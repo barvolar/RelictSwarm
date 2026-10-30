@@ -2,14 +2,7 @@ function closest(x,y,max=360,except=null){let best=null,bestD=max*max;for(let e 
 // Ranged weapons favor a reachable boss, but switch to immediate threats when surrounded.
 // The nearest target still governs flame, saws, mines and short-range defensive effects.
 function chooseCombatTarget(x,y,max=550,weapon='pulse'){
- const nearest=closest(x,y,max);
- if(!nearest||trainingMode||weapon==='flame')return nearest;
- let boss=null,best=Infinity;
- for(const e of S.bosses){if(e.hp<=0)continue;const dist=(e.x-x)**2+(e.y-y)**2;if(dist<best&&dist<Math.min(max,550)**2){boss=e;best=dist;}}
- if(!boss)return nearest;
- const dangerRadius=112; // collision protection takes precedence over boss focus
- if(!nearest.elite&&(nearest.x-x)**2+(nearest.y-y)**2<dangerRadius*dangerRadius)return nearest;
- return boss;
+ return selectCombatTarget(closest(x,y,max),S.bosses,x,y,max,weapon,trainingMode);
 }
 function damageArea(x,y,r,dmg,options={}){for(const e of S.enemy){if(e.hp<=0)continue;let dx=e.x-x,dy=e.y-y;if(dx*dx+dy*dy<(r+e.r)**2){hurtEnemy(e,dmg,options)}}S.fx.push({type:'ring',x,y,r,life:.32,max:.32,col:options.color||AMBER});burst(x,y,options.color||AMBER,19,r*2)}
 // Shared firing geometry. The illustrated muzzle is on the drone's local -Y axis.

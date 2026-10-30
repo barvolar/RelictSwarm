@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import vm from 'node:vm';
+import {selectCombatTarget} from '../src/domain/targeting.mjs';
 import test from 'node:test';
 
 const root = new URL('../', import.meta.url);
@@ -20,7 +21,7 @@ function game(initial = {}) {
   };
   const calls = {choices: [], fusions: [], saves: 0};
   const ctx = vm.createContext({
-    S, mode: 'playing', trainingMode: false, TAU: 2 * Math.PI,
+    S, selectCombatTarget, mode: 'playing', trainingMode: false, TAU: 2 * Math.PI,
     rand: (a, b) => (a + b) / 2,
     save: {recipes: {}}, performance: {now: () => 1000},
     setMode: mode => {ctx.mode = mode;},
@@ -181,4 +182,17 @@ test('loading older save filters invalid skins, records and threat', () => {
   assert.equal(save.meta.hull,3);
   stored.set('relictSwarm_v01_save','{invalid json');
   assert.equal(vm.runInContext('readSave().runs',ctx),0);
+});
+
+
+test('independent ES targeting module has no dependency on the game runtime', () => {
+  const boss={id:'boss1',x:240,y:0,hp:100,elite:true};
+  const nearby={id:'scarab',x:150,y:0,hp:12};
+  assert.equal(selectCombatTarget(nearby,[boss],0,0,550,'pulse',false),boss);
+  nearby.x=60;
+  assert.equal(selectCombatTarget(nearby,[boss],0,0,550,'pulse',false),nearby);
+  nearby.x=150;
+  assert.equal(selectCombatTarget(nearby,[boss],0,0,550,'flame',false),nearby);
+  assert.equal(selectCombatTarget(nearby,[boss],0,0,550,'pulse',true),nearby);
+  assert.equal(selectCombatTarget(null,[boss],0,0,550,'pulse',false),null);
 });
