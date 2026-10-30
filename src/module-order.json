@@ -68,6 +68,9 @@
   "src/modules/70-render/layers/projectile-effects.js",
   "src/modules/70-render/layers/overlays.js",
   "src/modules/70-render/layers/frame.js",
-  "src/modules/60-analytics/performance.js",
+  "src/modules/60-analytics/performance/tracker.js",
+  "src/modules/60-analytics/performance/reports.js",
+  "src/modules/60-analytics/performance/download.js",
+  "src/modules/60-analytics/performance/settings.js",
   "src/modules/90-bootstrap/entry.js"
 ]
