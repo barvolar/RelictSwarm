@@ -21,7 +21,7 @@ function game(initial = {}) {
   const S = {
     drones: [], enemy: [], bosses: [], hybrids: [], fusionCores: 0,
     player: {x: 0, y: 0, hp: 100, maxHp: 100, speed: 100},
-    fx: [], lvl: 1, pendingUp: 0, t: 0, ...initial,
+    fx: [], parts: [], floaters: [], lvl: 1, pendingUp: 0, t: 0, ...initial,
   };
   const calls = {choices: [], fusions: [], saves: 0};
   const ctx = vm.createContext({
