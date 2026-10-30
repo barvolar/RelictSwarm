@@ -1,0 +1,70 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="430" viewBox="0 0 1200 430" role="img" aria-label="Реликтовый рой: научно-фантастическая арена, боевой робот и волны врагов">
+<defs>
+ <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#071420"/><stop offset=".53" stop-color="#0b1930"/><stop offset="1" stop-color="#140e24"/></linearGradient>
+ <radialGradient id="halo"><stop stop-color="#14c6c4" stop-opacity=".34"/><stop offset=".55" stop-color="#0b6a94" stop-opacity=".11"/><stop offset="1" stop-color="#06131f" stop-opacity="0"/></radialGradient>
+ <radialGradient id="ember"><stop stop-color="#ffcf76" stop-opacity=".42"/><stop offset="1" stop-color="#ffa63d" stop-opacity="0"/></radialGradient>
+ <linearGradient id="steel" x1="0" x2="1" y1="0" y2="1"><stop stop-color="#4ebbbd"/><stop offset=".45" stop-color="#25475d"/><stop offset="1" stop-color="#101d34"/></linearGradient>
+ <linearGradient id="aqua" x1="0" x2="1"><stop stop-color="#46f3da"/><stop offset="1" stop-color="#6dd5ff"/></linearGradient>
+ <filter id="light" x="-70%" y="-70%" width="240%" height="240%"><feGaussianBlur stdDeviation="14"/></filter>
+ <pattern id="grid" width="38" height="38" patternUnits="userSpaceOnUse"><path d="M38 0H0V38" fill="none" stroke="#61a3bc" stroke-width=".55" opacity=".19"/></pattern>
+ <pattern id="dots" width="15" height="15" patternUnits="userSpaceOnUse"><circle cx="1" cy="1" r=".8" fill="#60e4e1" opacity=".2"/></pattern>
+</defs>
+<rect width="1200" height="430" rx="18" fill="url(#bg)"/>
+<rect width="1200" height="430" fill="url(#grid)"/>
+<rect width="1200" height="430" fill="url(#dots)"/>
+<path d="M0 350 475 0M300 430 755 0M650 430 1100 0" stroke="#2ed8d7" stroke-width="1" opacity=".1"/>
+<ellipse cx="918" cy="214" rx="310" ry="235" fill="url(#halo)"/>
+<ellipse cx="991" cy="217" rx="172" ry="166" fill="url(#ember)"/>
+<g fill="none" stroke="#4fe4df" stroke-width="1.5" opacity=".3">
+ <circle cx="918" cy="216" r="172" stroke-dasharray="5 14"/>
+ <circle cx="918" cy="216" r="146" stroke-dasharray="32 16 8 18"/>
+ <circle cx="918" cy="216" r="118"/>
+ <path d="M918 30V82M918 350V401M726 216H790M1053 216h121"/>
+</g>
+<g transform="translate(918 214)" stroke-linejoin="round">
+ <g fill="#14283a" stroke="#50d4d6" stroke-width="3" opacity=".9">
+  <path d="M-84-61-147-91-169-55-121-7-89-10Z"/>
+  <path d="M84-61 147-91 169-55 121-7 89-10Z"/>
+  <path d="M-90 60-148 90-157 127-106 106-65 74Z"/>
+  <path d="M90 60 148 90 157 127 106 106 65 74Z"/>
+ </g>
+ <g fill="url(#steel)" stroke="#73d9db" stroke-width="4">
+  <path d="M0-134 86-99 113-18 89 79 0 127-89 79-113-18-86-99Z"/>
+  <path d="M0-112 65-86 88-17 68 62 0 99-68 62-88-17-65-86Z" fill="#15273a" stroke="#347c91" stroke-width="3"/>
+ </g>
+ <path d="M-86-12-41-55 0-35 41-55 86-12 55 47 0 73-55 47Z" fill="#15404e" stroke="#5de6df" stroke-width="3"/>
+ <path d="M0-50 53-6 42 48 0 77-42 48-53-6Z" fill="#123747" stroke="#ffbe70" stroke-width="4"/>
+ <path d="M0-32 34-2 26 37 0 55-26 37-34-2Z" fill="#ffb756" opacity=".38" filter="url(#light)"/>
+ <path d="M0-32 34-2 26 37 0 55-26 37-34-2Z" fill="#ffca70"/>
+ <path d="M0-19 18-1 15 27 0 39-15 27-18-1Z" fill="#fff3bf"/>
+ <g fill="none" stroke="#80d9e6" stroke-width="3">
+  <path d="M-58-86-31-103 0-86 31-103 58-86"/>
+  <path d="M-77 67-43 80 0 104 43 80 77 67"/>
+ </g>
+ <g fill="#ffbe72" stroke="#ffe5a3" stroke-width="2">
+  <path d="M-157-71-195-88-184-63-154-49Z"/>
+  <path d="M157-71 195-88 184-63 154-49Z"/>
+ </g>
+</g>
+<g fill="#ffbe70" stroke="#ffde9b" stroke-width="2" opacity=".9">
+ <path d="M693 111 716 122 724 146 705 164 681 150 676 127Z"/>
+ <path d="M1105 319 1126 325 1133 346 1114 363 1092 353 1088 333Z"/>
+ <path d="M1092 82 1107 91 1113 107 1098 120 1080 113 1077 95Z"/>
+</g>
+<g fill="none" stroke="#ffbb6c" opacity=".48" stroke-width="2">
+ <circle cx="700" cy="136" r="33" stroke-dasharray="2 7"/>
+ <circle cx="1110" cy="338" r="31" stroke-dasharray="2 7"/>
+ <path d="M738 146 820 184M1051 282 1080 323M1045 143 1084 108"/>
+</g>
+<path d="M34 32H486" stroke="#59e4df" stroke-width="2" opacity=".7"/>
+<path d="M34 32v25M486 32v12" stroke="#59e4df" stroke-width="2" opacity=".7"/>
+<text x="56" y="101" fill="#65e7dc" font-family="Arial,Helvetica,sans-serif" font-size="16" font-weight="700" letter-spacing="5">ПРОТОКОЛ ВЫЖИВАНИЯ</text>
+<text x="49" y="188" fill="#e5fcff" font-family="Arial,Helvetica,sans-serif" font-size="65" font-weight="900" letter-spacing="1">РЕЛИКТОВЫЙ</text>
+<text x="47" y="290" fill="url(#aqua)" font-family="Arial,Helvetica,sans-serif" font-size="116" font-weight="900" letter-spacing="8">РОЙ</text>
+<path d="M54 317H513" stroke="#ffbf78" stroke-width="2" opacity=".85"/>
+<text x="55" y="347" fill="#c6dae5" font-family="Arial,Helvetica,sans-serif" font-size="19" letter-spacing="2">15 МИНУТ  /  5 ОРУЖИЙ  /  25 СИНТЕЗОВ</text>
+<rect x="55" y="373" width="187" height="32" rx="4" fill="#133b42" stroke="#4de4d1" opacity=".92"/>
+<text x="74" y="394" fill="#bdfff6" font-family="Arial,Helvetica,sans-serif" font-size="13" font-weight="700" letter-spacing="2">АРЕНА ЖДЁТ ТЕБЯ</text>
+<path d="M34 415H515" stroke="#59e4df" opacity=".25"/>
+<path d="M1173 35h-80M1173 35v43M1166 396h-104M1166 396v-41" fill="none" stroke="#4de3d9" stroke-width="2" opacity=".5"/>
+</svg>
