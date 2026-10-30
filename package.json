@@ -3,12 +3,11 @@
   "private": true,
   "version": "0.10.15",
   "type": "module",
-  "description": "Modular source build for Relict Swarm",
+  "description": "Modular HTML5 build with anonymous optional telemetry",
   "scripts": {
     "build": "node scripts/build.mjs",
     "test": "npm run build && node --test tests/*.test.mjs",
-    "preview": "node scripts/serve.mjs",
-    "verify:refactor": "npm run build && node scripts/verify-refactor.mjs"
+    "preview": "node scripts/serve.mjs"
   },
   "engines": {
     "node": ">=20"
