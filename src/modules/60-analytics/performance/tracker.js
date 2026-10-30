@@ -1,5 +1,5 @@
 const perf={on:true,lastRaf:0,bucketFrom:0,frames:0,intervals:[],updateMs:[],drawMs:[],audioMs:[],samples:[],startedAt:Date.now(),excludedLargeGaps:0};
-function perfReset(){perf.lastRaf=0;perf.bucketFrom=0;perf.frames=0;perf.intervals=[];perf.updateMs=[];perf.drawMs=[];perf.audioMs=[];perf.samples=[];perf.startedAt=Date.now();perf.excludedLargeGaps=0;perfShow();}
+function perfReset(){perf.lastRaf=0;perf.bucketFrom=0;perf.frames=0;perf.intervals=[];perf.updateMs=[];perf.drawMs=[];perf.audioMs=[];perf.samples=[];perf.startedAt=Date.now();perf.excludedLargeGaps=0;resetRenderAdaptation();perfShow();}
 function perfShow(){} // Performance sampling is invisible.
 function perfSnapshot(){
  if(!S)return {enemies:0,enemyBullets:0,shots:0,fx:0,parts:0,pickups:0,hazards:0,mines:0,chains:0};
@@ -20,6 +20,7 @@ function perfTick(now,msUpdate,msDraw,msAudio){
  const sample={elapsedGameSec:Math.round((S?.t||0)*10)/10,wallClock:Date.now(),renderQuality,renderDpr:+scale.toFixed(2),canvasPixels:C.width*C.height,fps:+(perf.frames/elapsed).toFixed(1),frameP95ms:+perfPercentile(intervals,.95).toFixed(1),frameP99ms:+perfPercentile(intervals,.99).toFixed(1),slowFrames33:intervals.filter(v=>v>33.3).length,slowFrames50:intervals.filter(v=>v>50).length,cpuUpdateMs:+perfAvg(perf.updateMs).toFixed(2),cpuDrawMs:+perfAvg(perf.drawMs).toFixed(2),cpuAudioMs:+perfAvg(perf.audioMs).toFixed(2),...counts};
  perf.samples.push(sample);
  if(perf.samples.length>1000)perf.samples.shift();
+ adjustRenderFidelity(perf.samples);
 
  perf.bucketFrom=now;perf.frames=0;perf.intervals=[];perf.updateMs=[];perf.drawMs=[];perf.audioMs=[];
 }
