@@ -1,6 +1,8 @@
 [
   "src/modules/00-bootstrap/context.js",
-  "src/modules/10-data/weapons.js",
+  "src/modules/10-data/weapons/catalog.js",
+  "src/modules/10-data/weapons/modifiers.js",
+  "src/modules/10-data/weapons/helpers.js",
   "src/modules/10-data/world.js",
   "src/modules/20-core/state.js",
   "src/modules/20-core/input.js",
