@@ -54,7 +54,15 @@
   "src/modules/40-game/enemies/raids.js",
   "src/modules/40-game/update/simulation.js",
   "src/modules/40-game/update/hud.js",
-  "src/modules/70-render/draw.js",
+  "src/modules/70-render/layers/primitives.js",
+  "src/modules/70-render/layers/background.js",
+  "src/modules/70-render/layers/pickups.js",
+  "src/modules/70-render/layers/robot.js",
+  "src/modules/70-render/layers/drones.js",
+  "src/modules/70-render/layers/enemies.js",
+  "src/modules/70-render/layers/projectile-effects.js",
+  "src/modules/70-render/layers/overlays.js",
+  "src/modules/70-render/layers/frame.js",
   "src/modules/60-analytics/performance.js",
   "src/modules/90-bootstrap/entry.js"
 ]
