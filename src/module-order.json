@@ -74,5 +74,7 @@
   "src/modules/60-analytics/performance/reports.js",
   "src/modules/60-analytics/performance/download.js",
   "src/modules/60-analytics/performance/settings.js",
-  "src/modules/90-bootstrap/entry.js"
+  "src/modules/90-bootstrap/game-loop.js",
+  "src/modules/90-bootstrap/test-bridge.js",
+  "src/modules/90-bootstrap/start.js"
 ]
