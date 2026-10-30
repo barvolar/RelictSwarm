@@ -11,13 +11,21 @@ import test from 'node:test';
 
 const root = new URL('../', import.meta.url);
 const read = path => fs.readFileSync(new URL(path, root), 'utf8');
+const sourceOrder = JSON.parse(read('src/module-order.json'));
+const sourceFor = original => {
+  // Resolve a legacy source path to its ordered sub-files as the refactor progresses.
+  const prefix = original.replace(/\.js$/, '/');
+  const files = sourceOrder.filter(path => path === original || path.startsWith(prefix));
+  if (!files.length) throw new Error('Missing source module: ' + original);
+  return files.map(read).join('');
+};
 const src = [
   'src/modules/10-data/weapons.js',
   'src/modules/10-data/world.js',
   'src/modules/40-game/upgrades.js',
   'src/modules/40-game/weapons-combat.js',
   'src/modules/40-game/entities.js',
-].map(read).join('\n');
+].map(sourceFor).join('\n');
 
 function game(initial = {}) {
   const S = {
@@ -173,7 +181,7 @@ test('loading older save filters invalid skins, records and threat', () => {
     C:{style:{}},cx:{setTransform(){}},window:{},
     matchMedia:()=>({matches:false}),addEventListener(){},
   });
-  vm.runInContext(read('src/modules/10-data/world.js')+'\n'+read('src/modules/20-core/state.js'),ctx,{timeout:3000});
+  vm.runInContext(sourceFor('src/modules/10-data/world.js')+'\n'+sourceFor('src/modules/20-core/state.js'),ctx,{timeout:3000});
   assert.equal(vm.runInContext('save.threatUnlocked',ctx),1);
   assert.deepEqual(Array.from(vm.runInContext('save.skins',ctx)),['relict','ghost']);
   stored.set('relictSwarm_v01_save',JSON.stringify({
