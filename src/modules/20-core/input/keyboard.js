@@ -1,0 +1,4 @@
+const touching=matchMedia('(pointer:coarse)').matches || 'ontouchstart' in window;let keys={},joy={x:0,y:0,pid:null},mouse={x:0,y:0};const input=(k)=>!!keys[k];
+addEventListener('keydown',e=>{if(['ArrowDown','ArrowUp','ArrowLeft','ArrowRight','Space'].includes(e.code))e.preventDefault();keys[e.code]=true;if(e.repeat)return;if(e.code==='Escape'){if(mode==='playing')pause();else if(mode==='paused')resume()}if(e.code==='Space'&&mode==='playing')dash();if(mode==='playing'&&e.code==='KeyF'){if(trainingMode)renderTrainingPanel(true);else openForge();}if(mode==='upgrade'&&['Digit1','Digit2','Digit3'].includes(e.code)){const n=+e.code.slice(-1)-1;chooseUpgrade(n)}});addEventListener('keyup',e=>{keys[e.code]=false});addEventListener('blur',()=>{keys={};resetFloatingJoy();if(mode==='playing')pause()});
+// A floating joystick starts at the first touch in the left 60% of the arena.
+// Capture the pointer on the canvas, not on the decorative stick, to allow multitouch dash.
