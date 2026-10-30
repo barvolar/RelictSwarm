@@ -1,6 +1,4 @@
-/* Public frontend configuration. Never put secrets or passwords in this file. */
+/* Public telemetry endpoint. This URL is public; never put ADMIN_TOKEN here. */
 window.RELIC_TELEMETRY_CONFIG = {
-  // After deploying Cloudflare Worker, paste its public HTTPS endpoint, e.g.:
-  // endpoint: 'https://relict-telemetry.your-account.workers.dev/ingest'
-  endpoint: ''
+  endpoint: 'https://relict-swarm-telemetry.barvolar1.workers.dev/ingest'
 };
