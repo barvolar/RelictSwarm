@@ -12,7 +12,9 @@ const pureModules=[
   ['src/domain/targeting.mjs','selectCombatTarget'],
   ['src/domain/fusion-rules.mjs','eligibleFusionIds'],
   ['src/domain/boss-damage.mjs','calculateBossDamage'],
-  ['src/domain/weapon-damage.mjs','calculateWeaponDamage']
+  ['src/domain/weapon-damage.mjs','calculateWeaponDamage'],
+  ['src/domain/weapon-cooldown.mjs','calculateWeaponCooldown'],
+  ['src/domain/fusion-transfer.mjs','createFusionWeapon']
 ];
 const embeddedRules=pureModules.map(([file,name])=>{
   const source=read(file),signature='export function '+name+'(';

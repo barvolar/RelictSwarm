@@ -5,6 +5,8 @@ import {selectCombatTarget} from '../src/domain/targeting.mjs';
 import {eligibleFusionIds} from '../src/domain/fusion-rules.mjs';
 import {calculateBossDamage} from '../src/domain/boss-damage.mjs';
 import {calculateWeaponDamage} from '../src/domain/weapon-damage.mjs';
+import {calculateWeaponCooldown} from '../src/domain/weapon-cooldown.mjs';
+import {createFusionWeapon} from '../src/domain/fusion-transfer.mjs';
 import test from 'node:test';
 
 const root = new URL('../', import.meta.url);
@@ -25,7 +27,7 @@ function game(initial = {}) {
   };
   const calls = {choices: [], fusions: [], saves: 0};
   const ctx = vm.createContext({
-    S, selectCombatTarget, eligibleFusionIds, calculateBossDamage, calculateWeaponDamage, bal: null, mode: 'playing', trainingMode: false, TAU: 2 * Math.PI,
+    S, selectCombatTarget, eligibleFusionIds, calculateBossDamage, calculateWeaponDamage, calculateWeaponCooldown, createFusionWeapon, bal: null, mode: 'playing', trainingMode: false, TAU: 2 * Math.PI,
     rand: (a, b) => (a + b) / 2,
     save: {recipes: {}}, performance: {now: () => 1000},
     setMode: mode => {ctx.mode = mode;},
@@ -274,4 +276,39 @@ test('hurtEnemy integrates pure boss caps with analytics counters', () => {
  g.run('hurtEnemy(S.enemy[0],500,{silentHit:true})');
  assert.equal(boss.hp,18260);
  assert.equal(boss.damageSecond,340);
+});
+
+test('cooldown keeps base pace and compensates extremely high firing speed', () => {
+ const original=calculateWeaponCooldown(1.5,1,0,1);
+ assert.equal(original.cooldown,1.5);
+ assert.equal(original.attackOverflow,1);
+ const haste=1.6,rank=20,levels=8,base=1.8;
+ const raw=base/(haste*(1+Math.log1p(levels)*.40)*(1+Math.log1p(rank-1)*.16));
+ const boosted=calculateWeaponCooldown(base,haste,levels,rank);
+ assert.equal(boosted.cooldown,Math.max(.19,raw));
+ assert.equal(boosted.attackOverflow,Math.max(1,.19/Math.max(.0001,raw)));
+ const extreme=calculateWeaponCooldown(.5,4,200,500);
+ assert.equal(extreme.cooldown,.19);
+ assert.ok(extreme.attackOverflow>1);
+});
+
+test('fusion output transfers only matching branches without mutating inputs', () => {
+ const a={id:'pulse',lvl:7,mods:{power:5,rate:3,pierce:9}};
+ const b={id:'rail',lvl:10,mods:{power:4,rate:6,width:20}};
+ const output=createFusionWeapon('spear',a,b,[['power'],['rate'],['beams']]);
+ assert.deepEqual(output,{id:'fusion_spear',lvl:8,mods:{power:5,rate:5,beams:0},cd:.2,hitCd:0});
+ assert.deepEqual(a.mods,{power:5,rate:3,pierce:9});
+ assert.deepEqual(b.mods,{power:4,rate:6,width:20});
+ const minimum=createFusionWeapon('polar',{lvl:1,mods:{}},{lvl:1,mods:{}},[['freeze']]);
+ assert.equal(minimum.lvl,1);
+ assert.equal(minimum.mods.freeze,0);
+});
+
+test('production HTML remains standalone with inline domain rules', () => {
+ const html=read('dist/index.html');
+ for(const fn of ['selectCombatTarget','eligibleFusionIds','calculateBossDamage','calculateWeaponDamage','calculateWeaponCooldown','createFusionWeapon']){
+  assert.match(html,new RegExp('function '+fn+'\\('));
+  assert.doesNotMatch(html,new RegExp('export function '+fn+'\\('));
+ }
+ assert.ok(html.includes('telemetry-client.js'));
 });

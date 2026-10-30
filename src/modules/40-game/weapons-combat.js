@@ -147,7 +147,6 @@ function droneUpdate(dt){
  for(let i=0;i<S.drones.length;i++){
   const d=S.drones[i],meta=DRONES[d.id],rank=d.lvl;
   const pos=getDronePos(d,i),linked=S.hybrids.some(h=>HYBRIDS[h.id].a===d.id||HYBRIDS[h.id].b===d.id);
-  const fusionDamage=1,fusionRate=1;
   d.cd-=dt;d.hitCd-=dt;d.flash=Math.max(0,(d.flash||0)-dt);
   const baseDmg=calculateWeaponDamage(S.playerDmg,rank,wm(d,'power'),S.rageTimer>0);
   if(['saw','fusion_thermal','fusion_tesla','fusion_frostblade','fusion_magnetblade'].includes(d.id)){
@@ -195,11 +194,9 @@ function droneUpdate(dt){
   d.aimX=target.x;d.aimY=target.y;d.aimUntil=S.t+.23;
   d.flash=.18;
   sfxWeapon(d.id);
-  const cooldownBonus=1+Math.log1p(wm(d,'rate'))*.40;
-  // Even at extreme ranks the cooldown remains playable; extra investments add damage.
-  const rawCooldown=meta.base/(haste*fusionRate*cooldownBonus*(1+Math.log1p(rank-1)*.16));
-  const attackOverflow=Math.max(1,.19/Math.max(.0001,rawCooldown));
-  d.cd=Math.max(.19,rawCooldown);
+  // Preserve the .19-second firing floor; excess attack speed becomes extra damage.
+  const {cooldown,attackOverflow}=calculateWeaponCooldown(meta.base,haste,wm(d,'rate'),rank);
+  d.cd=cooldown;
   if(d.id==='fusion_ion'){
    const n=Math.min(5,1+wm(d,'beams'));
    for(let j=0;j<n;j++){
