@@ -12,9 +12,15 @@ import test from 'node:test';
 const root = new URL('../', import.meta.url);
 const read = path => fs.readFileSync(new URL(path, root), 'utf8');
 const sourceOrder = JSON.parse(read('src/module-order.json'));
+const sourceAliases = {
+  'src/modules/40-game/weapons-combat.js':'src/modules/40-game/combat/',
+  'src/modules/40-game/entities.js':'src/modules/40-game/entities/',
+  'src/modules/40-game/upgrades.js':'src/modules/40-game/upgrades/',
+  'src/modules/40-game/bosses-enemies.js':'src/modules/40-game/enemies/',
+};
 const sourceFor = original => {
   // Resolve a legacy source path to its ordered sub-files as the refactor progresses.
-  const prefix = original.replace(/\.js$/, '/');
+  const prefix = sourceAliases[original] || original.replace(/\.js$/, '/');
   const files = sourceOrder.filter(path => path === original || path.startsWith(prefix));
   if (!files.length) throw new Error('Missing source module: ' + original);
   return files.map(read).join('');
