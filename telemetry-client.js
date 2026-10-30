@@ -53,7 +53,7 @@
   function allowed() { return configured && consent === true; }
   function enqueue(payload) {
     if (!allowed()) return;
-    queue.push(payload);
+    queue.push({...payload,eventId:randomId()});
     if (queue.length > 12) queue = queue.slice(-12);
     storeQueue(); flush();
   }
@@ -62,6 +62,7 @@
     sending = true;
     try {
       while (queue.length && allowed()) {
+        if(!queue[0].eventId)queue[0].eventId=randomId();
         const data = JSON.stringify(queue[0]);
         const resp = await fetch(endpoint, {method:'POST', mode:'cors',
           headers:{'Content-Type':'application/json'}, body:data, keepalive:data.length < 50000,
@@ -80,9 +81,9 @@
     if (consent) flush();
   }
   function consentHtml() {
-    if (!configured) return '<div class="rs-privacy"><b>Статистика</b><p>Онлайн-аналитика ещё не подключена. Отчёты можно сохранять в JSON вручную.</p></div>';
+    if (!configured) return '<div class="rs-privacy"><b>Анонимная статистика</b><p>Онлайн-приём пока не настроен. Показатели собираются локально, не отображаясь в интерфейсе.</p></div>';
     const label = consent === true ? 'Включена' : consent === false ? 'Отключена' : 'Не выбрано';
-    return `<div class="rs-privacy"><b>Анонимная статистика</b><p>Отправка FPS, сложности, оружия, количества врагов и результатов забегов. Без имён и постоянных идентификаторов. Статус: <b>${label}</b>.</p><div class="rs-privacy-buttons"><button type="button" class="btn" data-rs-consent="yes">Разрешить</button><button type="button" class="btn ghost" data-rs-consent="no">Отключить</button></div><small>Можно изменить выбор в настройках. Уже отправленные отчёты не удаляются этим переключателем.</small></div>`;
+    return `<div class="rs-privacy"><b>Анонимная статистика</b><p>Автоматическая отправка показателей производительности, сложности, оружия и результатов забегов. Без имён и постоянных идентификаторов. Статус: <b>${label}</b>.</p><div class="rs-privacy-buttons"><button type="button" class="btn" data-rs-consent="yes">Разрешить</button><button type="button" class="btn ghost" data-rs-consent="no">Отключить</button></div><small>Можно изменить выбор в настройках. Уже отправленные отчёты не удаляются этим переключателем.</small></div>`;
   }
   function renderConsent() {
     const modal = document.getElementById('rs-consent-banner');
@@ -106,16 +107,27 @@
   function start() { sessionId = randomId(); }
   function sample(report, samples) {
     if (!allowed() || !report?.totals || !sessionId) return;
-    enqueue({v:1,type:'snapshot',sessionId,build:'0.10.15-online-test',data:compactSnapshot(report,samples)});
+    enqueue({v:1,type:'snapshot',sessionId,build:'0.10.16-telemetry',data:compactSnapshot(report,samples)});
   }
   function finish(report, samples) {
     if (!allowed() || !report?.result || !sessionId) return;
     const summary = compactSnapshot(report,samples);
     // Keep detailed boss encounters, choices and progression; no raw user-agent or user input.
+    const all=samples||[];
+    const fps=all.map(x=>x.fps).filter(Number.isFinite);
+    const perfOverall={seconds:all.length,
+      averageFps:fps.length?round(fps.reduce((a,b)=>a+b,0)/fps.length):null,
+      minFps:fps.length?round(Math.min(...fps)):null,
+      slowFrames33:all.reduce((sum,x)=>sum+(x.slowFrames33||0),0),
+      worstP95ms:all.length?round(Math.max(...all.map(x=>x.frameP95ms||0))):null};
+    const perfTimeline=all.filter((x,i)=>i%15===0).slice(-80).map(x=>({
+      t:round(x.elapsedGameSec),fps:round(x.fps),p95:round(x.frameP95ms),
+      cpu:round((x.cpuUpdateMs||0)+(x.cpuDrawMs||0),2),
+      enemies:x.enemies||0,shots:(x.shots||0)+(x.enemyBullets||0),fx:(x.fx||0)+(x.parts||0)}));
     const details = {result:report.result,totals:report.totals,bosses:report.bosses,
       choices:report.choices,fusions:report.fusions,timeline:report.timeline,
-      finalWeapons:report.finalWeapons,events:report.events};
-    enqueue({v:1,type:'finish',sessionId,build:'0.10.15-online-test',data:summary,details});
+      finalWeapons:report.finalWeapons,events:report.events,perfOverall,perfTimeline};
+    enqueue({v:1,type:'finish',sessionId,build:'0.10.16-telemetry',data:summary,details});
   }
   window.SwarmTelemetry = { start, sample, finish, settingsHTML:consentHtml };
   addEventListener('online',flush);
