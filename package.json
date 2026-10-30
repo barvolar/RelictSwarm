@@ -6,8 +6,9 @@
   "description": "Modular source build for Relict Swarm",
   "scripts": {
     "build": "node scripts/build.mjs",
-    "test": "node scripts/build.mjs --verify-migration",
-    "preview": "node scripts/serve.mjs"
+    "test": "npm run test:migration && node --test tests/*.test.mjs",
+    "preview": "node scripts/serve.mjs",
+    "test:migration": "node scripts/build.mjs --verify-migration"
   },
   "engines": {
     "node": ">=20"
