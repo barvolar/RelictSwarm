@@ -7,7 +7,8 @@
   "scripts": {
     "build": "node scripts/build.mjs",
     "test": "npm run build && node --test tests/*.test.mjs",
-    "preview": "node scripts/serve.mjs"
+    "preview": "node scripts/serve.mjs",
+    "verify:refactor": "npm run build && node scripts/verify-refactor.mjs"
   },
   "engines": {
     "node": ">=20"
