@@ -9,21 +9,3 @@
 #touchControls #joystick.floating-stick.is-active{opacity:1;visibility:visible}
 #world{touch-action:none}
 
-/* v0.10.12 diagnostic build: lightweight DOM overlay, disabled outside live gameplay. */
-#perfOverlay{position:fixed;left:9px;top:130px;z-index:8;pointer-events:none;display:none;width:min(246px,calc(100vw - 18px));background:rgba(5,15,26,.87);border:1px solid #51798f;border-radius:8px;padding:7px 10px;color:#ecf9fd;font:11px/1.45 'Trebuchet MS','Segoe UI',sans-serif;box-shadow:0 2px 12px #0008;letter-spacing:.1px;contain:layout style}
-#perfOverlay .perf-main{display:flex;gap:9px;align-items:baseline;font-size:13px;font-weight:900}
-#perfOverlay .perf-main b{color:#65eddb;font-size:18px;font-variant-numeric:tabular-nums}
-#perfOverlay .perf-main b.perf-warning{color:#ffba70}
-#perfOverlay .perf-main b.perf-bad{color:#ff7e89}
-#perfOverlay .perf-info{color:#a6bfce;font-variant-numeric:tabular-nums;white-space:normal}
-#perfOverlay .perf-caption{font-size:9px;color:#b8d4dc;letter-spacing:1.6px;font-weight:800}
-.perf-tools{border:1px solid #38627b;padding:12px;border-radius:9px;background:#0b1b2a;display:grid;gap:10px;margin:14px 0}
-.perf-tools strong{color:#b1fff0;font-size:13px}
-.perf-tools p{margin:0;color:#b6cbd5;font-size:12px;line-height:1.5}
-.perf-tools .perf-actions{display:flex;flex-wrap:wrap;gap:8px}
-.perf-tools .perf-actions button{min-width:0;flex:1 1 135px;font-size:12px}
-#perfReportText{background:#06111d;color:#cbe8e9;border:1px solid #49687a;border-radius:6px;width:100%;max-width:100%;height:170px;resize:vertical;padding:7px;font:11px/1.4 monospace;overflow:auto;user-select:text;-webkit-user-select:text;touch-action:auto}
-@media(max-width:430px){#perfOverlay{left:7px;width:min(218px,calc(100vw - 14px));padding:6px 8px;font-size:10px}#perfOverlay .perf-main b{font-size:16px}}
-
-/* Run-balance diagnostics, local export, zero impact on combat visuals. */
-.bal-tools{margin:13px 0;padding:13px 14px;border:1px solid #3a6772;border-radius:10px;background:linear-gradient(145deg,#112634,#091b2c);color:#dff7fc;font-size:13px;line-height:1.5}.bal-tools strong{display:block;color:#77e9db;letter-spacing:1.1px;font-size:13px}.bal-tools p{margin:7px 0 10px}.bal-tools .btn{width:100%;max-width:100%;white-space:normal;padding:13px 9px}.bal-tools textarea{display:block;width:100%;min-height:115px;margin-top:10px;background:#091727;color:#e9f7fc;font-size:11px;resize:vertical}.bal-tools textarea[hidden]{display:none}

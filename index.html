@@ -405,24 +405,6 @@ button.forge-card:hover{filter:brightness(1.25)}.forge-card.is-done{border-color
 #touchControls #joystick.floating-stick.is-active{opacity:1;visibility:visible}
 #world{touch-action:none}
 
-/* v0.10.12 diagnostic build: lightweight DOM overlay, disabled outside live gameplay. */
-#perfOverlay{position:fixed;left:9px;top:130px;z-index:8;pointer-events:none;display:none;width:min(246px,calc(100vw - 18px));background:rgba(5,15,26,.87);border:1px solid #51798f;border-radius:8px;padding:7px 10px;color:#ecf9fd;font:11px/1.45 'Trebuchet MS','Segoe UI',sans-serif;box-shadow:0 2px 12px #0008;letter-spacing:.1px;contain:layout style}
-#perfOverlay .perf-main{display:flex;gap:9px;align-items:baseline;font-size:13px;font-weight:900}
-#perfOverlay .perf-main b{color:#65eddb;font-size:18px;font-variant-numeric:tabular-nums}
-#perfOverlay .perf-main b.perf-warning{color:#ffba70}
-#perfOverlay .perf-main b.perf-bad{color:#ff7e89}
-#perfOverlay .perf-info{color:#a6bfce;font-variant-numeric:tabular-nums;white-space:normal}
-#perfOverlay .perf-caption{font-size:9px;color:#b8d4dc;letter-spacing:1.6px;font-weight:800}
-.perf-tools{border:1px solid #38627b;padding:12px;border-radius:9px;background:#0b1b2a;display:grid;gap:10px;margin:14px 0}
-.perf-tools strong{color:#b1fff0;font-size:13px}
-.perf-tools p{margin:0;color:#b6cbd5;font-size:12px;line-height:1.5}
-.perf-tools .perf-actions{display:flex;flex-wrap:wrap;gap:8px}
-.perf-tools .perf-actions button{min-width:0;flex:1 1 135px;font-size:12px}
-#perfReportText{background:#06111d;color:#cbe8e9;border:1px solid #49687a;border-radius:6px;width:100%;max-width:100%;height:170px;resize:vertical;padding:7px;font:11px/1.4 monospace;overflow:auto;user-select:text;-webkit-user-select:text;touch-action:auto}
-@media(max-width:430px){#perfOverlay{left:7px;width:min(218px,calc(100vw - 14px));padding:6px 8px;font-size:10px}#perfOverlay .perf-main b{font-size:16px}}
-
-/* Run-balance diagnostics, local export, zero impact on combat visuals. */
-.bal-tools{margin:13px 0;padding:13px 14px;border:1px solid #3a6772;border-radius:10px;background:linear-gradient(145deg,#112634,#091b2c);color:#dff7fc;font-size:13px;line-height:1.5}.bal-tools strong{display:block;color:#77e9db;letter-spacing:1.1px;font-size:13px}.bal-tools p{margin:7px 0 10px}.bal-tools .btn{width:100%;max-width:100%;white-space:normal;padding:13px 9px}.bal-tools textarea{display:block;width:100%;min-height:115px;margin-top:10px;background:#091727;color:#e9f7fc;font-size:11px;resize:vertical}.bal-tools textarea[hidden]{display:none}
 </style>
 </head>
 <body>
@@ -454,7 +436,6 @@ button.forge-card:hover{filter:brightness(1.25)}.forge-card.is-done{border-color
  <div class="joystick floating-stick" id="joystick"><div class="joy-ring"></div><div class="joy-knob" id="joyKnob"></div></div>
  <button class="dash" id="dashBtn"><span>⚡</span><small>РЫВОК</small><span class="dash-cool" id="dashCool"></span></button>
 </div>
-<div id="perfOverlay" aria-label="Статистика производительности" aria-live="off"></div>
 <div id="modal" class="modal">
  <div class="menu-head"><div class="eyebrow">[ 10.15: ONLINE TEST ]</div><div class="menu-logo"><span>РЕЛИКТОВЫЙ</span><strong>РОЙ</strong></div><div class="subtitle">НУЛЕВОЙ ПРОТОКОЛ <i></i> 10 // ПЯТНАДЦАТЬ МИНУТ</div></div>
  <div class="modal-panel" id="modalContent"></div>
@@ -1114,9 +1095,9 @@ function renderSkins(){
 }
 function showSettings(){
  setMode('menu');
- $('modalContent').innerHTML=`<div class="section-top"><div><div class="label">[ СИСТЕМА ]</div><div class="panel-title">Настройки</div></div><button id="backHome" class="btn ghost small-back">◂ НАЗАД</button></div><div class="settings-action"><button id="soundBtn" class="btn">${mute?'♪ ВКЛЮЧИТЬ ЗВУК':'♫ ВЫКЛЮЧИТЬ ЗВУК'}</button><button id="howBtn" class="btn ghost">? КАК ИГРАТЬ</button></div>${audioMixerHTML()}${balPanelHTML()}${perfSettingsHTML()}${window.SwarmTelemetry?.settingsHTML?.()||''}`;
+ $('modalContent').innerHTML=`<div class="section-top"><div><div class="label">[ СИСТЕМА ]</div><div class="panel-title">Настройки</div></div><button id="backHome" class="btn ghost small-back">◂ НАЗАД</button></div><div class="settings-action"><button id="soundBtn" class="btn">${mute?'♪ ВКЛЮЧИТЬ ЗВУК':'♫ ВЫКЛЮЧИТЬ ЗВУК'}</button><button id="howBtn" class="btn ghost">? КАК ИГРАТЬ</button></div>${audioMixerHTML()}${renderQualityControls()}${window.SwarmTelemetry?.settingsHTML?.()||''}`;
  $('backHome').onclick=menu;$('soundBtn').onclick=soundToggle;
- $('howBtn').onclick=showHow;bindAudioMixer();bindPerfSettings();
+ $('howBtn').onclick=showHow;bindAudioMixer();
 }
 function renderShop(){let el=$('shop');if(!el)return;el.innerHTML=META.map(m=>{let n=save.meta[m.id]||0,price=m.cost+n*m.step,full=n>=m.max;return `<div class="shop-item"><div class="upgrade-title"><span style="color:#5af5de">${m.glyph}</span> ${m.name}</div><p>${m.sub}</p><div class="price"><span class="rank">${n}/${m.max} УР.</span><button data-buy="${m.id}" class="btn" ${full||save.shards<price?'disabled':''}>${full?'МАКС':'✧ '+price}</button></div></div>`}).join('');el.querySelectorAll('[data-buy]').forEach(b=>b.onclick=()=>{let m=META.find(z=>z.id===b.dataset.buy),n=save.meta[m.id]||0,cost=m.cost+n*m.step;if(n>=m.max||save.shards<cost)return;save.shards-=cost;save.meta[m.id]=n+1;persist();clickSound(540,.13);$('wallet').textContent=save.shards;renderShop()})}
 function renderLab(){
@@ -1239,7 +1220,7 @@ function balReport(){
    durationSeconds:balR((b.killedAt??now)-b.spawnedAt)};
  });
  return {game:'Реликтовый рой',build:bal.build,reportType:'balance',
-  created:bal.created,generated:new Date().toISOString(),notice:'Локальный диагностический отчёт; онлайн-передача возможна только с согласия игрока. Время в секундах игрового процесса; урон записан после ограничений по боссам. Данные по конкретному оружию — история выбора, а не отдельный DPS.',
+  created:bal.created,generated:new Date().toISOString(),notice:'Время в секундах игрового процесса; урон после ограничений по боссам. Отдельный DPS каждого оружия не измеряется.',
   environment:{...bal.screen,graphicsQuality:bal.graphicsQuality},difficulty:bal.threat,
   result:bal.result||{status:'in_progress',seconds:now},
   totals:{...bal.totals,damageToBoss:balR(bal.totals.damageToBoss),
@@ -1249,7 +1230,7 @@ function balReport(){
   events:bal.events,
   fpsSummary:typeof perfSummary==='function'?perfSummary():null};
 }
-function balStore(){try{const report=balReport();if(report){balLast=report;localStorage.setItem(BAL_STORE,JSON.stringify(report));if(!report.result)window.SwarmTelemetry?.sample?.(report,perf.samples)}}catch(err){console.warn('Balance report storage:',err)}}
+function balStore(){try{const report=balReport();if(report){balLast=report;localStorage.setItem(BAL_STORE,JSON.stringify(report));if(report.result?.status==='in_progress')window.SwarmTelemetry?.sample?.(report,perf.samples)}}catch(err){console.warn('Balance report storage:',err)}}
 function balFinalize(won,giveup){
  if(!bal||trainingMode)return;
  balSnapshot();bal.result={status:won?'win':giveup?'abandoned':'defeat',
@@ -1257,22 +1238,9 @@ function balFinalize(won,giveup){
   remainingBosses:S.bosses.filter(e=>e.hp>0).map(e=>({id:e.id,hpPct:balR(100*e.hp/e.maxHp)}))};
  bal.events.push({t:balR(S.t),what:'run_end',result:bal.result.status});balStore();window.SwarmTelemetry?.finish?.(balReport(),perf.samples);
 }
-function balPanelHTML(){
- const r=bal&&S?balReport():balLast;
- const t=r?.result?.seconds??r?.timeline?.at(-1)?.t??0;
- return `<div class="bal-tools"><strong>◈ АНАЛИТИКА БАЛАНСА</strong><p>${r?`Записано ${formatTime(t)} · урон боссам ${Math.round(r.totals.damageToBoss).toLocaleString('ru')} · пик врагов ${r.totals.peakEnemies} · получено ударов ${r.totals.receivedHits}`:'Пока нет данных. Запусти забег, статистика соберётся автоматически.'}</p><button type="button" class="btn primary" id="balExport" ${r?'':'disabled'}>↓ СКАЧАТЬ ОТЧЁТ БАЛАНСА</button><p class="tiny">Отчёт хранится на этом устройстве, пока не начнётся новый забег. Отчёт хранится локально. При разрешённой онлайн-аналитике анонимные данные также передаются на сервер.</p><textarea id="balReportText" hidden readonly aria-label="Отчёт баланса для копирования"></textarea></div>`;
-}
-function balExport(){
- const report=(mode==='menu'||(!S&&balLast))?balLast:balReport();if(!report)return;
- const json=JSON.stringify(report,null,2);
- try{const file=new Blob([json],{type:'application/json;charset=utf-8'}),url=URL.createObjectURL(file),link=document.createElement('a');link.href=url;link.download='RelictSwarm_Balance_'+Date.now()+'.json';document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),4000)}catch(err){console.warn('Balance download:',err)}
- const area=$('balReportText');if(area){area.value=json;area.hidden=false;}
-}
-document.addEventListener('click',e=>{if(e.target?.id==='balExport')balExport()});
-
 function start(){perfReset();trainingMode=false;runId++;selectedThreat=Math.max(1,Math.min(save.threatUnlocked,selectedThreat));S={threat:selectedThreat,t:0,elapsed:0,player:{x:0,y:0,hp:120+(save.meta.hull||0)*15,maxHp:120+(save.meta.hull||0)*15,speed:225,rad:17,inv:1,hit:0,dx:0,dy:-1,dashCd:0,dashTime:0,regen:save.meta.regen||0},cam:{x:0,y:0},lvl:1,xp:0,xpNeed:19,playerDmg:1+(save.meta.power||0)*.06,magnet:100+(save.meta.magnet||0)*16,score:0,kills:0,shards:0,enemy:[],bullets:[],enemyBullets:[],pickups:[],parts:[],fx:[],floaters:[],drones:[{id:'pulse',lvl:1,cd:0,hitCd:0,mods:{}}],mines:[],gravityWells:[],effects:[],chains:[],hazards:[],hybrids:[],fusionCores:0,synthFlags:[false,false,false],powerupClock:25,rageTimer:0,invulnTimer:0,magnetTimer:0,dead:false,wins:false,spawn:0,spawnCount:0,raidFlags:RAID_EVENTS.map(()=>false),upgrades:[],pendingUp:0,bossFlags:BOSS_EVENTS.map(()=>false),bosses:[],clock:0,regenT:0};balInit();$('bossWrap').classList.add('hidden');$('wavebanner').classList.add('hidden');$('toast').classList.add('hidden');setMode('playing');toast('СИСТЕМА АКТИВИРОВАНА // СОБИРАЙ ДАННЫЕ');sfx('level',.75);for(let i=0;i<9;i++)spawnEnemy('scarab',i*TAU/9,rand(235,340));updateHUD()}
 function weaponSummary(){return `<div class="line"></div><div class="label">КОНФИГУРАЦИЯ ОРУЖИЯ</div><div class="tiny" style="margin:10px 0;line-height:1.9">${S.drones.map(d=>`<b style="color:${DRONES[d.id].color}">${DRONES[d.id].name} ур. ${d.lvl}</b>: ${weaponBranches(d.id).filter(m=>wm(d,m[0])>0).map(m=>m[1]+' '+wm(d,m[0])).join(', ')||'Без модулей'}`).join('<br>')}</div>`}
-function pause(){if(mode!=='playing')return;if(trainingMode){setMode('paused');$('modalContent').innerHTML=`<div class="label">[ ПОЛИГОН ]</div><div class="panel-title">Испытание приостановлено</div><p class="panel-desc">Изменения оружия здесь не сохраняются в обычный забег.</p><div class="button-row"><button class="btn primary" id="resumeBtn">▶ ПРОДОЛЖИТЬ</button><button class="btn ghost" id="quitBtn">◂ В ГЛАВНОЕ МЕНЮ</button></div>`;$('resumeBtn').onclick=resume;$('quitBtn').onclick=leaveTraining;return;}setMode('paused');$('modalContent').innerHTML=`<div class="label">[ ПАУЗА ]</div><div class="panel-title" style="margin-top:9px">Система ожидает</div><p class="panel-desc">На поле уже ${S.kills} обломков. Машины терпеливо дождутся твоего возвращения.</p>${weaponSummary()}${balPanelHTML()}${perfPauseHTML()}<div class="button-row"><button id="resumeBtn" class="btn primary">▶ ПРОДОЛЖИТЬ</button><button id="quitBtn" class="btn ghost">ЗАВЕРШИТЬ ЗАБЕГ</button></div>`;$('resumeBtn').onclick=resume;$('quitBtn').onclick=()=>finish(false,true)}
+function pause(){if(mode!=='playing')return;if(trainingMode){setMode('paused');$('modalContent').innerHTML=`<div class="label">[ ПОЛИГОН ]</div><div class="panel-title">Испытание приостановлено</div><p class="panel-desc">Изменения оружия здесь не сохраняются в обычный забег.</p><div class="button-row"><button class="btn primary" id="resumeBtn">▶ ПРОДОЛЖИТЬ</button><button class="btn ghost" id="quitBtn">◂ В ГЛАВНОЕ МЕНЮ</button></div>`;$('resumeBtn').onclick=resume;$('quitBtn').onclick=leaveTraining;return;}setMode('paused');$('modalContent').innerHTML=`<div class="label">[ ПАУЗА ]</div><div class="panel-title" style="margin-top:9px">Система ожидает</div><p class="panel-desc">На поле уже ${S.kills} обломков. Машины терпеливо дождутся твоего возвращения.</p>${weaponSummary()}<div class="button-row"><button id="resumeBtn" class="btn primary">▶ ПРОДОЛЖИТЬ</button><button id="quitBtn" class="btn ghost">ЗАВЕРШИТЬ ЗАБЕГ</button></div>`;$('resumeBtn').onclick=resume;$('quitBtn').onclick=()=>finish(false,true)}
 function resume(){if(mode!=='paused')return;setMode('playing');last=performance.now()}
 function toast(v,time=2.8){$('toast').textContent=v;$('toast').classList.remove('hidden');showToastUntil=(S?.t||0)+time}
 function banner(v,time=4.5){$('wavebanner').textContent=v;$('wavebanner').classList.remove('hidden');showBannerUntil=S.t+time;/* Баннер и toast показываются независимо: не дублируем одно событие. */if(/БОСС|УГРОЗ|ПРОРЫВ|ПЕРЕХВАТ|ОСАДА|ВТОРАЯ ФАЗА/.test(v))sfx('warning');else clickSound(360,.16,'triangle',.023)}
@@ -1284,7 +1252,7 @@ function finish(won=false,giveup=false){
  const record={score:rankedScore,baseScore:S.score,seconds:Math.round(S.t),kills:S.kills,level:S.lvl,threat:S.threat||1,win:!!won,fusions:S.hybrids.map(h=>h.id),weapons:S.drones.map(d=>d.id),timestamp:Date.now()};
  save.records=[...(save.records||[]),record].sort((a,b)=>b.score-a.score||b.seconds-a.seconds).slice(0,20);
  persist();setMode('end');$('bossWrap').classList.add('hidden');
- $('modalContent').innerHTML=`<div class="label">${won?'ПРОТОКОЛ ВЫПОЛНЕН':'СИГНАЛ ПОТЕРЯН'}</div><div class="panel-title" style="margin-top:8px">${won?'Омега уничтожена':'Корпус выведен из строя'}</div><div class="result-badge">${won?'✦ ПОБЕДА':'✕ '+(giveup?'ЗАБЕГ ПРЕРВАН':'ПОРАЖЕНИЕ')}</div><p class="panel-desc">${won?'Угроза отражена. Открыт следующий протокол сложности.':'Запись сохранена в локальной истории. Усиль билд и попробуй снова.'}</p><div class="stats-three"><div class="statbox"><b>${formatTime(S.t)}</b><span>ВЫЖИВАНИЕ</span></div><div class="statbox"><b>${S.kills}</b><span>УБИЙСТВА</span></div><div class="statbox"><b>${rankedScore.toLocaleString('ru')}</b><span>СЧЁТ ×${modifier.score}</span></div></div><div class="stats-three"><div class="statbox"><b>${S.lvl}</b><span>УРОВЕНЬ</span></div><div class="statbox"><b>${S.drones.length} / ${S.hybrids.length}</b><span>ОРУЖИЕ / СИНТЕЗ</span></div><div class="statbox"><b>✧ ${earned}</b><span>КРИСТАЛЛЫ ×${modifier.reward}</span></div></div><p class="tiny">Угроза: ${modifier.name} · Результат сохранён только в этом браузере.</p>${balPanelHTML()}${perfPauseHTML()}<div class="button-row"><button id="againBtn" class="btn primary">↻ ЕЩЁ ОДИН ЗАБЕГ</button><button id="hangarBtn" class="btn ghost">◈ АНГАР</button></div>`;
+ $('modalContent').innerHTML=`<div class="label">${won?'ПРОТОКОЛ ВЫПОЛНЕН':'СИГНАЛ ПОТЕРЯН'}</div><div class="panel-title" style="margin-top:8px">${won?'Омега уничтожена':'Корпус выведен из строя'}</div><div class="result-badge">${won?'✦ ПОБЕДА':'✕ '+(giveup?'ЗАБЕГ ПРЕРВАН':'ПОРАЖЕНИЕ')}</div><p class="panel-desc">${won?'Угроза отражена. Открыт следующий протокол сложности.':'Запись сохранена в локальной истории. Усиль билд и попробуй снова.'}</p><div class="stats-three"><div class="statbox"><b>${formatTime(S.t)}</b><span>ВЫЖИВАНИЕ</span></div><div class="statbox"><b>${S.kills}</b><span>УБИЙСТВА</span></div><div class="statbox"><b>${rankedScore.toLocaleString('ru')}</b><span>СЧЁТ ×${modifier.score}</span></div></div><div class="stats-three"><div class="statbox"><b>${S.lvl}</b><span>УРОВЕНЬ</span></div><div class="statbox"><b>${S.drones.length} / ${S.hybrids.length}</b><span>ОРУЖИЕ / СИНТЕЗ</span></div><div class="statbox"><b>✧ ${earned}</b><span>КРИСТАЛЛЫ ×${modifier.reward}</span></div></div><p class="tiny">Угроза: ${modifier.name} · Результат сохранён только в этом браузере.</p><div class="button-row"><button id="againBtn" class="btn primary">↻ ЕЩЁ ОДИН ЗАБЕГ</button><button id="hangarBtn" class="btn ghost">◈ АНГАР</button></div>`;
  $('againBtn').onclick=start;$('hangarBtn').onclick=menu;sfx(won?'win':'lose');} 
 function formatTime(t){let s=Math.max(0,Math.ceil(t)),m=Math.floor(s/60);return `${String(m).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`}
 function dash(){if(!S||mode!=='playing'||S.player.dashCd>0)return;let p=S.player,dir=getInput();let m=hypot(dir.x,dir.y);if(Math.abs(dir.x)+Math.abs(dir.y)<.15){dir.x=p.dx;dir.y=p.dy;m=hypot(dir.x,dir.y)}p.dx=dir.x/m;p.dy=dir.y/m;p.dashCd=3.6;p.dashTime=.2;p.inv=Math.max(p.inv,.32);burst(p.x,p.y,equippedSkin().core,22,180);S.fx.push({type:'ring',x:p.x,y:p.y,r:28,life:.34,max:.34,col:equippedSkin().core});sfx('dash')}
@@ -2196,11 +2164,9 @@ function draw(){cx.setTransform(scale,0,0,scale,0,0);if(!S||mode==='menu' || (mo
 
 // v0.10.12: diagnostics never touch enemy spawn, damage, or frame simulation.
 // JS timings include only CPU work. Canvas rendering may take additional GPU/browser time.
-const PERF_KEY='relictSwarm_perf_test_on';
 const perf={on:true,lastRaf:0,bucketFrom:0,frames:0,intervals:[],updateMs:[],drawMs:[],audioMs:[],samples:[],startedAt:Date.now(),excludedLargeGaps:0};
-try{perf.on=localStorage.getItem(PERF_KEY)!=='off'}catch{}
 function perfReset(){perf.lastRaf=0;perf.bucketFrom=0;perf.frames=0;perf.intervals=[];perf.updateMs=[];perf.drawMs=[];perf.audioMs=[];perf.samples=[];perf.startedAt=Date.now();perf.excludedLargeGaps=0;perfShow();}
-function perfShow(){const box=$('perfOverlay');if(box)box.style.display=perf.on&&mode==='playing'?'block':'none';}
+function perfShow(){} // Performance sampling is invisible.
 function perfSnapshot(){
  if(!S)return {enemies:0,enemyBullets:0,shots:0,fx:0,parts:0,pickups:0,hazards:0,mines:0,chains:0};
  return {enemies:S.enemy?.length||0,enemyBullets:S.enemyBullets?.length||0,shots:S.bullets?.length||0,fx:(S.fx?.length||0)+(S.effects?.length||0)+(S.floaters?.length||0),parts:S.parts?.length||0,pickups:S.pickups?.length||0,hazards:(S.hazards?.length||0)+(S.gravityWells?.length||0),mines:S.mines?.length||0,chains:S.chains?.length||0};
@@ -2219,38 +2185,24 @@ function perfTick(now,msUpdate,msDraw,msAudio){
  const counts=perfSnapshot();
  const sample={elapsedGameSec:Math.round((S?.t||0)*10)/10,wallClock:Date.now(),renderQuality,renderDpr:+scale.toFixed(2),canvasPixels:C.width*C.height,fps:+(perf.frames/elapsed).toFixed(1),frameP95ms:+perfPercentile(intervals,.95).toFixed(1),frameP99ms:+perfPercentile(intervals,.99).toFixed(1),slowFrames33:intervals.filter(v=>v>33.3).length,slowFrames50:intervals.filter(v=>v>50).length,cpuUpdateMs:+perfAvg(perf.updateMs).toFixed(2),cpuDrawMs:+perfAvg(perf.drawMs).toFixed(2),cpuAudioMs:+perfAvg(perf.audioMs).toFixed(2),...counts};
  perf.samples.push(sample);
- const box=$('perfOverlay');if(box){
-  const level=sample.fps<35?'perf-bad':sample.fps<50?'perf-warning':'';
-  box.innerHTML=`<div class="perf-caption">FPS ТЕСТ · 10.15 · ${renderQuality==='eco'?'ЭКО':'ОБЫЧ.'}</div><div class="perf-main"><span>FPS</span><b class="${level}">${sample.fps.toFixed(0)}</b><span>p95 ${sample.frameP95ms.toFixed(0)} мс</span></div><div class="perf-info">CPU: логика ${sample.cpuUpdateMs.toFixed(1)} · графика ${sample.cpuDrawMs.toFixed(1)} мс</div><div class="perf-info">Враги ${counts.enemies} · пули ${counts.shots+counts.enemyBullets} · FX ${counts.fx+counts.parts}</div><div class="perf-info">Кадров >33 мс: ${sample.slowFrames33} / ${intervals.length}</div>`;
-  const dock=$('hud')?.querySelector('.hud-dock');box.style.top=Math.max(10,Math.round((dock?.getBoundingClientRect().bottom||106)+7))+'px';
- }
+ if(perf.samples.length>1000)perf.samples.shift();
+
  perf.bucketFrom=now;perf.frames=0;perf.intervals=[];perf.updateMs=[];perf.drawMs=[];perf.audioMs=[];
 }
+// Internal performance aggregates; never shown inside the game.
 function perfSummary(){
- const samples=perf.samples;
- if(!samples.length)return 'Пока нет записанных данных. Запусти забег с включённым FPS-тестом.';
- let min=samples.reduce((a,b)=>a.fps<b.fps?a:b);
- const totalSlow=samples.reduce((a,b)=>a+b.slowFrames33,0);
- return `Секунд наблюдения: ${samples.length}. Средний FPS: ${perfAvg(samples.map(s=>s.fps)).toFixed(1)}, худшая секунда: ${min.fps} FPS (${formatTime(min.elapsedGameSec)}). P95 времени кадра в худшую секунду: ${min.frameP95ms} мс. Медленных кадров >33 мс: ${totalSlow}.`;
+ const samples=perf.samples||[];
+ if(!samples.length)return null;
+ const fps=samples.map(s=>s.fps).filter(Number.isFinite),p95=samples.map(s=>s.frameP95ms).filter(Number.isFinite);
+ return {samples:samples.length,avgFps:+perfAvg(fps).toFixed(1),minFps:fps.length?Math.min(...fps):null,
+  worstP95ms:p95.length?Math.max(...p95):null,
+  slowFrames33:samples.reduce((v,s)=>v+(s.slowFrames33||0),0),
+  avgUpdateMs:+perfAvg(samples.map(s=>s.cpuUpdateMs)).toFixed(2),
+  avgDrawMs:+perfAvg(samples.map(s=>s.cpuDrawMs)).toFixed(2)};
 }
-function perfReport(){
- return {game:'Реликтовый рой',build:'0.10.15-online-test',generatedAt:new Date().toISOString(),description:'FPS = фактические кадры в секунду. P95/P99 рассчитаны по интервалам requestAnimationFrame. CPU update/draw = JS-время, не измеряет GPU.',userAgent:navigator.userAgent,screen:{width:innerWidth,height:innerHeight,dpr:devicePixelRatio||1,canvasWidth:C.width,canvasHeight:C.height},level:S?.lvl||null,threat:S?.threat||null,enabled:perf.on,renderQuality,summary:perfSummary(),excludedGaps:perf.excludedLargeGaps,samples:perf.samples};
-}
-function perfDownload(){
- const report=JSON.stringify(perfReport(),null,2);
- try{const blob=new Blob([report],{type:'application/json;charset=utf-8'}),url=URL.createObjectURL(blob),link=document.createElement('a');link.href=url;link.download='RelictSwarm_FPS_Report_'+Date.now()+'.json';document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),3000)}catch(err){console.warn('FPS report download:',err)}
- const ta=$('perfReportText');if(ta){ta.value=report;ta.hidden=false;}
-}
-function renderQualityControls(){return `<div class="perf-quality" style="padding:10px 0;display:grid;gap:6px"><strong>КАЧЕСТВО ГРАФИКИ · ТЕСТ</strong><p style="margin:0">Только для телефона. «Обычное» сохраняет качество предыдущей версии; «ЭКО» снижает внутреннее разрешение Canvas без изменения размеров, урона и количества врагов. Можно менять в паузе, запись FPS продолжится.</p><button type="button" class="btn" id="qualityToggle">${renderQuality==='eco'?'◉ ЭКО (1.25×) · ПЕРЕКЛЮЧИТЬ':'◉ ОБЫЧНОЕ (2×) · ПЕРЕКЛЮЧИТЬ'}</button></div>`}
-function perfSettingsHTML(){return `<div class="perf-tools"><strong>▥ ДИАГНОСТИКА ПРОИЗВОДИТЕЛЬНОСТИ</strong><p>Записывает FPS и нагрузку только во время забега. Настройки игры и баланс не изменяет.</p>${renderQualityControls()}<div class="perf-actions"><button class="btn" id="perfToggle">${perf.on?'✓ FPS ТЕСТ ВКЛ':'○ FPS ТЕСТ ВЫКЛ'}</button><button class="btn ghost" id="perfExport">↓ СОХРАНИТЬ ОТЧЁТ</button></div><p>${perfSummary()}</p><textarea id="perfReportText" hidden readonly aria-label="Текст отчёта для копирования"></textarea><p>Для сравнения лучше пройти 3–5 минут с одинаковым оружием. При просадке сделай скриншот счётчика.</p></div>`}
-function bindPerfSettings(){
- const btn=$('perfToggle');if(btn)btn.onclick=()=>{perf.on=!perf.on;try{localStorage.setItem(PERF_KEY,perf.on?'on':'off')}catch{}perfShow();showSettings()};
- // Click delegation handles perfExport in settings, pause and results.
-}
-function perfPauseHTML(){return `<div class="perf-tools"><strong>▥ FPS ТЕСТ</strong><p>${perfSummary()}</p>${renderQualityControls()}<div class="perf-actions"><button type="button" class="btn ghost" id="perfExport">↓ СОХРАНИТЬ ОТЧЁТ</button></div><textarea id="perfReportText" hidden readonly aria-label="Текст отчёта для копирования"></textarea></div>`}
-document.addEventListener('click',e=>{if(e.target?.id==='perfExport')perfDownload();if(e.target?.id==='qualityToggle'){setRenderQuality(renderQuality==='normal'?'eco':'normal');e.target.textContent=renderQuality==='eco'?'◉ ЭКО (1.25×) · ПЕРЕКЛЮЧИТЬ':'◉ ОБЫЧНОЕ (2×) · ПЕРЕКЛЮЧИТЬ';}});
+function renderQualityControls(){return `<div class="perf-quality" style="padding:10px 0;display:grid;gap:6px"><strong>КАЧЕСТВО ГРАФИКИ</strong><p style="margin:0">«Обычное» — более чёткая картинка. «ЭКО» — меньше нагрузка на телефон, без изменения сложности игры.</p><button type="button" class="btn" id="qualityToggle">${renderQuality==='eco'?'◉ ЭКО (1.25×) · ПЕРЕКЛЮЧИТЬ':'◉ ОБЫЧНОЕ (2×) · ПЕРЕКЛЮЧИТЬ'}</button></div>`}
+document.addEventListener('click',e=>{if(e.target?.id==='qualityToggle'){setRenderQuality(renderQuality==='normal'?'eco':'normal');e.target.textContent=renderQuality==='eco'?'◉ ЭКО (1.25×) · ПЕРЕКЛЮЧИТЬ':'◉ ОБЫЧНОЕ (2×) · ПЕРЕКЛЮЧИТЬ';}});
 addEventListener('visibilitychange',()=>{perf.lastRaf=0;perf.bucketFrom=0;});
-
 let lastRuntimeError='',lastRuntimeErrorAt=0;
 function loop(now){
  requestAnimationFrame(loop); // Schedule next frame *before* updating; an exception must not silently freeze the browser game.

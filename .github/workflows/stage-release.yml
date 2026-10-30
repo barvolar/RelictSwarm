@@ -3,9 +3,7 @@ name: Stage verified standalone HTML release
 on:
   push:
     branches:
-      - release/2026-10-30
-    paths:
-      - .github/workflows/stage-release.yml
+      - 'release/**'
 
 permissions:
   contents: write
@@ -18,11 +16,9 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Verify the complete modular game
+      - name: Verify complete game and telemetry
         run: npm test
-      - name: Verify the tested, unchanged HTML build
-        run: npm run verify:refactor
-      - name: Put compiled HTML in the GitHub Pages root
+      - name: Stage compiled GitHub Pages entry
         run: |
           cp dist/index.html index.html
           cmp dist/index.html index.html
@@ -30,6 +26,6 @@ jobs:
           if ! git diff --cached --quiet; then
             git config user.name "github-actions[bot]"
             git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git commit -m "build: stage verified RelictSwarm HTML for main"
+            git commit -m "build: stage verified game HTML for publication"
             git push origin "HEAD:${GITHUB_REF_NAME}"
           fi

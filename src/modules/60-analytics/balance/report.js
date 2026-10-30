@@ -9,7 +9,7 @@ function balReport(){
    durationSeconds:balR((b.killedAt??now)-b.spawnedAt)};
  });
  return {game:'Реликтовый рой',build:bal.build,reportType:'balance',
-  created:bal.created,generated:new Date().toISOString(),notice:'Локальный диагностический отчёт; онлайн-передача возможна только с согласия игрока. Время в секундах игрового процесса; урон записан после ограничений по боссам. Данные по конкретному оружию — история выбора, а не отдельный DPS.',
+  created:bal.created,generated:new Date().toISOString(),notice:'Время в секундах игрового процесса; урон после ограничений по боссам. Отдельный DPS каждого оружия не измеряется.',
   environment:{...bal.screen,graphicsQuality:bal.graphicsQuality},difficulty:bal.threat,
   result:bal.result||{status:'in_progress',seconds:now},
   totals:{...bal.totals,damageToBoss:balR(bal.totals.damageToBoss),
@@ -19,7 +19,7 @@ function balReport(){
   events:bal.events,
   fpsSummary:typeof perfSummary==='function'?perfSummary():null};
 }
-function balStore(){try{const report=balReport();if(report){balLast=report;localStorage.setItem(BAL_STORE,JSON.stringify(report));if(!report.result)window.SwarmTelemetry?.sample?.(report,perf.samples)}}catch(err){console.warn('Balance report storage:',err)}}
+function balStore(){try{const report=balReport();if(report){balLast=report;localStorage.setItem(BAL_STORE,JSON.stringify(report));if(report.result?.status==='in_progress')window.SwarmTelemetry?.sample?.(report,perf.samples)}}catch(err){console.warn('Balance report storage:',err)}}
 function balFinalize(won,giveup){
  if(!bal||trainingMode)return;
  balSnapshot();bal.result={status:won?'win':giveup?'abandoned':'defeat',
