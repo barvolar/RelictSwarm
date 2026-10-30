@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no"/>
+<meta name="theme-color" content="#070c16"/>
+<meta name="description" content="Реликтовый рой — автономный HTML5 roguelite про боевых дронов, сборки и выживание."/>
+<title>РЕЛИКТОВЫЙ РОЙ | v0.10.15 Online Test</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23081121'/%3E%3Cpath d='M32 6 54 20v24L32 58 10 44V20Z' fill='none' stroke='%233ce8e0' stroke-width='5'/%3E%3Ccircle cx='32' cy='32' r='11' fill='%23ffb55c'/%3E%3C/svg%3E"/>
+<style>%%RELICT_STYLE%%</style>
+</head>
+<body>
+<canvas id="world" aria-label="Игровое поле Реликтовый рой"></canvas>
+<div id="scanlines"></div>
+<div id="hud" class="hidden">
+ <div class="hud-dock">
+ <div class="hud-top">
+  <div class="hud-brand"><div class="sigil">⬡</div><span>РЕЛИКТОВЫЙ<br><strong>РОЙ</strong></span></div>
+  <div class="hud-bars"><div class="barline"><span>КОРПУС</span><div class="bartrack hp"><div id="hpfill"></div></div><b id="hptext">120/120</b></div><div class="barline"><span>ДАННЫЕ</span><div class="bartrack xp"><div id="xpfill"></div></div><b id="leveltext">УР. 1</b></div></div>
+  <div class="hud-meta"><div class="timer" id="timer">15:00</div><div class="hud-sub"><span id="kills">0 УНИЧТОЖЕНО</span><span id="shards">✧ 0</span></div></div>
+  <button id="audioHudBtn" class="icon-btn" title="Звук вкл/выкл" aria-label="Звук вкл/выкл">♫</button>
+  <button id="pauseBtn" class="icon-btn" title="Пауза" aria-label="Пауза">Ⅱ</button>
+  </div>
+ <div class="hud-loadout" aria-label="Оружие и синтез">
+  <div id="modules" class="modules" aria-label="Текущее вооружение"></div>
+  <div id="mobileModules" class="mobile-module-grid" aria-label="Все пять слотов оружия"></div>
+  <button id="forgeBtn" class="forge-btn" type="button" title="Лаборатория синтеза">◈ СИНТЕЗ <b id="forgeCount">0</b></button>
+ </div>
+ </div>
+ <div id="wavebanner" class="wavebanner hidden"></div>
+ <div class="boss-wrap hidden" id="bossWrap"><div id="bossName">ЖНЕЦ</div><div class="boss-track"><div id="bossFill"></div></div></div>
+ <div id="toast" class="toast hidden"></div>
+  <div id="buffs" class="active-buffs hidden"></div>
+ <div class="controls-tip">WASD / стрелки — движение · ПРОБЕЛ — рывок · ESC — пауза</div>
+</div>
+<aside id="trainingPanel" class="hidden" aria-label="Полигон оружия"></aside>
+<div id="touchControls" class="hidden">
+ <div class="joystick floating-stick" id="joystick"><div class="joy-ring"></div><div class="joy-knob" id="joyKnob"></div></div>
+ <button class="dash" id="dashBtn"><span>⚡</span><small>РЫВОК</small><span class="dash-cool" id="dashCool"></span></button>
+</div>
+<div id="perfOverlay" aria-label="Статистика производительности" aria-live="off"></div>
+<div id="modal" class="modal">
+ <div class="menu-head"><div class="eyebrow">[ 10.15: ONLINE TEST ]</div><div class="menu-logo"><span>РЕЛИКТОВЫЙ</span><strong>РОЙ</strong></div><div class="subtitle">НУЛЕВОЙ ПРОТОКОЛ <i></i> 10 // ПЯТНАДЦАТЬ МИНУТ</div></div>
+ <div class="modal-panel" id="modalContent"></div>
+ <div class="footer-note" id="menuFoot">© 2026 · Оригинальная векторная графика · Без внешних загрузок</div>
+</div>
+<div id="rotateHint" aria-hidden="true"></div>
+<script src="./telemetry-config.js"></script>
+<script src="./telemetry-client.js"></script>
+<script>%%RELICT_MAIN_SCRIPT%%</script>
+</body>
+</html>

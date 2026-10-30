@@ -1,0 +1,21 @@
+[
+  "src/modules/00-bootstrap/context.js",
+  "src/modules/10-data/weapons.js",
+  "src/modules/10-data/world.js",
+  "src/modules/20-core/state.js",
+  "src/modules/20-core/input.js",
+  "src/modules/30-audio/embedded-bank.js",
+  "src/modules/30-audio/audio-engine.js",
+  "src/modules/40-game/training.js",
+  "src/modules/50-ui/menus.js",
+  "src/modules/60-analytics/balance.js",
+  "src/modules/40-game/lifecycle.js",
+  "src/modules/40-game/entities.js",
+  "src/modules/40-game/upgrades.js",
+  "src/modules/40-game/weapons-combat.js",
+  "src/modules/40-game/bosses-enemies.js",
+  "src/modules/40-game/update.js",
+  "src/modules/70-render/draw.js",
+  "src/modules/60-analytics/performance.js",
+  "src/modules/90-bootstrap/entry.js"
+]
