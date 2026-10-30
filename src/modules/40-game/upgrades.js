@@ -1,7 +1,4 @@
-function eligibleHybrids(){
- if(S.fusionCores<1||S.hybrids.length>=3)return [];
- return Object.entries(HYBRIDS).filter(([id,h])=>!S.hybrids.some(z=>z.id===id)&&[h.a,h.b].every(k=>S.drones.some(d=>d.id===k))).map(([id])=>id);
-}
+function eligibleHybrids(){return eligibleFusionIds(S,HYBRIDS);}
 function rarityRoll(){let sum=RARITIES.reduce((a,r)=>a+r.chance,0),k=rand(0,sum);for(const r of RARITIES){k-=r.chance;if(k<=0)return r}return RARITIES[0]}
 function upgradeChoices(){
  const pool=[];

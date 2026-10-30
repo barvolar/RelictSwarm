@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import vm from 'node:vm';
 import {selectCombatTarget} from '../src/domain/targeting.mjs';
+import {eligibleFusionIds} from '../src/domain/fusion-rules.mjs';
 import test from 'node:test';
 
 const root = new URL('../', import.meta.url);
@@ -21,7 +22,7 @@ function game(initial = {}) {
   };
   const calls = {choices: [], fusions: [], saves: 0};
   const ctx = vm.createContext({
-    S, selectCombatTarget, mode: 'playing', trainingMode: false, TAU: 2 * Math.PI,
+    S, selectCombatTarget, eligibleFusionIds, mode: 'playing', trainingMode: false, TAU: 2 * Math.PI,
     rand: (a, b) => (a + b) / 2,
     save: {recipes: {}}, performance: {now: () => 1000},
     setMode: mode => {ctx.mode = mode;},
@@ -195,4 +196,20 @@ test('independent ES targeting module has no dependency on the game runtime', ()
   assert.equal(selectCombatTarget(nearby,[boss],0,0,550,'flame',false),nearby);
   assert.equal(selectCombatTarget(nearby,[boss],0,0,550,'pulse',true),nearby);
   assert.equal(selectCombatTarget(null,[boss],0,0,550,'pulse',false),null);
+});
+
+
+test('independent ES fusion module guards recipes and limit', () => {
+  const recipes={spear:{a:'pulse',b:'rail'},ion:{a:'pulse',b:'arc'}};
+  const state={fusionCores:1,hybrids:[],drones:[{id:'pulse'},{id:'rail'}]};
+  assert.deepEqual(eligibleFusionIds(state,recipes),['spear']);
+  state.drones.push({id:'arc'});
+  assert.deepEqual(eligibleFusionIds(state,recipes),['spear','ion']);
+  state.hybrids=[{id:'spear'}];
+  assert.deepEqual(eligibleFusionIds(state,recipes),['ion']);
+  state.fusionCores=0;
+  assert.deepEqual(eligibleFusionIds(state,recipes),[]);
+  state.fusionCores=1;
+  state.hybrids=[{id:'a'},{id:'b'},{id:'c'}];
+  assert.deepEqual(eligibleFusionIds(state,recipes),[]);
 });

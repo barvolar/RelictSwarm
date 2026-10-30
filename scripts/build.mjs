@@ -8,10 +8,15 @@ const read=p=>fs.readFileSync(path.join(root,p),'utf8');
 const order=JSON.parse(read('src/module-order.json'));
 // Transitional single-file bundling: embed a verified, dependency-free ES module.
 // Only the named export is supported. Fail loudly rather than silently drop imports.
-const rulesSource=read('src/domain/targeting.mjs');
-const ruleExport='export function selectCombatTarget(';
-if(rulesSource.split(ruleExport).length!==2 || /^\s*import\s/m.test(rulesSource) || (rulesSource.match(/\bexport\b/g)||[]).length!==1) throw Error('Unsupported targeting module export');
-const embeddedRules=rulesSource.replace(ruleExport,'function selectCombatTarget(');
+const pureModules=[
+  ['src/domain/targeting.mjs','selectCombatTarget'],
+  ['src/domain/fusion-rules.mjs','eligibleFusionIds']
+];
+const embeddedRules=pureModules.map(([file,name])=>{
+  const source=read(file),signature='export function '+name+'(';
+  if(source.split(signature).length!==2 || /^\s*import\s/m.test(source) || (source.match(/\bexport\b/g)||[]).length!==1) throw Error('Unsupported pure ES module: '+file);
+  return source.replace(signature,'function '+name+'(');
+}).join('\n');
 const js=order.map((p,i)=>read(p)+(i===0?'\n'+embeddedRules+'\n':'')).join('');
 const template=read('src/index.template.html');
 if ((template.match(/%%RELICT_STYLE%%/g)||[]).length!==1 || (template.match(/%%RELICT_MAIN_SCRIPT%%/g)||[]).length!==1) throw Error('Invalid build template');
