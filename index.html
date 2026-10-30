@@ -470,6 +470,84 @@ button.forge-card:hover{filter:brightness(1.25)}.forge-card.is-done{border-color
 (()=>{
 const $=id=>document.getElementById(id),C=$('world'),cx=C.getContext('2d',{alpha:false});
 const RED='#ff667e',TEAL='#50f2db',AMBER='#ffc174',PURPLE='#b988ff',BLUE='#6dbbff';
+
+/**
+ * Pure boss/nearby-threat decision. No DOM, canvas, game state or audio access.
+ * This file is an actual ES module for Node tests; the standalone HTML builder
+ * inlines its exported function inside the legacy game closure.
+ */
+function selectCombatTarget(nearest, bosses, x, y, max = 550, weapon = 'pulse', trainingMode = false) {
+  if (!nearest || trainingMode || weapon === 'flame') return nearest;
+  let boss = null, best = Infinity;
+  for (const e of bosses) {
+    if (e.hp <= 0) continue;
+    const dist = (e.x - x) ** 2 + (e.y - y) ** 2;
+    if (dist < best && dist < Math.min(max, 550) ** 2) {
+      boss = e;
+      best = dist;
+    }
+  }
+  if (!boss) return nearest;
+  const dangerRadius = 112;
+  if (!nearest.elite && (nearest.x - x) ** 2 + (nearest.y - y) ** 2 < dangerRadius * dangerRadius) return nearest;
+  return boss;
+}
+
+/**
+ * Pure fusion eligibility rule: no UI, storage, random numbers or game globals.
+ * Tested as an ES module; bundled inline to keep the HTML game self-contained.
+ */
+function eligibleFusionIds(state, recipes) {
+  if (state.fusionCores < 1 || state.hybrids.length >= 3) return [];
+  return Object.entries(recipes)
+    .filter(([id, h]) =>
+      !state.hybrids.some(z => z.id === id) &&
+      [h.a, h.b].every(k => state.drones.some(d => d.id === k)))
+    .map(([id]) => id);
+}
+
+// Boss hit/shield/DPS caps. Takes a snapshot and returns next counters without mutation.
+function calculateBossDamage(enemy, raw, time, threat) {
+ const maxHit=enemy.id==='omega'?340:enemy.id==='synth3'?230:enemy.id==='synth2'?190:enemy.id==='synth1'?260:enemy.id==='boss2'?255:285;
+ const afterHitCap=Math.min(raw,maxHit);
+ const afterShield=enemy.shield>0?afterHitCap*.27:afterHitCap;
+ const restart=!enemy.damageSecondAt||time-enemy.damageSecondAt>=1;
+ const damageSecondAt=restart?time:enemy.damageSecondAt;
+ const spent=restart?0:(enemy.damageSecond||0);
+ const ceiling=(enemy.id==='omega'?1400:enemy.id==='synth3'?1050:enemy.id==='synth2'?900:enemy.id==='synth1'?850:enemy.id==='boss2'?950:1030)*(1+Math.max(0,(threat||1)-1)*.17);
+ const damage=Math.min(afterShield,Math.max(0,ceiling-spent));
+ return {
+  damage,damageSecondAt,damageSecond:spent+damage,
+  blockedByHitCap:Math.max(0,raw-afterHitCap),
+  blockedByShield:Math.max(0,afterHitCap-afterShield),
+  blockedByDpsCap:Math.max(0,afterShield-damage),
+  blockedTotal:Math.max(0,raw-damage)
+ };
+}
+
+// Pure weapon damage multiplier, shared by standard and fusion weapons.
+function calculateWeaponDamage(playerDamage, rank, powerLevels, rageActive) {
+ return playerDamage*(1+Math.sqrt(rank-1)*.14)*(1+powerLevels*.20)*(rageActive?2.1:1);
+}
+
+// Weapon fire pacing; the minimum interval and excess-fire multiplier are deliberate.
+function calculateWeaponCooldown(base, haste, rateLevels, rank) {
+ const cooldownBonus=1+Math.log1p(rateLevels)*.40;
+ const rawCooldown=base/(haste*cooldownBonus*(1+Math.log1p(rank-1)*.16));
+ return {
+  cooldown:Math.max(.19,rawCooldown),
+  attackOverflow:Math.max(1,.19/Math.max(.0001,rawCooldown))
+ };
+}
+
+// Build a fused weapon without changing the two source weapons or the game state.
+function createFusionWeapon(id, a, b, branches) {
+ const mods={};
+ for(const [key] of branches)mods[key]=Math.floor(((a.mods?.[key]||0)+(b.mods?.[key]||0))*.65);
+ const level=Math.max(1,Math.floor((a.lvl+b.lvl)/2));
+ return {id:'fusion_'+id,lvl:level,mods,cd:.2,hitCd:0};
+}
+
 const DRONES={
  fusion_glacier:{name:'КРИОРЕЛЬСОТРОН',color:'#b8ecff',glyph:'❅',desc:'Пробивной ледяной луч замораживает всех врагов на линии огня.',base:2.6},
  fusion_singularity:{name:'СИНГУЛЯРНАЯ МИНА',color:'#c5a6ff',glyph:'◉',desc:'Мины затягивают врагов перед мощным гравитационным взрывом.',base:2.7},
@@ -1245,12 +1323,15 @@ function applyChill(e,amount){
  }
 }
 function hurtEnemy(e,n,opts={}){if(e.hp<=0||!Number.isFinite(n))return;
- if(e.elite){const rawBossDamage=n;const maxHit=e.id==='omega'?340:e.id==='synth3'?230:e.id==='synth2'?190:e.id==='synth1'?260:e.id==='boss2'?255:285;
-  n=Math.min(n,maxHit);const afterHitCap=n;if(e.shield>0)n*=.27;const afterShield=n;
-  if(!e.damageSecondAt||S.t-e.damageSecondAt>=1){e.damageSecondAt=S.t;e.damageSecond=0;}
-  const ceiling=(e.id==='omega'?1400:e.id==='synth3'?1050:e.id==='synth2'?900:e.id==='synth1'?850:e.id==='boss2'?950:1030)*(1+Math.max(0,(S.threat||1)-1)*.17);
-  const remaining=Math.max(0,ceiling-(e.damageSecond||0));n=Math.min(n,remaining);if(bal&&!trainingMode){const record=bal.bosses.find(b=>b.id===e.balId);if(record){record.blockedByHitCap+=Math.max(0,rawBossDamage-afterHitCap);record.blockedByShield+=Math.max(0,afterHitCap-afterShield);record.blockedByDpsCap+=Math.max(0,afterShield-n);}bal.totals.bossDamageBlocked+=Math.max(0,rawBossDamage-n);}
-  e.damageSecond=(e.damageSecond||0)+n;
+ if(e.elite){
+  const hit=calculateBossDamage(e,n,S.t,S.threat);
+  n=hit.damage;
+  e.damageSecondAt=hit.damageSecondAt;e.damageSecond=hit.damageSecond;
+  if(bal&&!trainingMode){
+   const record=bal.bosses.find(b=>b.id===e.balId);
+   if(record){record.blockedByHitCap+=hit.blockedByHitCap;record.blockedByShield+=hit.blockedByShield;record.blockedByDpsCap+=hit.blockedByDpsCap;}
+   bal.totals.bossDamageBlocked+=hit.blockedTotal;
+  }
  }
  if(trainingMode){trainingRecord.damage+=n;trainingRecord.hits.push({t:S.t,d:n});if(trainingRecord.hits.length>3200)trainingRecord.hits.splice(0,1000)}
  const before=e.hp;balDamage(e,before,n);e.hp-=n;
@@ -1264,10 +1345,7 @@ function killEnemy(e){if(e.hp>0)return;if(trainingMode){S.kills++;burst(e.x,e.y,
 function spawnEnemyNear(id,x,y){const e=spawnEnemy(id,rand(0,TAU),280);if(e){e.x=x+rand(-22,22);e.y=y+rand(-22,22)}}
 function hitPlayer(dmg,x,y){if(trainingMode)return;const p=S.player;if(p.inv>0||S.dead)return;balPlayerHit(Math.min(p.hp,dmg));p.hp-=dmg;p.inv=.62;p.hit=.32;shake=Math.max(shake,7);burst(p.x,p.y,RED,18,160);floatNum(p.x,p.y-35,dmg,RED);sfx('damage');if(p.hp<=0){p.hp=0;finish(false)}}
 function gainXP(n){if(trainingMode)return;S.xp+=n;while(S.xp>=S.xpNeed){S.xp-=S.xpNeed;S.lvl++;S.xpNeed=Math.floor(17+S.lvl*11+Math.pow(S.lvl,1.26)*2.8);S.pendingUp++;heal(4)}if(S.pendingUp>0&&mode==='playing')showUpgrades()}
-function eligibleHybrids(){
- if(S.fusionCores<1||S.hybrids.length>=3)return [];
- return Object.entries(HYBRIDS).filter(([id,h])=>!S.hybrids.some(z=>z.id===id)&&[h.a,h.b].every(k=>S.drones.some(d=>d.id===k))).map(([id])=>id);
-}
+function eligibleHybrids(){return eligibleFusionIds(S,HYBRIDS);}
 function rarityRoll(){let sum=RARITIES.reduce((a,r)=>a+r.chance,0),k=rand(0,sum);for(const r of RARITIES){k-=r.chance;if(k<=0)return r}return RARITIES[0]}
 function upgradeChoices(){
  const pool=[];
@@ -1391,12 +1469,9 @@ function forgeReadiness(id){const h=HYBRIDS[id],a=S.drones.find(d=>d.id===h.a),b
  return '✦ ГОТОВО К ПРЕОБРАЗОВАНИЮ';}
 function openForge(){if(trainingMode){renderTrainingPanel(true);return;}if(!S||mode!=='playing')return;setMode('forge');const ready=eligibleHybrids();$('modalContent').innerHTML=`<div class="label">◈ ПРОТОКОЛ СИНТЕЗА</div><div class="panel-title">ДВА ОРУЖИЯ → ОДНО НОВОЕ</div><p class="panel-desc">Ядра: <b style="color:#ffcb71">◈ ${S.fusionCores}</b>. Уровень оружия не важен: даже оружия 1-го уровня подходят. За камень победи и подбери добычу Хранителя ядра (≈4:25), Кузнеца хаоса (≈9:10) или Сбоя реактора (≈12:45). Синтез <b>уничтожит два исходных оружия</b> и создаст одно уникальное с новой механикой и последующей бесконечной прокачкой.</p><div class="label">${ready.length} РЕЦЕПТОВ ДОСТУПНО · ${Object.keys(HYBRIDS).length} ВСЕГО</div><div class="forge-filter"><label for="recipeFilter">ФИЛЬТР</label><select id="recipeFilter"><option value="all">Все 25 рецептов</option><option value="ready">Только доступные</option>${BASE_WEAPONS.map(id=>`<option value="${id}">${DRONES[id].name}</option>`).join('')}</select><button type="button" id="allRecipes">СБРОСИТЬ</button></div><div class="forge-grid">${Object.entries(HYBRIDS).sort(([id1],[id2])=>Number(ready.includes(id2))-Number(ready.includes(id1))).map(([id,h])=>{const ok=ready.includes(id),done=S.hybrids.some(z=>z.id===id);return `<${ok?'button type="button"':'div'} data-a="${h.a}" data-b="${h.b}" data-ready="${ok}" class="forge-card ${done?'is-done':ok?'is-ready':'is-locked'}" ${ok?`data-forge="${id}"`:''}><b style="color:${h.color}">${h.glyph} ${h.name}</b><small>${DRONES[h.a].name} + ${DRONES[h.b].name}</small><p>${h.desc}</p><small>${forgeReadiness(id)}</small></${ok?'button':'div'}>`}).join('')}</div><button class="btn primary" id="backForge">◂ НАЗАД В БОЙ</button>`;$('modalContent').querySelectorAll('[data-forge]').forEach(el=>el.onclick=()=>forgeHybrid(el.dataset.forge));$('backForge').onclick=()=>{setMode('playing');last=performance.now()};const applyRecipeFilter=()=>{const val=$('recipeFilter').value;for(const el of $('modalContent').querySelectorAll('.forge-card'))el.hidden=val==='all'?false:val==='ready'?el.dataset.ready!=='true':(el.dataset.a!==val&&el.dataset.b!==val)};$('recipeFilter').onchange=applyRecipeFilter;$('allRecipes').onclick=()=>{$('recipeFilter').value='all';applyRecipeFilter()};}
 function forgeHybrid(id){if(mode!=='forge'||!eligibleHybrids().includes(id))return;const h=HYBRIDS[id],a=S.drones.find(d=>d.id===h.a),b=S.drones.find(d=>d.id===h.b);
- const newId='fusion_'+id,mods={};const map={power:['power','power'],rate:['rate','rate'],jumps:['jumps','jumps'],beams:['beams','beams'],count:['count','count'],radius:['radius','radius'],spin:['spin','spin'],salvo:['salvo','salvo'],blast:['blast','blast']};
- // Transfer accumulated investment, preserve the two builds' stat identities.
- for(const [key] of weaponBranches(newId))mods[key]=Math.floor(((a.mods?.[key]||0)+(b.mods?.[key]||0))*.65);
- const level=Math.max(1,Math.floor((a.lvl+b.lvl)/2));
+ const newWeapon=createFusionWeapon(id,a,b,weaponBranches('fusion_'+id));
  S.drones=S.drones.filter(d=>d!==a&&d!==b);
- S.drones.push({id:newId,lvl:level,mods,cd:.2,hitCd:0});
+ S.drones.push(newWeapon);
  S.fusionCores--;S.hybrids.push({id});balFusion(id);save.recipes[id]=true;persist();
  setMode('playing');last=performance.now();burst(S.player.x,S.player.y,h.color,100,340);S.fx.push({type:'ring',x:S.player.x,y:S.player.y,r:80,life:1.2,max:1.2,col:h.color});shake=15;banner('◈ НОВОЕ ОРУЖИЕ: '+h.name,5);sfx('fusion');updateHUD();
 }
@@ -1404,14 +1479,7 @@ function closest(x,y,max=360,except=null){let best=null,bestD=max*max;for(let e 
 // Ranged weapons favor a reachable boss, but switch to immediate threats when surrounded.
 // The nearest target still governs flame, saws, mines and short-range defensive effects.
 function chooseCombatTarget(x,y,max=550,weapon='pulse'){
- const nearest=closest(x,y,max);
- if(!nearest||trainingMode||weapon==='flame')return nearest;
- let boss=null,best=Infinity;
- for(const e of S.bosses){if(e.hp<=0)continue;const dist=(e.x-x)**2+(e.y-y)**2;if(dist<best&&dist<Math.min(max,550)**2){boss=e;best=dist;}}
- if(!boss)return nearest;
- const dangerRadius=112; // collision protection takes precedence over boss focus
- if(!nearest.elite&&(nearest.x-x)**2+(nearest.y-y)**2<dangerRadius*dangerRadius)return nearest;
- return boss;
+ return selectCombatTarget(closest(x,y,max),S.bosses,x,y,max,weapon,trainingMode);
 }
 function damageArea(x,y,r,dmg,options={}){for(const e of S.enemy){if(e.hp<=0)continue;let dx=e.x-x,dy=e.y-y;if(dx*dx+dy*dy<(r+e.r)**2){hurtEnemy(e,dmg,options)}}S.fx.push({type:'ring',x,y,r,life:.32,max:.32,col:options.color||AMBER});burst(x,y,options.color||AMBER,19,r*2)}
 // Shared firing geometry. The illustrated muzzle is on the drone's local -Y axis.
@@ -1556,9 +1624,8 @@ function droneUpdate(dt){
  for(let i=0;i<S.drones.length;i++){
   const d=S.drones[i],meta=DRONES[d.id],rank=d.lvl;
   const pos=getDronePos(d,i),linked=S.hybrids.some(h=>HYBRIDS[h.id].a===d.id||HYBRIDS[h.id].b===d.id);
-  const fusionDamage=1,fusionRate=1;
   d.cd-=dt;d.hitCd-=dt;d.flash=Math.max(0,(d.flash||0)-dt);
-  const baseDmg=S.playerDmg*(1+Math.sqrt(rank-1)*.14)*(1+wm(d,'power')*.20)*(S.rageTimer>0?2.1:1);
+  const baseDmg=calculateWeaponDamage(S.playerDmg,rank,wm(d,'power'),S.rageTimer>0);
   if(['saw','fusion_thermal','fusion_tesla','fusion_frostblade','fusion_magnetblade'].includes(d.id)){
    const positions=sawPositions(d,i),thermal=d.id==='fusion_thermal',tesla=d.id==='fusion_tesla',frost=d.id==='fusion_frostblade',magnet=d.id==='fusion_magnetblade';
    if(tesla){d.zapCd=(d.zapCd||0)-dt;if(d.zapCd<=0){const near=closest(S.player.x,S.player.y,365);if(near){scheduleChain(pos,near,3+Math.min(12,wm(d,'jumps')),22*baseDmg,260,'#ffe5a6',.22);d.zapCd=.95/(S.haste||1)}}}
@@ -1604,11 +1671,9 @@ function droneUpdate(dt){
   d.aimX=target.x;d.aimY=target.y;d.aimUntil=S.t+.23;
   d.flash=.18;
   sfxWeapon(d.id);
-  const cooldownBonus=1+Math.log1p(wm(d,'rate'))*.40;
-  // Even at extreme ranks the cooldown remains playable; extra investments add damage.
-  const rawCooldown=meta.base/(haste*fusionRate*cooldownBonus*(1+Math.log1p(rank-1)*.16));
-  const attackOverflow=Math.max(1,.19/Math.max(.0001,rawCooldown));
-  d.cd=Math.max(.19,rawCooldown);
+  // Preserve the .19-second firing floor; excess attack speed becomes extra damage.
+  const {cooldown,attackOverflow}=calculateWeaponCooldown(meta.base,haste,wm(d,'rate'),rank);
+  d.cd=cooldown;
   if(d.id==='fusion_ion'){
    const n=Math.min(5,1+wm(d,'beams'));
    for(let j=0;j<n;j++){
