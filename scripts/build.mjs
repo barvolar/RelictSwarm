@@ -10,7 +10,9 @@ const order=JSON.parse(read('src/module-order.json'));
 // Only the named export is supported. Fail loudly rather than silently drop imports.
 const pureModules=[
   ['src/domain/targeting.mjs','selectCombatTarget'],
-  ['src/domain/fusion-rules.mjs','eligibleFusionIds']
+  ['src/domain/fusion-rules.mjs','eligibleFusionIds'],
+  ['src/domain/boss-damage.mjs','calculateBossDamage'],
+  ['src/domain/weapon-damage.mjs','calculateWeaponDamage']
 ];
 const embeddedRules=pureModules.map(([file,name])=>{
   const source=read(file),signature='export function '+name+'(';

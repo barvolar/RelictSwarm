@@ -3,6 +3,8 @@ import fs from 'node:fs';
 import vm from 'node:vm';
 import {selectCombatTarget} from '../src/domain/targeting.mjs';
 import {eligibleFusionIds} from '../src/domain/fusion-rules.mjs';
+import {calculateBossDamage} from '../src/domain/boss-damage.mjs';
+import {calculateWeaponDamage} from '../src/domain/weapon-damage.mjs';
 import test from 'node:test';
 
 const root = new URL('../', import.meta.url);
@@ -12,6 +14,7 @@ const src = [
   'src/modules/10-data/world.js',
   'src/modules/40-game/upgrades.js',
   'src/modules/40-game/weapons-combat.js',
+  'src/modules/40-game/entities.js',
 ].map(read).join('\n');
 
 function game(initial = {}) {
@@ -22,14 +25,14 @@ function game(initial = {}) {
   };
   const calls = {choices: [], fusions: [], saves: 0};
   const ctx = vm.createContext({
-    S, selectCombatTarget, eligibleFusionIds, mode: 'playing', trainingMode: false, TAU: 2 * Math.PI,
+    S, selectCombatTarget, eligibleFusionIds, calculateBossDamage, calculateWeaponDamage, bal: null, mode: 'playing', trainingMode: false, TAU: 2 * Math.PI,
     rand: (a, b) => (a + b) / 2,
     save: {recipes: {}}, performance: {now: () => 1000},
     setMode: mode => {ctx.mode = mode;},
     balChoose: choice => calls.choices.push(choice),
     balFusion: id => calls.fusions.push(id),
     persist: () => {calls.saves++;},
-    updateHUD() {}, burst() {}, banner() {}, sfx() {},
+    updateHUD() {}, burst() {}, banner() {}, sfx() {}, balDamage() {}, floatNum() {},
     showUpgrades() {},
     heal: n => {S.player.hp = Math.min(S.player.maxHp, S.player.hp + n);},
   });
@@ -212,4 +215,63 @@ test('independent ES fusion module guards recipes and limit', () => {
   state.fusionCores=1;
   state.hybrids=[{id:'a'},{id:'b'},{id:'c'}];
   assert.deepEqual(eligibleFusionIds(state,recipes),[]);
+});
+
+test('weapon damage formula matches base, upgrades, rank and rage', () => {
+ assert.equal(calculateWeaponDamage(25,1,0,false),25);
+ assert.equal(calculateWeaponDamage(25,1,2,false),35);
+ assert.equal(calculateWeaponDamage(25,1,2,true),73.5);
+ const rank=10,power=5,player=3;
+ const expected=player*(1+Math.sqrt(rank-1)*.14)*(1+power*.20)*2.1;
+ assert.equal(calculateWeaponDamage(player,rank,power,true),expected);
+});
+
+test('boss caps respect type, shield and difficulty independently of the game loop', () => {
+ const base={id:'omega',shield:0,damageSecond:0,damageSecondAt:10};
+ const hit=calculateBossDamage(base,500,10.2,1);
+ assert.equal(hit.damage,340);
+ assert.equal(hit.blockedByHitCap,160);
+ assert.equal(hit.blockedByShield,0);
+ assert.equal(hit.blockedByDpsCap,0);
+ assert.equal(base.damageSecond,0, 'pure math must not mutate enemy');
+ assert.equal(calculateBossDamage({...base,id:'synth2'},500,10.2,1).damage,190);
+ const shield=calculateBossDamage({...base,shield:1},100,10.2,1);
+ assert.equal(shield.damage,27);
+ assert.equal(shield.blockedByShield,73);
+ const hard=calculateBossDamage({...base,damageSecond:1300},500,10.2,2);
+ assert.equal(hard.damage,170, 'difficulty II raises the omega 1-second budget');
+});
+
+test('boss one-second damage budget resets at window boundary', () => {
+ let enemy={id:'omega',shield:0,damageSecond:0,damageSecondAt:10};
+ for(let i=0;i<4;i++) {
+  const result=calculateBossDamage(enemy,500,10.2,1);
+  Object.assign(enemy,{damageSecond:result.damageSecond,damageSecondAt:result.damageSecondAt});
+  assert.equal(result.damage,340);
+ }
+ const capped=calculateBossDamage(enemy,500,10.3,1);
+ assert.equal(capped.damage,40);
+ enemy.damageSecond=capped.damageSecond;
+ assert.equal(calculateBossDamage(enemy,500,10.4,1).damage,0);
+ const reset=calculateBossDamage(enemy,500,11.2,1);
+ assert.equal(reset.damage,340);
+ assert.equal(reset.damageSecondAt,11.2);
+});
+
+test('hurtEnemy integrates pure boss caps with analytics counters', () => {
+ const g=game({threat:1,t:10,playerDmg:1});
+ const boss={id:'omega',hp:20000,maxHp:20000,elite:true,shield:0,balId:'boss-1',x:300,y:0};
+ g.S.enemy=[boss];
+ const record={id:'boss-1',blockedByHitCap:0,blockedByShield:0,blockedByDpsCap:0};
+ g.ctx.bal={bosses:[record],totals:{bossDamageBlocked:0}};
+ for(let i=0;i<5;i++)g.run('hurtEnemy(S.enemy[0],500,{silentHit:true})');
+ assert.equal(boss.hp,18600);
+ assert.equal(boss.damageSecond,1400);
+ assert.equal(record.blockedByHitCap,800);
+ assert.equal(record.blockedByDpsCap,300);
+ assert.equal(g.ctx.bal.totals.bossDamageBlocked,1100);
+ g.S.t=11.2;
+ g.run('hurtEnemy(S.enemy[0],500,{silentHit:true})');
+ assert.equal(boss.hp,18260);
+ assert.equal(boss.damageSecond,340);
 });

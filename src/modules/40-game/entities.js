@@ -31,12 +31,15 @@ function applyChill(e,amount){
  }
 }
 function hurtEnemy(e,n,opts={}){if(e.hp<=0||!Number.isFinite(n))return;
- if(e.elite){const rawBossDamage=n;const maxHit=e.id==='omega'?340:e.id==='synth3'?230:e.id==='synth2'?190:e.id==='synth1'?260:e.id==='boss2'?255:285;
-  n=Math.min(n,maxHit);const afterHitCap=n;if(e.shield>0)n*=.27;const afterShield=n;
-  if(!e.damageSecondAt||S.t-e.damageSecondAt>=1){e.damageSecondAt=S.t;e.damageSecond=0;}
-  const ceiling=(e.id==='omega'?1400:e.id==='synth3'?1050:e.id==='synth2'?900:e.id==='synth1'?850:e.id==='boss2'?950:1030)*(1+Math.max(0,(S.threat||1)-1)*.17);
-  const remaining=Math.max(0,ceiling-(e.damageSecond||0));n=Math.min(n,remaining);if(bal&&!trainingMode){const record=bal.bosses.find(b=>b.id===e.balId);if(record){record.blockedByHitCap+=Math.max(0,rawBossDamage-afterHitCap);record.blockedByShield+=Math.max(0,afterHitCap-afterShield);record.blockedByDpsCap+=Math.max(0,afterShield-n);}bal.totals.bossDamageBlocked+=Math.max(0,rawBossDamage-n);}
-  e.damageSecond=(e.damageSecond||0)+n;
+ if(e.elite){
+  const hit=calculateBossDamage(e,n,S.t,S.threat);
+  n=hit.damage;
+  e.damageSecondAt=hit.damageSecondAt;e.damageSecond=hit.damageSecond;
+  if(bal&&!trainingMode){
+   const record=bal.bosses.find(b=>b.id===e.balId);
+   if(record){record.blockedByHitCap+=hit.blockedByHitCap;record.blockedByShield+=hit.blockedByShield;record.blockedByDpsCap+=hit.blockedByDpsCap;}
+   bal.totals.bossDamageBlocked+=hit.blockedTotal;
+  }
  }
  if(trainingMode){trainingRecord.damage+=n;trainingRecord.hits.push({t:S.t,d:n});if(trainingRecord.hits.length>3200)trainingRecord.hits.splice(0,1000)}
  const before=e.hp;balDamage(e,before,n);e.hp-=n;

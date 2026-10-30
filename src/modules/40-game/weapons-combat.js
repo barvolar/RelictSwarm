@@ -149,7 +149,7 @@ function droneUpdate(dt){
   const pos=getDronePos(d,i),linked=S.hybrids.some(h=>HYBRIDS[h.id].a===d.id||HYBRIDS[h.id].b===d.id);
   const fusionDamage=1,fusionRate=1;
   d.cd-=dt;d.hitCd-=dt;d.flash=Math.max(0,(d.flash||0)-dt);
-  const baseDmg=S.playerDmg*(1+Math.sqrt(rank-1)*.14)*(1+wm(d,'power')*.20)*(S.rageTimer>0?2.1:1);
+  const baseDmg=calculateWeaponDamage(S.playerDmg,rank,wm(d,'power'),S.rageTimer>0);
   if(['saw','fusion_thermal','fusion_tesla','fusion_frostblade','fusion_magnetblade'].includes(d.id)){
    const positions=sawPositions(d,i),thermal=d.id==='fusion_thermal',tesla=d.id==='fusion_tesla',frost=d.id==='fusion_frostblade',magnet=d.id==='fusion_magnetblade';
    if(tesla){d.zapCd=(d.zapCd||0)-dt;if(d.zapCd<=0){const near=closest(S.player.x,S.player.y,365);if(near){scheduleChain(pos,near,3+Math.min(12,wm(d,'jumps')),22*baseDmg,260,'#ffe5a6',.22);d.zapCd=.95/(S.haste||1)}}}
