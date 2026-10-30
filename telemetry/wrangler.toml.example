@@ -1,0 +1,9 @@
+name = "relict-swarm-telemetry"
+main = "worker.mjs"
+compatibility_date = "2026-10-01"
+workers_dev = true
+
+[[d1_databases]]
+binding = "TELEMETRY"
+database_name = "relict-swarm-telemetry"
+database_id = "REPLACE_WITH_YOUR_D1_DATABASE_UUID"
