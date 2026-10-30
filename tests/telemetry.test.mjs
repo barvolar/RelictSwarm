@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import fs from 'node:fs';
+import vm from 'node:vm';
 import worker from '../telemetry/worker.mjs';
 
 const root=new URL('../',import.meta.url);
@@ -84,4 +85,59 @@ test('player build has no FPS overlay, JSON download buttons or old export modul
  assert.ok(html.includes('renderQualityControls'),'Graphics quality control must remain');
  assert.ok(read('telemetry-client.js').includes('data-rs-consent'),'Consent UI is kept for online analytics');
  assert.ok(read('src/modules/60-analytics/balance/report.js').includes("report.result?.status==='in_progress'"),'Periodic snapshots must still be emitted');
+});
+
+
+test('browser client sends only after consent and does not expose personal fields',async()=>{
+ const sent=[];
+ const storage=new Map([['relict_swarm_analytics_consent_v1','yes']]);
+ const listeners={};
+ const client={
+  window:{RELIC_TELEMETRY_CONFIG:{endpoint:'https://telemetry.example.workers.dev/ingest'}},
+  document:{readyState:'loading',addEventListener(name,fn){listeners[name]=fn;}},
+  localStorage:{getItem:k=>storage.get(k)||null,setItem:(k,v)=>storage.set(k,v)},
+  navigator:{onLine:true},
+  innerWidth:420,Date,Math,JSON,Number,
+  crypto:{randomUUID:()=> '12345678-abcd-abcd-abcd-123456789012'},
+  addEventListener(name,fn){listeners[name]=fn;},
+  fetch:async(url,options)=>{sent.push({url,payload:JSON.parse(options.body)});return {ok:true}}
+ };
+ vm.runInNewContext(read('telemetry-client.js'),client,{timeout:3000});
+ client.window.SwarmTelemetry.start();
+ const report={difficulty:2,environment:{width:420,graphicsQuality:'eco'},
+  result:{status:'in_progress',seconds:30,level:4,kills:21},
+  totals:{peakEnemies:15,damageToBoss:300},
+  timeline:[{t:30,hp:110,enemies:14,near300:2,bossHpPct:[]}]};
+ const samples=[{fps:45,frameP95ms:28,slowFrames33:2,cpuUpdateMs:4,cpuDrawMs:7,elapsedGameSec:30}];
+ client.window.SwarmTelemetry.sample(report,samples);
+ await new Promise(resolve=>setImmediate(resolve));
+ assert.equal(sent.length,1);
+ assert.equal(sent[0].payload.type,'snapshot');
+ assert.equal(sent[0].payload.data.perf.avgFps,45);
+ assert.equal(sent[0].payload.data.device.category,'phone');
+ assert.ok(!JSON.stringify(sent[0].payload).includes('userAgent'));
+ assert.ok(!JSON.stringify(sent[0].payload).includes('ipAddress'));
+ const end={...report,result:{status:'win',seconds:45,score:1000,level:5,kills:34},
+  bosses:[],choices:[],fusions:[],finalWeapons:[],events:[],timeline:[]};
+ client.window.SwarmTelemetry.finish(end,samples);
+ await new Promise(resolve=>setImmediate(resolve));
+ assert.equal(sent.length,2);
+ assert.equal(sent[1].payload.type,'finish');
+ assert.equal(sent[1].payload.details.perfOverall.averageFps,45);
+ assert.ok(sent[1].payload.eventId);
+});
+
+test('browser client with missing endpoint never sends telemetry',async()=>{
+ const sent=[],client={
+  window:{RELIC_TELEMETRY_CONFIG:{endpoint:''}},
+  document:{readyState:'loading',addEventListener(){}},
+  localStorage:{getItem:k=>k==='relict_swarm_analytics_consent_v1'?'yes':null,setItem(){}},
+  navigator:{onLine:true},Date,Math,JSON,Number,innerWidth:900,
+  addEventListener(){},fetch:async()=>{sent.push(1);return {ok:true}}
+ };
+ vm.runInNewContext(read('telemetry-client.js'),client,{timeout:3000});
+ client.window.SwarmTelemetry.start();
+ client.window.SwarmTelemetry.sample({result:{status:'in_progress'},totals:{}},[]);
+ await new Promise(resolve=>setImmediate(resolve));
+ assert.equal(sent.length,0);
 });
