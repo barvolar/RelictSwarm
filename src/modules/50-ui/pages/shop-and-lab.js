@@ -1,0 +1,5 @@
+function renderShop(){let el=$('shop');if(!el)return;el.innerHTML=META.map(m=>{let n=save.meta[m.id]||0,price=m.cost+n*m.step,full=n>=m.max;return `<div class="shop-item"><div class="upgrade-title"><span style="color:#5af5de">${m.glyph}</span> ${m.name}</div><p>${m.sub}</p><div class="price"><span class="rank">${n}/${m.max} УР.</span><button data-buy="${m.id}" class="btn" ${full||save.shards<price?'disabled':''}>${full?'МАКС':'✧ '+price}</button></div></div>`}).join('');el.querySelectorAll('[data-buy]').forEach(b=>b.onclick=()=>{let m=META.find(z=>z.id===b.dataset.buy),n=save.meta[m.id]||0,cost=m.cost+n*m.step;if(n>=m.max||save.shards<cost)return;save.shards-=cost;save.meta[m.id]=n+1;persist();clickSound(540,.13);$('wallet').textContent=save.shards;renderShop()})}
+function renderLab(){
+ const sh=$('lab');if(!sh)return;
+ sh.innerHTML=Object.entries(HYBRIDS).map(([id,h])=>`<div class="lab-entry ${save.recipes?.[id]?'found':''}"><span style="color:${h.color}">${h.glyph}</span><div><b>${h.name}</b><small>${DRONES[h.a].name} + ${DRONES[h.b].name} · ядро особого босса</small></div><em>${save.recipes?.[id]?'ОТКРЫТО':'НЕ ИЗУЧЕНО'}</em></div>`).join('');
+}
