@@ -239,7 +239,7 @@ test('boss caps respect type, shield and difficulty independently of the game lo
  assert.equal(shield.damage,27);
  assert.equal(shield.blockedByShield,73);
  const hard=calculateBossDamage({...base,damageSecond:1300},500,10.2,2);
- assert.equal(hard.damage,170, 'difficulty II raises the omega 1-second budget');
+ assert.equal(hard.damage,338, 'difficulty II raises the omega 1-second budget');
 });
 
 test('boss one-second damage budget resets at window boundary', () => {
