@@ -1,0 +1,60 @@
+/* v0.3: guaranteed synthesis is earned by IV-rank weapons and boss cores */
+.forge-btn{position:absolute;top:85px;right:22px;padding:11px 14px;background:linear-gradient(110deg,#132b36,#1b283a);color:#c7e8ef;border:1px solid #608397;letter-spacing:1px;font-weight:900;font-size:11px;pointer-events:auto;border-radius:7px;cursor:pointer;box-shadow:0 6px 25px #0008}
+.forge-btn b{display:inline-flex;align-items:center;justify-content:center;border:1px solid #aa8d5c;border-radius:50%;height:23px;width:23px;color:#fbd399;background:#32271b;margin-left:6px}
+.forge-btn.ready{border-color:#ffce72;color:#ffe2a3;animation:forgePulse 1.15s infinite;box-shadow:0 0 25px #eeac4a4c}
+
+@media (max-width:430px){.joystick{left:22px;bottom:24px;width:124px;height:124px}.joy-ring{inset:16px}.joy-knob{left:39px;top:39px;width:46px;height:46px}.dash{right:22px;bottom:34px;width:90px;height:90px}.dash>span:first-child{font-size:28px}}
+@keyframes forgePulse{50%{filter:brightness(1.4);transform:scale(1.03)}}
+.forge-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin:14px 0}
+.forge-card{border:1px solid #36556c;background:#0b1c2b;padding:12px 11px;min-width:0;color:#dff8fd;text-align:left;display:flex;flex-direction:column;gap:6px;min-height:127px}
+.forge-card b{color:#ffda9c;font-size:13px}.forge-card p{font-size:10px;color:#a7b9c4;line-height:1.45;margin:0}.forge-card small{color:#78c6bc;font-size:10px}
+button.forge-card{cursor:pointer;border-color:#d3a458;background:linear-gradient(130deg,#3a2c22,#172637)}
+button.forge-card:hover{filter:brightness(1.25)}.forge-card.is-done{border-color:#6ac6a2}.forge-card.is-locked{opacity:.7}
+.module-chip.is-linked{background:linear-gradient(145deg,#3d3222ed,#141b2af0)!important;border-color:#ffd184!important;box-shadow:0 0 13px #fbb64754!important}
+@media(max-width:700px){.forge-btn{top:86px;right:8px;padding:8px 10px;font-size:9px}.forge-grid{grid-template-columns:1fr}.forge-card{min-height:0}}
+.upgrade-card.fusion-card{background:linear-gradient(155deg,#483316,#231927 56%,#0b1423);border-color:#c6a156;box-shadow:inset 0 0 28px #ffd07913,0 0 20px #d6ab4524}
+.upgrade-card.fusion-card .kind{color:#ffe0a1;font-weight:900}
+.upgrade-card.fusion-card .glyph{font-size:40px;text-shadow:0 0 15px #ffcf74,0 0 24px #f7b750}
+.module-chip.is-linked{border-color:#c8a065;box-shadow:inset 0 0 10px #ffcd5522}
+.module-chip .link-dot{color:#ffdc8d;font-size:12px}
+.lab-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin:10px 0}
+.lab-entry{display:flex;align-items:center;gap:8px;min-width:0;background:#071523;border:1px solid #273e50;padding:10px 8px;opacity:.72}
+.lab-entry.found{opacity:1;background:linear-gradient(125deg,#283222,#0c1a25);border-color:#ae9152}
+.lab-entry>span{font-size:23px;min-width:25px;text-align:center}
+.lab-entry>div{min-width:0;flex:1}
+.lab-entry b{font-size:10px;display:block;letter-spacing:.5px;color:#f1dfc0}
+.lab-entry small{font-size:9px;display:block;color:#82a6b1;margin-top:3px}
+.lab-entry em{font-size:8px;letter-spacing:.5px;color:#ba9971;font-style:normal;text-align:right}
+@media(max-width:530px){.lab-grid{grid-template-columns:1fr}.lab-entry{padding:7px}.lab-entry small{font-size:8px}}
+
+
+.upgrade-card.weapon-card{background:linear-gradient(155deg,#10283b,#0a1525 75%);border-color:var(--accent)}
+.upgrade-card.weapon-card .kind{color:#a6dbe8}.upgrade-card.weapon-card .number{color:#a8edda}
+.module-chip{position:relative}.module-chip .smallstat{font-size:9px;letter-spacing:0;color:#94c5c4;font-weight:500}
+.lab-entry small{color:#86b6b5}
+/* Recipe search in a growing synthesis lab. */
+.forge-filter{display:flex;flex-wrap:wrap;align-items:center;gap:9px;margin:10px 0 14px}
+.forge-filter label{color:#82d8cd;font-size:11px;letter-spacing:1px;font-weight:800}
+.forge-filter select{flex:1;min-width:155px;border:1px solid #486881;border-radius:5px;background:#0c2333;color:#f1f9ff;padding:9px 10px;font:inherit;font-size:12px;outline:none}
+.forge-filter button{padding:9px 10px;background:#142b3e;color:#ccecf2;border:1px solid #4e7386;border-radius:5px;cursor:pointer}
+.forge-card[hidden]{display:none!important}
+.forge-card .progress{display:block;width:100%;height:4px;background:#243a4a;margin:5px 0;border-radius:4px;overflow:hidden}
+.forge-card .progress>span{display:block;background:#cda767;height:100%}
+@media(min-width:701px){.upgrade-card.weapon-card{min-height:195px}}
+
+.active-buffs{position:absolute;right:25px;top:183px;border:1px solid #3f94b1;background:#0d2537dd;color:#f7d897;padding:9px 11px;font-size:11px;font-weight:900;letter-spacing:1px;max-width:45vw;text-align:right}
+.upgrade-card.rarity-uncommon{background:linear-gradient(145deg,#123629,#0a1628)}
+.upgrade-card.rarity-rare{background:linear-gradient(145deg,#172d50,#0a1628);box-shadow:0 0 25px #3f8af544}
+.upgrade-card.rarity-epic{background:linear-gradient(145deg,#32204e,#0b1626);box-shadow:0 0 35px #a974ff66;animation:rarityPulse 1.8s infinite alternate}
+@keyframes rarityPulse{to{filter:brightness(1.16)}}
+@media(max-width:700px){.active-buffs{top:148px;right:8px;font-size:9px;max-width:65vw}}
+/* v0.8: compact inventory indicator must never overlap the mobile joystick. */
+@media (pointer:coarse){
+ .modules{top:141px;bottom:auto;left:8px;transform:none;width:calc(100vw - 16px);max-width:none;justify-content:flex-start;flex-wrap:nowrap;overflow-x:auto;overflow-y:hidden;gap:4px;padding:3px 0;scrollbar-width:none;pointer-events:auto}
+ .modules::-webkit-scrollbar{display:none}
+ .module-chip{white-space:nowrap;flex-shrink:0;padding:4px 5px;font-size:9px}
+ .module-chip .dicon{font-size:12px}
+ .module-chip b{font-size:9px}
+}
+@media (pointer:coarse) and (max-height:500px){.modules{top:116px}}
+

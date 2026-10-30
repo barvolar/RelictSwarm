@@ -24,7 +24,8 @@ const embeddedRules=pureModules.map(([file,name])=>{
 const js=order.map((p,i)=>read(p)+(i===0?'\n'+embeddedRules+'\n':'')).join('');
 const template=read('src/index.template.html');
 if ((template.match(/%%RELICT_STYLE%%/g)||[]).length!==1 || (template.match(/%%RELICT_MAIN_SCRIPT%%/g)||[]).length!==1) throw Error('Invalid build template');
-const html=template.replace('%%RELICT_STYLE%%',read('src/styles/game.css')).replace('%%RELICT_MAIN_SCRIPT%%',js);
+const styles=JSON.parse(read('src/style-order.json')).map(read).join('');
+const html=template.replace('%%RELICT_STYLE%%',styles).replace('%%RELICT_MAIN_SCRIPT%%',js);
 const dist=path.join(root,'dist'); fs.mkdirSync(dist,{recursive:true});
 fs.writeFileSync(path.join(dist,'index.html'),html);
 const check=path.join(dist,'game-check.js'); fs.writeFileSync(check,js);

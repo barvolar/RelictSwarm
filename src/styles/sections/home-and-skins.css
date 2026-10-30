@@ -1,0 +1,30 @@
+/* v0.10.1: three-entry mobile home + equipment skins */
+.main-home{display:grid;gap:18px;padding:4px 0}
+.home-unit{display:flex;align-items:center;gap:19px;min-height:136px;border:1px solid #385668;border-radius:12px;background:radial-gradient(circle at 18% 50%,#24636d40,transparent 56%),linear-gradient(130deg,#0b2134,#0c1725);padding:12px 18px}
+.home-unit .skin-art{width:108px;height:120px;flex:none;filter:drop-shadow(0 0 14px #4ff3dc35)}
+.home-unit>div{display:grid;gap:7px;min-width:0}
+.home-unit strong{font-size:clamp(16px,3vw,23px);color:#eafcff;line-height:1.2}
+.home-unit small{font-size:11px;color:#a8c4cd;line-height:1.5}
+.home-actions{display:grid;gap:10px}
+.home-btn{width:100%;min-height:59px;letter-spacing:2px;font-size:15px;font-weight:900}
+.section-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:15px}
+.section-top .panel-title{margin:5px 0 0}
+.small-back{padding:9px 12px;white-space:nowrap}
+.garage-tabs{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:12px 0 15px}
+.garage-tabs .btn{min-height:44px}
+.skins-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}
+.skin-info{margin:4px 0 15px;line-height:1.6}
+.skin-card{border:1px solid #35536a;border-radius:11px;background:linear-gradient(140deg,#10253a,#0a1828);min-width:0;padding:12px;display:flex;flex-direction:column;gap:9px}
+.skin-card.selected{border-color:var(--skin-color);box-shadow:inset 0 0 24px #6de4df0a,0 0 14px #53dbdb10}
+.skin-preview{height:130px;border-radius:7px;background:radial-gradient(circle,#173b51 0,#0b1c2b 68%);display:grid;place-items:center;overflow:hidden}
+.skin-preview .skin-art{height:125px;width:auto;filter:drop-shadow(0 0 9px var(--skin-color))}
+.skin-copy{flex:1;display:grid;gap:5px;align-content:start}
+.skin-copy strong{font-size:11px;letter-spacing:.5px;color:#f0f8ff;line-height:1.35}
+.skin-copy p{font-size:10px;line-height:1.45;color:#a5bec9;margin:0}
+.skin-copy small{font-size:9px;color:var(--skin-color);font-weight:900;letter-spacing:.8px}
+.skin-card .btn{width:100%;min-height:39px;font-size:11px}
+.settings-action{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:10px 0 16px}
+.settings-action .btn{min-height:44px}
+@media(max-width:480px){.home-unit{padding:9px 12px;gap:11px;min-height:110px}.home-unit .skin-art{width:82px;height:100px}.home-unit small{font-size:9px}.home-btn{min-height:53px}.skin-card{padding:8px}.skin-preview{height:102px}.skin-preview .skin-art{height:102px}.skin-copy strong{font-size:10px}.garage-tabs .btn{font-size:11px}.settings-action{grid-template-columns:1fr}}
+@media(max-height:620px){.main-home{gap:9px}.home-unit{min-height:76px}.home-unit .skin-art{height:77px;width:75px}.home-btn{min-height:44px}.skin-preview{height:102px}.skin-preview .skin-art{height:99px}}
+

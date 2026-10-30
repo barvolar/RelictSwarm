@@ -1,0 +1,10 @@
+[
+  "src/styles/sections/core.css",
+  "src/styles/sections/synthesis.css",
+  "src/styles/sections/training.css",
+  "src/styles/sections/audio-and-threat.css",
+  "src/styles/sections/home-and-skins.css",
+  "src/styles/sections/mobile-hud.css",
+  "src/styles/sections/upgrade-cards.css",
+  "src/styles/sections/controls-and-diagnostics.css"
+]
