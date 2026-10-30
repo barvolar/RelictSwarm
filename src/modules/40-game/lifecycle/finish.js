@@ -1,0 +1,11 @@
+function finish(won=false,giveup=false){
+ if(!S||S.dead)return;S.dead=true;S.wins=won;balFinalize(won,giveup);
+ const modifier=THREAT_MODES[(S.threat||1)-1],rankedScore=Math.round(S.score*modifier.score),earned=Math.round((S.shards+Math.floor(S.score/260)+(won?95:0))*modifier.reward);
+ save.shards+=earned;save.runs++;if(won){save.wins++;save.threatUnlocked=Math.min(5,Math.max(save.threatUnlocked,(S.threat||1)+1));}
+ save.best=Math.max(save.best,rankedScore);
+ const record={score:rankedScore,baseScore:S.score,seconds:Math.round(S.t),kills:S.kills,level:S.lvl,threat:S.threat||1,win:!!won,fusions:S.hybrids.map(h=>h.id),weapons:S.drones.map(d=>d.id),timestamp:Date.now()};
+ save.records=[...(save.records||[]),record].sort((a,b)=>b.score-a.score||b.seconds-a.seconds).slice(0,20);
+ persist();setMode('end');$('bossWrap').classList.add('hidden');
+ $('modalContent').innerHTML=`<div class="label">${won?'ПРОТОКОЛ ВЫПОЛНЕН':'СИГНАЛ ПОТЕРЯН'}</div><div class="panel-title" style="margin-top:8px">${won?'Омега уничтожена':'Корпус выведен из строя'}</div><div class="result-badge">${won?'✦ ПОБЕДА':'✕ '+(giveup?'ЗАБЕГ ПРЕРВАН':'ПОРАЖЕНИЕ')}</div><p class="panel-desc">${won?'Угроза отражена. Открыт следующий протокол сложности.':'Запись сохранена в локальной истории. Усиль билд и попробуй снова.'}</p><div class="stats-three"><div class="statbox"><b>${formatTime(S.t)}</b><span>ВЫЖИВАНИЕ</span></div><div class="statbox"><b>${S.kills}</b><span>УБИЙСТВА</span></div><div class="statbox"><b>${rankedScore.toLocaleString('ru')}</b><span>СЧЁТ ×${modifier.score}</span></div></div><div class="stats-three"><div class="statbox"><b>${S.lvl}</b><span>УРОВЕНЬ</span></div><div class="statbox"><b>${S.drones.length} / ${S.hybrids.length}</b><span>ОРУЖИЕ / СИНТЕЗ</span></div><div class="statbox"><b>✧ ${earned}</b><span>КРИСТАЛЛЫ ×${modifier.reward}</span></div></div><p class="tiny">Угроза: ${modifier.name} · Результат сохранён только в этом браузере.</p>${balPanelHTML()}${perfPauseHTML()}<div class="button-row"><button id="againBtn" class="btn primary">↻ ЕЩЁ ОДИН ЗАБЕГ</button><button id="hangarBtn" class="btn ghost">◈ АНГАР</button></div>`;
+ $('againBtn').onclick=start;$('hangarBtn').onclick=menu;sfx(won?'win':'lose');} 
+function formatTime(t){let s=Math.max(0,Math.ceil(t)),m=Math.floor(s/60);return `${String(m).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`}
