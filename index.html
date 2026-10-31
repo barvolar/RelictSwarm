@@ -141,6 +141,30 @@ button.forge-card:hover{filter:brightness(1.25)}.forge-card.is-done{border-color
 @media(max-width:480px){.home-unit{padding:9px 12px;gap:11px;min-height:110px}.home-unit .skin-art{width:82px;height:100px}.home-unit small{font-size:9px}.home-btn{min-height:53px}.skin-card{padding:8px}.skin-preview{height:102px}.skin-preview .skin-art{height:102px}.skin-copy strong{font-size:10px}.garage-tabs .btn{font-size:11px}.settings-action{grid-template-columns:1fr}}
 @media(max-height:620px){.main-home{gap:9px}.home-unit{min-height:76px}.home-unit .skin-art{height:77px;width:75px}.home-btn{min-height:44px}.skin-preview{height:102px}.skin-preview .skin-art{height:99px}}
 
+
+/* Four-branch permanent research tree, optimized for narrow mobile screens. */
+.research-summary{display:flex;flex-wrap:wrap;gap:5px 12px;align-items:center;justify-content:space-between;background:#102739;border:1px solid #2e6371;border-radius:10px;padding:11px 12px;margin-bottom:10px}
+.research-summary strong{font-size:12px;letter-spacing:1px;color:#8cf2e1}
+.research-summary span{font-size:12px;color:#e0f7fc;font-weight:800}
+.research-summary small{width:100%;font-size:10px;color:#92afbd}
+.research-tabs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin:10px 0}
+.research-tab{min-width:0;display:grid;gap:3px;text-align:left;padding:9px 10px;border-radius:8px;border:1px solid #35546a;background:#112536;color:#cbe1e9;cursor:pointer}
+.research-tab.selected{border-color:#6be5cf;background:#183e48;color:#f4ffff}
+.research-tab strong{font-size:10px;letter-spacing:.5px;white-space:normal}
+.research-tab small{font-size:10px;color:#8faab6}
+.research-category{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:14px 2px 9px}
+.research-category b{font-size:11px;letter-spacing:1.4px;color:#7ef0dc}
+.research-category span{font-size:10px;color:#8faab6}
+.research-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+.research-item{border-radius:8px;padding:11px;gap:8px}
+.research-item .upgrade-title{line-height:1.35}
+.research-item p{min-height:34px}
+.research-progress{height:5px;border-radius:10px;background:#213c4e;overflow:hidden}
+.research-progress span{display:block;height:100%;background:linear-gradient(90deg,#318d8f,#78f2da)}
+.research-details{display:flex;justify-content:space-between;gap:5px;flex-wrap:wrap;font-size:10px;color:#9ec3c7}
+.research-details span:first-child{font-weight:800;color:#d5f8e9}
+.research-buy{min-height:36px;width:100%;white-space:normal}
+@media(max-width:480px){.research-grid{grid-template-columns:1fr}.research-tabs{gap:5px}.research-tab{padding:8px}.research-summary span{font-size:11px}.research-item p{min-height:0}}
 /* v0.10.8: one cohesive compact mobile HUD; the loadout is a REAL grid,
    not two independently positioned overlapping fixed elements. */
 .hud-dock,.hud-loadout{display:contents}
@@ -619,12 +643,50 @@ function sawPositions(d,i){const n=Math.min(10,1+wm(d,'count')),r=Math.min(310,M
 function hybridIs(id){return S.hybrids.some(h=>h.id===id)}
 function modHealthText(d){return d?`УР. ${d.lvl} · готов к синтезу`:'не получен'}
 
+// Permanent research. Previously purchased levels keep their original effects.
 const META=[
- {id:'hull',name:'Бронепластины',sub:'+15 к максимальной прочности корпуса',cost:15,step:14,max:6,glyph:'⬡'},
- {id:'power',name:'Боевой процессор',sub:'+6% к урону всех дронов',cost:25,step:21,max:6,glyph:'ϟ'},
- {id:'magnet',name:'Магнитный захват',sub:'+16 к радиусу сбора данных',cost:15,step:13,max:6,glyph:'◎'},
- {id:'regen',name:'Саморемонт',sub:'+0.12 прочности в секунду',cost:25,step:19,max:5,glyph:'✚'}
+ {id:'hull',group:'hull',name:'Бронепластины',sub:'+15 HP до 6-го уровня, затем +7 HP',cost:15,step:14,max:30,glyph:'⬡'},
+ {id:'regen',group:'hull',name:'Саморемонт',sub:'+0,12 HP/с до 5-го уровня, затем +0,04 HP/с',cost:25,step:19,max:25,glyph:'✚'},
+ {id:'armor',group:'hull',name:'Композитная броня',sub:'−0,4% получаемого урона за уровень',cost:40,step:26,max:20,glyph:'▣'},
+ {id:'repair',group:'hull',name:'Ремонтные наниты',sub:'+1% к лечению за уровень',cost:30,step:22,max:20,glyph:'♥'},
+ {id:'power',group:'weapons',name:'Боевой процессор',sub:'+6% урона до 6-го уровня, затем +1,2%',cost:25,step:21,max:30,glyph:'ϟ'},
+ {id:'haste',group:'weapons',name:'Разгон турелей',sub:'+0,5% к частоте атак за уровень',cost:40,step:31,max:20,glyph:'⌁'},
+ {id:'critChance',group:'weapons',name:'Критический анализ',sub:'+0,35 п.п. к шансу критического попадания',cost:55,step:34,max:20,glyph:'⌖'},
+ {id:'critDamage',group:'weapons',name:'Усиленные боеприпасы',sub:'+2 п.п. к критическому урону за уровень',cost:45,step:30,max:25,glyph:'✦'},
+ {id:'speed',group:'systems',name:'Улучшенные приводы',sub:'+0,4% к скорости движения за уровень',cost:25,step:20,max:20,glyph:'➤'},
+ {id:'dash',group:'systems',name:'Конденсатор рывка',sub:'−1% к перезарядке рывка за уровень',cost:40,step:24,max:20,glyph:'↝'},
+ {id:'magnet',group:'systems',name:'Магнитный захват',sub:'+16 к радиусу до 6-го уровня, затем +8',cost:15,step:13,max:30,glyph:'◎'},
+ {id:'duration',group:'systems',name:'Стабилизатор усилений',sub:'+1% к длительности временных бонусов',cost:35,step:26,max:20,glyph:'◷'},
+ {id:'xp',group:'research',name:'Анализ данных',sub:'+1% получаемого опыта за уровень',cost:30,step:24,max:25,glyph:'◇'},
+ {id:'shards',group:'research',name:'Переработка реликтов',sub:'+2% к кристаллам по итогам забега',cost:45,step:30,max:25,glyph:'✧'},
+ {id:'rarity',group:'research',name:'Система поиска',sub:'Повышает шанс необычных, редких и эпических карточек',cost:65,step:41,max:15,glyph:'✥'},
+ {id:'score',group:'research',name:'Боевой анализатор',sub:'+1% к итоговому счёту за уровень',cost:35,step:26,max:20,glyph:'▤'}
 ];
+const META_GROUPS=[
+ {id:'hull',name:'КОРПУС',desc:'Защита и ремонт',glyph:'⬡'},
+ {id:'weapons',name:'ВООРУЖЕНИЕ',desc:'Сила и точность',glyph:'ϟ'},
+ {id:'systems',name:'СИСТЕМЫ',desc:'Мобильность и сбор',glyph:'⌁'},
+ {id:'research',name:'ИССЛЕДОВАНИЯ',desc:'Опыт и награды',glyph:'✧'}
+];
+function metaLevel(id){const m=META.find(x=>x.id===id);return m?Math.min(m.max,Math.max(0,Math.floor(Number(save?.meta?.[id])||0))):0}
+function metaCost(m,n){return Math.ceil(m.cost+m.step*n+3*Math.max(0,n-8)**2)}
+function metaBonus(id,n=metaLevel(id)){
+ const p=Math.max(0,n);
+ switch(id){
+  case'hull':return 15*Math.min(p,6)+7*Math.max(0,p-6);
+  case'regen':return .12*Math.min(p,5)+.04*Math.max(0,p-5);
+  case'power':return .06*Math.min(p,6)+.012*Math.max(0,p-6);
+  case'magnet':return 16*Math.min(p,6)+8*Math.max(0,p-6);
+  case'armor':return .004*p;
+  case'repair':case'duration':case'dash':case'xp':case'score':return .01*p;
+  case'haste':return .005*p;
+  case'critChance':return .0035*p;
+  case'critDamage':case'shards':return .02*p;
+  case'speed':return .004*p;
+  case'rarity':return p;
+  default:return 0;
+ }
+}
 const ENEMY={
  scarab:{name:'Скарабей',hp:21,spd:84,rad:16,dmg:10,xp:3,col:'#79f3a4',value:7},
  hunter:{name:'Охотник',hp:34,spd:122,rad:15,dmg:8,xp:4,col:'#ffca69',value:11},
@@ -701,7 +763,7 @@ const SKINS={
 function ownedSkins(raw){const list=Array.isArray(raw)?raw:[];return [...new Set(['relict','ghost',...list.filter(id=>SKINS[id])])];}
 function equippedSkin(){return SKINS[save.skin]||SKINS.relict;}
 let save=readSave(),mode='menu',S=null,W=innerWidth,H=innerHeight,scale=Math.min(devicePixelRatio||1,2),frame=0,last=0,ambient=0,shake=0,runId=0,menuStars=[],audio=null,mute=false,showToastUntil=0,showBannerUntil=0;
-function readSave(){try{let v=JSON.parse(localStorage.getItem(saveKey)||'null');if(v && typeof v==='object')return {shards:Math.max(0,+v.shards||0),best:+v.best||0,runs:+v.runs||0,wins:+v.wins||0,meta:{hull:0,power:0,magnet:0,regen:0,...v.meta},recipes:{...v.recipes},skins:ownedSkins(v.skins),skin:ownedSkins(v.skins).includes(v.skin)?v.skin:'relict',threatUnlocked:Math.max(1,Math.min(5,Math.floor(v.threatUnlocked||1))),records:Array.isArray(v.records)?v.records.filter(r=>r&&Number.isFinite(+r.score)).slice(0,20):[]}}catch{}return {shards:0,best:0,runs:0,wins:0,meta:{hull:0,power:0,magnet:0,regen:0},recipes:{},skins:['relict','ghost'],skin:'relict',threatUnlocked:1,records:[]}}
+function readSave(){try{let v=JSON.parse(localStorage.getItem(saveKey)||'null');if(v && typeof v==='object')return {shards:Math.max(0,+v.shards||0),best:+v.best||0,runs:+v.runs||0,wins:+v.wins||0,meta:Object.fromEntries(META.map(m=>[m.id,Math.min(m.max,Math.max(0,Math.floor(Number(v.meta?.[m.id])||0)))])),recipes:{...v.recipes},skins:ownedSkins(v.skins),skin:ownedSkins(v.skins).includes(v.skin)?v.skin:'relict',threatUnlocked:Math.max(1,Math.min(5,Math.floor(v.threatUnlocked||1))),records:Array.isArray(v.records)?v.records.filter(r=>r&&Number.isFinite(+r.score)).slice(0,20):[]}}catch{}return {shards:0,best:0,runs:0,wins:0,meta:Object.fromEntries(META.map(m=>[m.id,0])),recipes:{},skins:['relict','ghost'],skin:'relict',threatUnlocked:1,records:[]}}
 function persist(){try{localStorage.setItem(saveKey,JSON.stringify(save))}catch{}}
 function rand(a,b){return a+Math.random()*(b-a)}function rint(a,b){return Math.floor(rand(a,b+1))}const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));function dist(a,b){return Math.hypot(a.x-b.x,a.y-b.y)}function hypot(x,y){return Math.hypot(x,y)||1}const TAU=Math.PI*2;function lerp(a,b,t){return a+(b-a)*t}
 // v0.10.12 A/B graphics test: only backing-canvas resolution changes. World zoom and gameplay stay identical.
@@ -1099,7 +1161,7 @@ function showPlayMenu(){
 function showProgression(tab='upgrades'){
  setMode('menu');
  const upgrade=tab!=='skins';
- $('modalContent').innerHTML=`<div class="section-top"><div><div class="label">[ АНГАР ]</div><div class="panel-title">Прокачка</div></div><button id="backHome" class="btn ghost small-back">◂ НАЗАД</button></div><div class="shop-head"><span class="tiny">Постоянные улучшения и облики</span><div class="wallet">✧ <span id="wallet">${save.shards}</span></div></div><div class="garage-tabs"><button id="tabUpgrades" class="btn ${upgrade?'primary':'ghost'}" aria-pressed="${upgrade}">МОДУЛИ</button><button id="tabSkins" class="btn ${!upgrade?'primary':'ghost'}" aria-pressed="${!upgrade}">СКИНЫ</button></div>${upgrade?`<div class="shop-grid" id="shop"></div><div class="line"></div><div class="label">ИССЛЕДОВАННЫЕ СИНТЕЗЫ</div><p class="tiny">Новые типы вооружения открываются в забегах.</p><div id="lab" class="lab-grid"></div>`:`<p class="tiny skin-info">Скины изменяют только внешний вид робота. Урон, здоровье и скорость не меняются. Выбранный облик сохраняется на устройстве.</p><div id="skinsGrid" class="skins-grid"></div>`}`;
+ $('modalContent').innerHTML=`<div class="section-top"><div><div class="label">[ АНГАР ]</div><div class="panel-title">Прокачка</div></div><button id="backHome" class="btn ghost small-back">◂ НАЗАД</button></div><div class="shop-head"><span class="tiny">Постоянные улучшения и облики</span><div class="wallet">✧ <span id="wallet">${save.shards.toLocaleString("ru")}</span></div></div><div class="garage-tabs"><button id="tabUpgrades" class="btn ${upgrade?'primary':'ghost'}" aria-pressed="${upgrade}">МОДУЛИ</button><button id="tabSkins" class="btn ${!upgrade?'primary':'ghost'}" aria-pressed="${!upgrade}">СКИНЫ</button></div>${upgrade?`<div id="shop"></div><div class="line"></div><div class="label">ИССЛЕДОВАННЫЕ СИНТЕЗЫ</div><p class="tiny">Новые типы вооружения открываются в забегах.</p><div id="lab" class="lab-grid"></div>`:`<p class="tiny skin-info">Скины изменяют только внешний вид робота. Урон, здоровье и скорость не меняются. Выбранный облик сохраняется на устройстве.</p><div id="skinsGrid" class="skins-grid"></div>`}`;
  $('backHome').onclick=menu;
  $('tabUpgrades').onclick=()=>showProgression('upgrades');
  $('tabSkins').onclick=()=>showProgression('skins');
@@ -1127,7 +1189,43 @@ function showSettings(){
  $('backHome').onclick=menu;$('soundBtn').onclick=soundToggle;
  $('howBtn').onclick=showHow;bindAudioMixer();
 }
-function renderShop(){let el=$('shop');if(!el)return;el.innerHTML=META.map(m=>{let n=save.meta[m.id]||0,price=m.cost+n*m.step,full=n>=m.max;return `<div class="shop-item"><div class="upgrade-title"><span style="color:#5af5de">${m.glyph}</span> ${m.name}</div><p>${m.sub}</p><div class="price"><span class="rank">${n}/${m.max} УР.</span><button data-buy="${m.id}" class="btn" ${full||save.shards<price?'disabled':''}>${full?'МАКС':'✧ '+price}</button></div></div>`}).join('');el.querySelectorAll('[data-buy]').forEach(b=>b.onclick=()=>{let m=META.find(z=>z.id===b.dataset.buy),n=save.meta[m.id]||0,cost=m.cost+n*m.step;if(n>=m.max||save.shards<cost)return;save.shards-=cost;save.meta[m.id]=n+1;persist();clickSound(540,.13);$('wallet').textContent=save.shards;renderShop()})}
+let activeMetaTab='hull';
+function renderShop(){
+ const root=$('shop');if(!root)return;
+ const group=META_GROUPS.find(g=>g.id===activeMetaTab)||META_GROUPS[0];
+ const total=META.reduce((a,m)=>a+metaLevel(m.id),0),max=META.reduce((a,m)=>a+m.max,0);
+ const tabs=META_GROUPS.map(g=>{
+  const mods=META.filter(m=>m.group===g.id);
+  const invested=mods.reduce((a,m)=>a+metaLevel(m.id),0),maximum=mods.reduce((a,m)=>a+m.max,0);
+  return `<button type="button" class="research-tab ${g.id===group.id?'selected':''}" data-meta-tab="${g.id}" aria-pressed="${g.id===group.id}"><strong>${g.glyph} ${g.name}</strong><small>${invested}/${maximum}</small></button>`;
+ }).join('');
+ const rows=META.filter(m=>m.group===group.id).map(m=>{
+  const n=metaLevel(m.id),full=n>=m.max,price=metaCost(m,n),canBuy=!full&&save.shards>=price;
+  const next=metaBonus(m.id,Math.min(m.max,n+1)),current=metaBonus(m.id,n);
+  const progress=Math.round(n/m.max*100);
+  const format=v=>Number(v.toFixed(3)).toLocaleString('ru');
+  const percentIds=['power','armor','repair','haste','critChance','critDamage','speed','dash','duration','xp','shards','score'];
+  const unit=percentIds.includes(m.id)?' п.п.':'';
+  const delta=percentIds.includes(m.id)?(next-current)*100:next-current;
+  return `<div class="shop-item research-item">
+   <div class="upgrade-title"><span style="color:#5af5de">${m.glyph}</span> ${m.name}</div>
+   <p>${m.sub}</p>
+   <div class="research-progress" role="progressbar" aria-valuenow="${n}" aria-valuemin="0" aria-valuemax="${m.max}"><span style="width:${progress}%"></span></div>
+   <div class="research-details"><span>УР. ${n}/${m.max}</span><span>${full?'ИЗУЧЕНО':m.id==='rarity'?'РЕДКОСТЬ КАРТОЧЕК':'Следующий: +'+format(delta)+unit}</span></div>
+   <button data-buy="${m.id}" type="button" class="btn research-buy" ${canBuy?'':'disabled'}>${full?'✓ МАКСИМУМ':'✧ '+price.toLocaleString('ru')+' · УЛУЧШИТЬ'}</button>
+  </div>`;
+ }).join('');
+ root.innerHTML=`<div class="research-summary"><strong>◈ ЦЕНТР ИССЛЕДОВАНИЙ</strong><span>Изучено ${total} из ${max} уровней</span><small>Исследования действуют в каждом новом забеге.</small></div>
+ <div class="research-tabs">${tabs}</div><div class="research-category"><b>${group.name}</b><span>${group.desc}</span></div>
+ <div class="shop-grid research-grid">${rows}</div>`;
+ root.querySelectorAll('[data-meta-tab]').forEach(b=>b.onclick=()=>{activeMetaTab=b.dataset.metaTab;renderShop();});
+ root.querySelectorAll('[data-buy]').forEach(b=>b.onclick=()=>{
+  const m=META.find(z=>z.id===b.dataset.buy);if(!m)return;
+  const n=metaLevel(m.id),cost=metaCost(m,n);if(n>=m.max||save.shards<cost)return;
+  save.shards-=cost;save.meta[m.id]=n+1;persist();clickSound(540,.13);
+  $('wallet').textContent=save.shards.toLocaleString('ru');renderShop();
+ });
+}
 function renderLab(){
  const sh=$('lab');if(!sh)return;
  sh.innerHTML=Object.entries(HYBRIDS).map(([id,h])=>`<div class="lab-entry ${save.recipes?.[id]?'found':''}"><span style="color:${h.color}">${h.glyph}</span><div><b>${h.name}</b><small>${DRONES[h.a].name} + ${DRONES[h.b].name} · ядро особого босса</small></div><em>${save.recipes?.[id]?'ОТКРЫТО':'НЕ ИЗУЧЕНО'}</em></div>`).join('');
@@ -1266,7 +1364,7 @@ function balFinalize(won,giveup){
   remainingBosses:S.bosses.filter(e=>e.hp>0).map(e=>({id:e.id,hpPct:balR(100*e.hp/e.maxHp)}))};
  bal.events.push({t:balR(S.t),what:'run_end',result:bal.result.status});balStore();window.SwarmTelemetry?.finish?.(balReport(),perf.samples);
 }
-function start(){perfReset();trainingMode=false;runId++;selectedThreat=Math.max(1,Math.min(save.threatUnlocked,selectedThreat));S={threat:selectedThreat,t:0,elapsed:0,player:{x:0,y:0,hp:120+(save.meta.hull||0)*15,maxHp:120+(save.meta.hull||0)*15,speed:225,rad:17,inv:1,hit:0,dx:0,dy:-1,dashCd:0,dashTime:0,regen:save.meta.regen||0},cam:{x:0,y:0},lvl:1,xp:0,xpNeed:19,playerDmg:1+(save.meta.power||0)*.06,magnet:100+(save.meta.magnet||0)*16,score:0,kills:0,shards:0,enemy:[],bullets:[],enemyBullets:[],pickups:[],parts:[],fx:[],floaters:[],drones:[{id:'pulse',lvl:1,cd:0,hitCd:0,mods:{}}],mines:[],gravityWells:[],effects:[],chains:[],hazards:[],hybrids:[],fusionCores:0,synthFlags:[false,false,false],powerupClock:25,rageTimer:0,invulnTimer:0,magnetTimer:0,dead:false,wins:false,spawn:0,spawnCount:0,raidFlags:RAID_EVENTS.map(()=>false),upgrades:[],pendingUp:0,bossFlags:BOSS_EVENTS.map(()=>false),bosses:[],clock:0,regenT:0};balInit();$('bossWrap').classList.add('hidden');$('wavebanner').classList.add('hidden');$('toast').classList.add('hidden');setMode('playing');toast('СИСТЕМА АКТИВИРОВАНА // СОБИРАЙ ДАННЫЕ');sfx('level',.75);for(let i=0;i<9;i++)spawnEnemy('scarab',i*TAU/9,rand(235,340));updateHUD()}
+function start(){perfReset();trainingMode=false;runId++;selectedThreat=Math.max(1,Math.min(save.threatUnlocked,selectedThreat));S={threat:selectedThreat,t:0,elapsed:0,player:{x:0,y:0,hp:120+metaBonus('hull'),maxHp:120+metaBonus('hull'),speed:225*(1+metaBonus('speed')),rad:17,inv:1,hit:0,dx:0,dy:-1,dashCd:0,dashTime:0,regen:metaBonus('regen')},cam:{x:0,y:0},lvl:1,xp:0,xpNeed:19,playerDmg:1+metaBonus('power'),magnet:100+metaBonus('magnet'),haste:1+metaBonus('haste'),armor:metaBonus('armor'),healBonus:metaBonus('repair'),critChance:metaBonus('critChance'),critMultiplier:1.5+metaBonus('critDamage'),xpBonus:metaBonus('xp'),buffDuration:1+metaBonus('duration'),dashCooldown:3.6*(1-metaBonus('dash')),score:0,kills:0,shards:0,enemy:[],bullets:[],enemyBullets:[],pickups:[],parts:[],fx:[],floaters:[],drones:[{id:'pulse',lvl:1,cd:0,hitCd:0,mods:{}}],mines:[],gravityWells:[],effects:[],chains:[],hazards:[],hybrids:[],fusionCores:0,synthFlags:[false,false,false],powerupClock:25,rageTimer:0,invulnTimer:0,magnetTimer:0,dead:false,wins:false,spawn:0,spawnCount:0,raidFlags:RAID_EVENTS.map(()=>false),upgrades:[],pendingUp:0,bossFlags:BOSS_EVENTS.map(()=>false),bosses:[],clock:0,regenT:0};balInit();$('bossWrap').classList.add('hidden');$('wavebanner').classList.add('hidden');$('toast').classList.add('hidden');setMode('playing');toast('СИСТЕМА АКТИВИРОВАНА // СОБИРАЙ ДАННЫЕ');sfx('level',.75);for(let i=0;i<9;i++)spawnEnemy('scarab',i*TAU/9,rand(235,340));updateHUD()}
 function weaponSummary(){return `<div class="line"></div><div class="label">КОНФИГУРАЦИЯ ОРУЖИЯ</div><div class="tiny" style="margin:10px 0;line-height:1.9">${S.drones.map(d=>`<b style="color:${DRONES[d.id].color}">${DRONES[d.id].name} ур. ${d.lvl}</b>: ${weaponBranches(d.id).filter(m=>wm(d,m[0])>0).map(m=>m[1]+' '+wm(d,m[0])).join(', ')||'Без модулей'}`).join('<br>')}</div>`}
 function pause(){if(mode!=='playing')return;if(trainingMode){setMode('paused');$('modalContent').innerHTML=`<div class="label">[ ПОЛИГОН ]</div><div class="panel-title">Испытание приостановлено</div><p class="panel-desc">Изменения оружия здесь не сохраняются в обычный забег.</p><div class="button-row"><button class="btn primary" id="resumeBtn">▶ ПРОДОЛЖИТЬ</button><button class="btn ghost" id="quitBtn">◂ В ГЛАВНОЕ МЕНЮ</button></div>`;$('resumeBtn').onclick=resume;$('quitBtn').onclick=leaveTraining;return;}setMode('paused');$('modalContent').innerHTML=`<div class="label">[ ПАУЗА ]</div><div class="panel-title" style="margin-top:9px">Система ожидает</div><p class="panel-desc">На поле уже ${S.kills} обломков. Машины терпеливо дождутся твоего возвращения.</p>${weaponSummary()}<div class="button-row"><button id="resumeBtn" class="btn primary">▶ ПРОДОЛЖИТЬ</button><button id="quitBtn" class="btn ghost">ЗАВЕРШИТЬ ЗАБЕГ</button></div>`;$('resumeBtn').onclick=resume;$('quitBtn').onclick=()=>finish(false,true)}
 function resume(){if(mode!=='paused')return;setMode('playing');last=performance.now()}
@@ -1274,7 +1372,7 @@ function toast(v,time=2.8){$('toast').textContent=v;$('toast').classList.remove(
 function banner(v,time=4.5){$('wavebanner').textContent=v;$('wavebanner').classList.remove('hidden');showBannerUntil=S.t+time;/* Баннер и toast показываются независимо: не дублируем одно событие. */if(/БОСС|УГРОЗ|ПРОРЫВ|ПЕРЕХВАТ|ОСАДА|ВТОРАЯ ФАЗА/.test(v))sfx('warning');else clickSound(360,.16,'triangle',.023)}
 function finish(won=false,giveup=false){
  if(!S||S.dead)return;S.dead=true;S.wins=won;balFinalize(won,giveup);
- const modifier=THREAT_MODES[(S.threat||1)-1],rankedScore=Math.round(S.score*modifier.score),earned=Math.round((S.shards+Math.floor(S.score/260)+(won?95:0))*modifier.reward);
+ const modifier=THREAT_MODES[(S.threat||1)-1],rankedScore=Math.round(S.score*modifier.score*(1+metaBonus('score'))),earned=Math.round((S.shards+Math.floor(S.score/260)+(won?95:0))*modifier.reward*(1+metaBonus('shards')));
  save.shards+=earned;save.runs++;if(won){save.wins++;save.threatUnlocked=Math.min(5,Math.max(save.threatUnlocked,(S.threat||1)+1));}
  save.best=Math.max(save.best,rankedScore);
  const record={score:rankedScore,baseScore:S.score,seconds:Math.round(S.t),kills:S.kills,level:S.lvl,threat:S.threat||1,win:!!won,fusions:S.hybrids.map(h=>h.id),weapons:S.drones.map(d=>d.id),timestamp:Date.now()};
@@ -1283,7 +1381,7 @@ function finish(won=false,giveup=false){
  $('modalContent').innerHTML=`<div class="label">${won?'ПРОТОКОЛ ВЫПОЛНЕН':'СИГНАЛ ПОТЕРЯН'}</div><div class="panel-title" style="margin-top:8px">${won?'Омега уничтожена':'Корпус выведен из строя'}</div><div class="result-badge">${won?'✦ ПОБЕДА':'✕ '+(giveup?'ЗАБЕГ ПРЕРВАН':'ПОРАЖЕНИЕ')}</div><p class="panel-desc">${won?'Угроза отражена. Открыт следующий протокол сложности.':'Запись сохранена в локальной истории. Усиль билд и попробуй снова.'}</p><div class="stats-three"><div class="statbox"><b>${formatTime(S.t)}</b><span>ВЫЖИВАНИЕ</span></div><div class="statbox"><b>${S.kills}</b><span>УБИЙСТВА</span></div><div class="statbox"><b>${rankedScore.toLocaleString('ru')}</b><span>СЧЁТ ×${modifier.score}</span></div></div><div class="stats-three"><div class="statbox"><b>${S.lvl}</b><span>УРОВЕНЬ</span></div><div class="statbox"><b>${S.drones.length} / ${S.hybrids.length}</b><span>ОРУЖИЕ / СИНТЕЗ</span></div><div class="statbox"><b>✧ ${earned}</b><span>КРИСТАЛЛЫ ×${modifier.reward}</span></div></div><p class="tiny">Угроза: ${modifier.name} · Результат сохранён только в этом браузере.</p><div class="button-row"><button id="againBtn" class="btn primary">↻ ЕЩЁ ОДИН ЗАБЕГ</button><button id="hangarBtn" class="btn ghost">◈ АНГАР</button></div>`;
  $('againBtn').onclick=start;$('hangarBtn').onclick=menu;sfx(won?'win':'lose');} 
 function formatTime(t){let s=Math.max(0,Math.ceil(t)),m=Math.floor(s/60);return `${String(m).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`}
-function dash(){if(!S||mode!=='playing'||S.player.dashCd>0)return;let p=S.player,dir=getInput();let m=hypot(dir.x,dir.y);if(Math.abs(dir.x)+Math.abs(dir.y)<.15){dir.x=p.dx;dir.y=p.dy;m=hypot(dir.x,dir.y)}p.dx=dir.x/m;p.dy=dir.y/m;p.dashCd=3.6;p.dashTime=.2;p.inv=Math.max(p.inv,.32);burst(p.x,p.y,equippedSkin().core,22,180);S.fx.push({type:'ring',x:p.x,y:p.y,r:28,life:.34,max:.34,col:equippedSkin().core});sfx('dash')}
+function dash(){if(!S||mode!=='playing'||S.player.dashCd>0)return;let p=S.player,dir=getInput();let m=hypot(dir.x,dir.y);if(Math.abs(dir.x)+Math.abs(dir.y)<.15){dir.x=p.dx;dir.y=p.dy;m=hypot(dir.x,dir.y)}p.dx=dir.x/m;p.dy=dir.y/m;p.dashCd=S.dashCooldown||3.6;p.dashTime=.2;p.inv=Math.max(p.inv,.32);burst(p.x,p.y,equippedSkin().core,22,180);S.fx.push({type:'ring',x:p.x,y:p.y,r:28,life:.34,max:.34,col:equippedSkin().core});sfx('dash')}
 function getInput(){let x=(input('KeyD')||input('ArrowRight')?1:0)-(input('KeyA')||input('ArrowLeft')?1:0)+joy.x,y=(input('KeyS')||input('ArrowDown')?1:0)-(input('KeyW')||input('ArrowUp')?1:0)+joy.y,m=Math.max(1,Math.hypot(x,y));return {x:x/m,y:y/m}}
 function getDronePos(d,i){if(['saw','fusion_thermal','fusion_tesla','fusion_frostblade','fusion_magnetblade'].includes(d.id))return sawPositions(d,i)[0];const a=S.t*.6+i*TAU/S.drones.length-Math.PI/2,r=57+(i%2)*15;return {x:S.player.x+Math.cos(a)*r,y:S.player.y+Math.sin(a)*r,a}}
 function spawnEnemy(id,a=null,dis=null){if(S.enemy.length>170&&!id.startsWith('boss')&&!id.startsWith('synth')&&id!=='omega'){if(bal&&!trainingMode)bal.totals.spawnBlocked++;return;}let p=S.player,ang=a??rand(0,TAU),d=dis??Math.max(360,Math.min(670,Math.max(W,H)*.55+90)),sp=ENEMY[id],factor=1+S.t/150+Math.max(0,S.lvl-18)*.012,elite=id.startsWith('boss')||id.startsWith('synth')||id==='omega';let x=clamp(p.x+Math.cos(ang)*d,-1760,1760),y=clamp(p.y+Math.sin(ang)*d,-1760,1760);const threat=THREAT_MODES[(S.threat||1)-1];let hp=sp.hp*(elite?(1+Math.max(0,S.t-180)/390):factor)*threat.hp;const obj={id,x,y,vx:0,vy:0,hp,maxHp:hp,r:sp.rad,spd:sp.spd*(1+Math.min(.3,S.t/1600))*threat.speed,dmg:sp.dmg*(elite?1:1+S.t/580)*threat.damage,t:rand(0,4),hit:0,shock:0,marked:0,attack:rand(.5,1.6),fire:rand(1,3),charge:0,slow:0,stun:0,burn:0,phase:0,special:elite?rand(1.6,3.5):0,summoned:false,seed:rand(0,500),elite,value:sp.value};if(!elite&&S.t>135&&Math.random()<Math.min(.21,.035+S.t/4800+(S.threat-1)*.023)){
@@ -1291,16 +1389,16 @@ function spawnEnemy(id,a=null,dis=null){if(S.enemy.length>170&&!id.startsWith('b
  }S.enemy.push(obj);balSpawn(obj);if(elite){S.bosses.push(obj);banner('⚠ '+sp.name+' // ВЫСОКАЯ УГРОЗА',5);$('bossWrap').classList.remove('hidden')}return obj}
 function burst(x,y,col,n=11,power=100){if(!S)return;for(let i=0;i<n&&S.parts.length<650;i++){let a=rand(0,TAU),v=rand(power*.15,power),life=rand(.25,.75);S.parts.push({x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v,life,max:life,size:rand(1.5,4),col})}}
 function floatNum(x,y,val,col){if(S.floaters.length>70)S.floaters.shift();S.floaters.push({x,y,t:.7,val:Math.round(val),col})}
-function heal(n){let p=S.player;p.hp=Math.min(p.maxHp,p.hp+n)}
+function heal(n){let p=S.player;p.hp=Math.min(p.maxHp,p.hp+n*(1+(S.healBonus||0)))}
 function spawnPowerup(x=null,y=null,type=null){if(!S)return;const types=['magnet','rage','invuln','heal'],choice=type||types[Math.floor(Math.random()*types.length)];
  const a=rand(0,TAU),r=rand(125,240),px=x??S.player.x+Math.cos(a)*r,py=y??S.player.y+Math.sin(a)*r;
  S.pickups.push({x:clamp(px,-1750,1750),y:clamp(py,-1750,1750),xp:38,r:14,life:28,type:choice});}
 function applyPowerup(o){
  switch(o.type){
  case 'core':S.fusionCores++;banner('◈ ЯДРО СИНТЕЗА ПОДОБРАНО!',4);break;
- case 'magnet':S.magnetTimer=4.5;toast('◎ МАГНИТ: ВЕСЬ ОПЫТ НА КАРТЕ!',3);break;
- case 'rage':S.rageTimer=13;toast('ϟ ЯРОСТЬ: УРОН ×2.1 НА 13 СЕКУНД',3);break;
- case 'invuln':S.invulnTimer=8;S.player.inv=Math.max(S.player.inv,8);toast('⬡ НЕУЯЗВИМОСТЬ: 8 СЕКУНД',3);break;
+ case 'magnet':S.magnetTimer=4.5*(S.buffDuration||1);toast('◎ МАГНИТ: ВЕСЬ ОПЫТ НА КАРТЕ!',3);break;
+ case 'rage':S.rageTimer=13*(S.buffDuration||1);toast('ϟ ЯРОСТЬ: УРОН ×2.1 НА 13 СЕКУНД',3);break;
+ case 'invuln':S.invulnTimer=8*(S.buffDuration||1);S.player.inv=Math.max(S.player.inv,S.invulnTimer);toast('⬡ НЕУЯЗВИМОСТЬ: 8 СЕКУНД',3);break;
  case 'heal':heal(38);toast('✚ РЕМОНТ КОРПУСА',2);break;
  }
  sfx('pickup');burst(S.player.x,S.player.y,o.type==='rage'?AMBER:o.type==='invuln'?BLUE:TEAL,35,150);
@@ -1319,6 +1417,8 @@ function applyChill(e,amount){
  }
 }
 function hurtEnemy(e,n,opts={}){if(e.hp<=0||!Number.isFinite(n))return;
+ const critical=!opts.silentHit&&n>0&&!opts.crit&&Math.random()<(S.critChance||0);
+ if(critical)n*=S.critMultiplier||1.5;
  if(e.elite){
   const hit=calculateBossDamage(e,n,S.t,S.threat);
   n=hit.damage;
@@ -1336,13 +1436,20 @@ function hurtEnemy(e,n,opts={}){if(e.hp<=0||!Number.isFinite(n))return;
  e.hit=.11;if(opts.slow)e.slow=Math.max(e.slow,opts.slow);if(opts.stun)e.stun=Math.max(e.stun,opts.stun);if(opts.burn){e.burn=Math.max(e.burn,opts.burn);e.burnStrength=Math.max(e.burnStrength||0,opts.burnPower||16*S.playerDmg*(1+S.t/500));e.burnClock??=0;}if(opts.knock){let m=hypot(e.x-S.player.x,e.y-S.player.y);e.x+=(e.x-S.player.x)/m*opts.knock;e.y+=(e.y-S.player.y)/m*opts.knock}if(e.trainingDummy){
   e.displayDamage=(e.displayDamage||0)+n;
   if(S.t-(e.lastDamageDisplay||-1)>=.22){floatNum(e.x+rand(-5,5),e.y-25,e.displayDamage,'#ffebae');e.lastDamageDisplay=S.t;e.displayDamage=0;}
- }else if(n>8&&Math.random()<.38)floatNum(e.x+rand(-8,8),e.y-25,n,opts.crit?AMBER:'#dbffff');if(e.hp<=0)killEnemy(e)}
+ }else if(n>8&&Math.random()<.38)floatNum(e.x+rand(-8,8),e.y-25,n,(critical||opts.crit)?AMBER:'#dbffff');if(e.hp<=0)killEnemy(e)}
 function killEnemy(e){if(e.hp>0)return;if(trainingMode){S.kills++;burst(e.x,e.y,ENEMY[e.id].col,12,100);return;}const z=ENEMY[e.id];S.kills++;balKill(e);if(!e.elite&&Math.random()<.13)sfx('kill',.65);S.score+=z.value;burst(e.x,e.y,z.col,e.elite?55:10,e.elite?260:110);S.fx.push({type:'ring',x:e.x,y:e.y,r:e.r,life:.4,max:.4,col:z.col});S.pickups.push({x:e.x+rand(-6,6),y:e.y+rand(-6,6),xp:z.xp,r:7,life:30,type:'xp'});if(Math.random()<(e.elite?1:e.champion?.35:.025)){S.pickups.push({x:e.x+rand(-10,10),y:e.y+rand(-10,10),xp:e.elite?28:1,r:9,life:30,type:'shard'})}if(Math.random()<.025){S.pickups.push({x:e.x,y:e.y+12,xp:32,r:8,life:40,type:'heal'})}if(e.champion&&Math.random()<.21)spawnPowerup(e.x,e.y);if(e.id==='hive'){for(let i=0;i<2;i++)spawnEnemyNear('scarab',e.x,e.y)}if(e.elite){sfx('heavyExplosion',1,true);sfx('bossDown');S.bosses=S.bosses.filter(z=>z!==e);S.lastBossDefeatAt=S.t;$('bossWrap').classList.toggle('hidden',S.bosses.length===0);if(e.id==='omega'){finish(true);return}if(e.id.startsWith('synth')){S.pickups.push({x:e.x,y:e.y,xp:1,r:17,life:120,type:'core'});burst(e.x,e.y,AMBER,65,290);banner('◈ БОСС ПАЛ! ПОДБЕРИ ЯДРО СИНТЕЗА!',5)}else banner('✦ БОСС ПОВЕРЖЕН!',2.8)}if(Math.random()<.10)clickSound(100+Math.random()*90,.07,'triangle',.012)}
 function spawnEnemyNear(id,x,y){const e=spawnEnemy(id,rand(0,TAU),280);if(e){e.x=x+rand(-22,22);e.y=y+rand(-22,22)}}
-function hitPlayer(dmg,x,y){if(trainingMode)return;const p=S.player;if(p.inv>0||S.dead)return;balPlayerHit(Math.min(p.hp,dmg));p.hp-=dmg;p.inv=.62;p.hit=.32;shake=Math.max(shake,7);burst(p.x,p.y,RED,18,160);floatNum(p.x,p.y-35,dmg,RED);sfx('damage');if(p.hp<=0){p.hp=0;finish(false)}}
-function gainXP(n){if(trainingMode)return;S.xp+=n;while(S.xp>=S.xpNeed){S.xp-=S.xpNeed;S.lvl++;S.xpNeed=Math.floor(17+S.lvl*11+Math.pow(S.lvl,1.26)*2.8);S.pendingUp++;heal(4)}if(S.pendingUp>0&&mode==='playing')showUpgrades()}
+function hitPlayer(dmg,x,y){if(trainingMode)return;const p=S.player;if(p.inv>0||S.dead)return;dmg*=1-(S.armor||0);balPlayerHit(Math.min(p.hp,dmg));p.hp-=dmg;p.inv=.62;p.hit=.32;shake=Math.max(shake,7);burst(p.x,p.y,RED,18,160);floatNum(p.x,p.y-35,dmg,RED);sfx('damage');if(p.hp<=0){p.hp=0;finish(false)}}
+function gainXP(n){if(trainingMode)return;S.xp+=n*(1+(S.xpBonus||0));while(S.xp>=S.xpNeed){S.xp-=S.xpNeed;S.lvl++;S.xpNeed=Math.floor(17+S.lvl*11+Math.pow(S.lvl,1.26)*2.8);S.pendingUp++;heal(4)}if(S.pendingUp>0&&mode==='playing')showUpgrades()}
 function eligibleHybrids(){return eligibleFusionIds(S,HYBRIDS);}
-function rarityRoll(){let sum=RARITIES.reduce((a,r)=>a+r.chance,0),k=rand(0,sum);for(const r of RARITIES){k-=r.chance;if(k<=0)return r}return RARITIES[0]}
+function rarityRoll(){
+ // Keep the original 60/27/10/3 distribution when no research has been purchased.
+ const research=metaBonus('rarity');
+ const weights=RARITIES.map(r=>r.chance+(r.id==='common'?-.6:r.id==='uncommon'?.3:r.id==='rare'?.2:.1)*research);
+ let k=rand(0,weights.reduce((a,v)=>a+v,0));
+ for(let i=0;i<RARITIES.length;i++){k-=weights[i];if(k<=0)return RARITIES[i]}
+ return RARITIES[0];
+}
 function upgradeChoices(){
  const pool=[];
  for(const id of Object.keys(DRONES)){
@@ -1996,7 +2103,7 @@ function executeRaid(evt){
  banner('⚠ '+evt.name+' // ПРИОРИТЕТ ЦЕЛЕЙ!',3.4);sfx('warning',.6);
 }
 function update(dt){if(!S)return;if(trainingMode){updateTraining(dt);return;}S.t+=dt;S.spawn-=dt;S.rageTimer=Math.max(0,S.rageTimer-dt);S.invulnTimer=Math.max(0,S.invulnTimer-dt);S.magnetTimer=Math.max(0,S.magnetTimer-dt);S.powerupClock-=dt;if(S.powerupClock<=0){spawnPowerup();S.powerupClock=rand(22,34)}S.player.inv=Math.max(0,S.player.inv-dt);S.player.hit=Math.max(0,S.player.hit-dt);S.player.dashCd=Math.max(0,S.player.dashCd-dt);S.player.dashTime=Math.max(0,S.player.dashTime-dt);let p=S.player,inp=getInput(),mag=hypot(inp.x,inp.y);if(Math.abs(inp.x)+Math.abs(inp.y)>.12){p.dx=inp.x/mag;p.dy=inp.y/mag}if(p.dashTime>0){p.x+=p.dx*900*dt;p.y+=p.dy*900*dt;if(Math.random()<dt*90)burst(p.x,p.y,TEAL,1,40)}else{p.x+=inp.x*p.speed*dt;p.y+=inp.y*p.speed*dt}p.x=clamp(p.x,-1740,1740);p.y=clamp(p.y,-1740,1740);
- if(S.player.regen){S.player.hp=Math.min(S.player.maxHp,S.player.hp+S.player.regen*.12*dt)}
+ if(S.player.regen){S.player.hp=Math.min(S.player.maxHp,S.player.hp+S.player.regen*dt)}
  S.cam.x=lerp(S.cam.x,p.x,Math.min(1,dt*5));S.cam.y=lerp(S.cam.y,p.y,Math.min(1,dt*5));
   const phase=Math.min(4,Math.floor(S.t/180));
   const bossPressure=S.bosses.some(b=>b.hp>0);const diff=Math.max(.29,1.12-S.t/1400-(S.threat-1)*.055)*(bossPressure?1.25:1);
@@ -2044,7 +2151,7 @@ function updateHUD(){
  }
  const active=[S.rageTimer>0?`ϟ ЯРОСТЬ ${Math.ceil(S.rageTimer)}с`:'',S.invulnTimer>0?`⬡ ЩИТ ${Math.ceil(S.invulnTimer)}с`:'',S.magnetTimer>0?`◎ МАГНИТ ${Math.ceil(S.magnetTimer)}с`:''].filter(Boolean);
  $('buffs').textContent=active.join('  ·  ');$('buffs').classList.toggle('hidden',!active.length);
- $('dashCool').style.transform=`scaleY(${clamp(p.dashCd/3.6,0,1)})`;$('dashBtn').style.opacity=p.dashCd>.1?.65:1;
+ $('dashCool').style.transform=`scaleY(${clamp(p.dashCd/(S.dashCooldown||3.6),0,1)})`;$('dashBtn').style.opacity=p.dashCd>.1?.65:1;
 }
 // Draw everything with vector shapes. No remote sprites, fonts, or scripts required.
 function poly(points,fill,stroke=null,width=1){cx.beginPath();cx.moveTo(points[0][0],points[0][1]);for(let i=1;i<points.length;i++)cx.lineTo(points[i][0],points[i][1]);cx.closePath();if(fill){cx.fillStyle=fill;cx.fill()}if(stroke){cx.strokeStyle=stroke;cx.lineWidth=width;cx.stroke()}}

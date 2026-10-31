@@ -1,9 +1,47 @@
+// Permanent research. Previously purchased levels keep their original effects.
 const META=[
- {id:'hull',name:'Бронепластины',sub:'+15 к максимальной прочности корпуса',cost:15,step:14,max:6,glyph:'⬡'},
- {id:'power',name:'Боевой процессор',sub:'+6% к урону всех дронов',cost:25,step:21,max:6,glyph:'ϟ'},
- {id:'magnet',name:'Магнитный захват',sub:'+16 к радиусу сбора данных',cost:15,step:13,max:6,glyph:'◎'},
- {id:'regen',name:'Саморемонт',sub:'+0.12 прочности в секунду',cost:25,step:19,max:5,glyph:'✚'}
+ {id:'hull',group:'hull',name:'Бронепластины',sub:'+15 HP до 6-го уровня, затем +7 HP',cost:15,step:14,max:30,glyph:'⬡'},
+ {id:'regen',group:'hull',name:'Саморемонт',sub:'+0,12 HP/с до 5-го уровня, затем +0,04 HP/с',cost:25,step:19,max:25,glyph:'✚'},
+ {id:'armor',group:'hull',name:'Композитная броня',sub:'−0,4% получаемого урона за уровень',cost:40,step:26,max:20,glyph:'▣'},
+ {id:'repair',group:'hull',name:'Ремонтные наниты',sub:'+1% к лечению за уровень',cost:30,step:22,max:20,glyph:'♥'},
+ {id:'power',group:'weapons',name:'Боевой процессор',sub:'+6% урона до 6-го уровня, затем +1,2%',cost:25,step:21,max:30,glyph:'ϟ'},
+ {id:'haste',group:'weapons',name:'Разгон турелей',sub:'+0,5% к частоте атак за уровень',cost:40,step:31,max:20,glyph:'⌁'},
+ {id:'critChance',group:'weapons',name:'Критический анализ',sub:'+0,35 п.п. к шансу критического попадания',cost:55,step:34,max:20,glyph:'⌖'},
+ {id:'critDamage',group:'weapons',name:'Усиленные боеприпасы',sub:'+2 п.п. к критическому урону за уровень',cost:45,step:30,max:25,glyph:'✦'},
+ {id:'speed',group:'systems',name:'Улучшенные приводы',sub:'+0,4% к скорости движения за уровень',cost:25,step:20,max:20,glyph:'➤'},
+ {id:'dash',group:'systems',name:'Конденсатор рывка',sub:'−1% к перезарядке рывка за уровень',cost:40,step:24,max:20,glyph:'↝'},
+ {id:'magnet',group:'systems',name:'Магнитный захват',sub:'+16 к радиусу до 6-го уровня, затем +8',cost:15,step:13,max:30,glyph:'◎'},
+ {id:'duration',group:'systems',name:'Стабилизатор усилений',sub:'+1% к длительности временных бонусов',cost:35,step:26,max:20,glyph:'◷'},
+ {id:'xp',group:'research',name:'Анализ данных',sub:'+1% получаемого опыта за уровень',cost:30,step:24,max:25,glyph:'◇'},
+ {id:'shards',group:'research',name:'Переработка реликтов',sub:'+2% к кристаллам по итогам забега',cost:45,step:30,max:25,glyph:'✧'},
+ {id:'rarity',group:'research',name:'Система поиска',sub:'Повышает шанс необычных, редких и эпических карточек',cost:65,step:41,max:15,glyph:'✥'},
+ {id:'score',group:'research',name:'Боевой анализатор',sub:'+1% к итоговому счёту за уровень',cost:35,step:26,max:20,glyph:'▤'}
 ];
+const META_GROUPS=[
+ {id:'hull',name:'КОРПУС',desc:'Защита и ремонт',glyph:'⬡'},
+ {id:'weapons',name:'ВООРУЖЕНИЕ',desc:'Сила и точность',glyph:'ϟ'},
+ {id:'systems',name:'СИСТЕМЫ',desc:'Мобильность и сбор',glyph:'⌁'},
+ {id:'research',name:'ИССЛЕДОВАНИЯ',desc:'Опыт и награды',glyph:'✧'}
+];
+function metaLevel(id){const m=META.find(x=>x.id===id);return m?Math.min(m.max,Math.max(0,Math.floor(Number(save?.meta?.[id])||0))):0}
+function metaCost(m,n){return Math.ceil(m.cost+m.step*n+3*Math.max(0,n-8)**2)}
+function metaBonus(id,n=metaLevel(id)){
+ const p=Math.max(0,n);
+ switch(id){
+  case'hull':return 15*Math.min(p,6)+7*Math.max(0,p-6);
+  case'regen':return .12*Math.min(p,5)+.04*Math.max(0,p-5);
+  case'power':return .06*Math.min(p,6)+.012*Math.max(0,p-6);
+  case'magnet':return 16*Math.min(p,6)+8*Math.max(0,p-6);
+  case'armor':return .004*p;
+  case'repair':case'duration':case'dash':case'xp':case'score':return .01*p;
+  case'haste':return .005*p;
+  case'critChance':return .0035*p;
+  case'critDamage':case'shards':return .02*p;
+  case'speed':return .004*p;
+  case'rarity':return p;
+  default:return 0;
+ }
+}
 const ENEMY={
  scarab:{name:'Скарабей',hp:21,spd:84,rad:16,dmg:10,xp:3,col:'#79f3a4',value:7},
  hunter:{name:'Охотник',hp:34,spd:122,rad:15,dmg:8,xp:4,col:'#ffca69',value:11},
