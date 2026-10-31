@@ -1,5 +1,12 @@
 function eligibleHybrids(){return eligibleFusionIds(S,HYBRIDS);}
-function rarityRoll(){let sum=RARITIES.reduce((a,r)=>a+r.chance,0),k=rand(0,sum);for(const r of RARITIES){k-=r.chance;if(k<=0)return r}return RARITIES[0]}
+function rarityRoll(){
+ // Keep the original 60/27/10/3 distribution when no research has been purchased.
+ const research=metaBonus('rarity');
+ const weights=RARITIES.map(r=>r.chance+(r.id==='common'?-.6:r.id==='uncommon'?.3:r.id==='rare'?.2:.1)*research);
+ let k=rand(0,weights.reduce((a,v)=>a+v,0));
+ for(let i=0;i<RARITIES.length;i++){k-=weights[i];if(k<=0)return RARITIES[i]}
+ return RARITIES[0];
+}
 function upgradeChoices(){
  const pool=[];
  for(const id of Object.keys(DRONES)){
