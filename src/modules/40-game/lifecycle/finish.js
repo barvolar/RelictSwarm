@@ -1,6 +1,6 @@
 function finish(won=false,giveup=false){
  if(!S||S.dead)return;S.dead=true;S.wins=won;balFinalize(won,giveup);
- const modifier=THREAT_MODES[(S.threat||1)-1],rankedScore=Math.round(S.score*modifier.score),earned=Math.round((S.shards+Math.floor(S.score/260)+(won?95:0))*modifier.reward);
+ const modifier=THREAT_MODES[(S.threat||1)-1],rankedScore=Math.round(S.score*modifier.score*(1+metaBonus('score'))),earned=Math.round((S.shards+Math.floor(S.score/260)+(won?95:0))*modifier.reward*(1+metaBonus('shards')));
  save.shards+=earned;save.runs++;if(won){save.wins++;save.threatUnlocked=Math.min(5,Math.max(save.threatUnlocked,(S.threat||1)+1));}
  save.best=Math.max(save.best,rankedScore);
  const record={score:rankedScore,baseScore:S.score,seconds:Math.round(S.t),kills:S.kills,level:S.lvl,threat:S.threat||1,win:!!won,fusions:S.hybrids.map(h=>h.id),weapons:S.drones.map(d=>d.id),timestamp:Date.now()};
