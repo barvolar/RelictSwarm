@@ -19,6 +19,6 @@ function updateHUD(){
  }
  const active=[S.rageTimer>0?`ϟ ЯРОСТЬ ${Math.ceil(S.rageTimer)}с`:'',S.invulnTimer>0?`⬡ ЩИТ ${Math.ceil(S.invulnTimer)}с`:'',S.magnetTimer>0?`◎ МАГНИТ ${Math.ceil(S.magnetTimer)}с`:''].filter(Boolean);
  $('buffs').textContent=active.join('  ·  ');$('buffs').classList.toggle('hidden',!active.length);
- $('dashCool').style.transform=`scaleY(${clamp(p.dashCd/3.6,0,1)})`;$('dashBtn').style.opacity=p.dashCd>.1?.65:1;
+ $('dashCool').style.transform=`scaleY(${clamp(p.dashCd/(S.dashCooldown||3.6),0,1)})`;$('dashBtn').style.opacity=p.dashCd>.1?.65:1;
 }
 // Draw everything with vector shapes. No remote sprites, fonts, or scripts required.
