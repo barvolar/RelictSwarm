@@ -12,6 +12,8 @@ function applyChill(e,amount){
  }
 }
 function hurtEnemy(e,n,opts={}){if(e.hp<=0||!Number.isFinite(n))return;
+ const critical=!opts.silentHit&&n>0&&!opts.crit&&Math.random()<(S.critChance||0);
+ if(critical)n*=S.critMultiplier||1.5;
  if(e.elite){
   const hit=calculateBossDamage(e,n,S.t,S.threat);
   n=hit.damage;
@@ -29,4 +31,4 @@ function hurtEnemy(e,n,opts={}){if(e.hp<=0||!Number.isFinite(n))return;
  e.hit=.11;if(opts.slow)e.slow=Math.max(e.slow,opts.slow);if(opts.stun)e.stun=Math.max(e.stun,opts.stun);if(opts.burn){e.burn=Math.max(e.burn,opts.burn);e.burnStrength=Math.max(e.burnStrength||0,opts.burnPower||16*S.playerDmg*(1+S.t/500));e.burnClock??=0;}if(opts.knock){let m=hypot(e.x-S.player.x,e.y-S.player.y);e.x+=(e.x-S.player.x)/m*opts.knock;e.y+=(e.y-S.player.y)/m*opts.knock}if(e.trainingDummy){
   e.displayDamage=(e.displayDamage||0)+n;
   if(S.t-(e.lastDamageDisplay||-1)>=.22){floatNum(e.x+rand(-5,5),e.y-25,e.displayDamage,'#ffebae');e.lastDamageDisplay=S.t;e.displayDamage=0;}
- }else if(n>8&&Math.random()<.38)floatNum(e.x+rand(-8,8),e.y-25,n,opts.crit?AMBER:'#dbffff');if(e.hp<=0)killEnemy(e)}
+ }else if(n>8&&Math.random()<.38)floatNum(e.x+rand(-8,8),e.y-25,n,(critical||opts.crit)?AMBER:'#dbffff');if(e.hp<=0)killEnemy(e)}
