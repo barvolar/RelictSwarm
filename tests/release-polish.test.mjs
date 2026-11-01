@@ -103,7 +103,7 @@ test('enemy hazard warning is red and boss warning cannot share healthbar placem
  assert.ok(css.includes('#hud .boss-track>div'));
  assert.ok(css.includes('#hud .wavebanner'));
  assert.ok(css.includes('top:152px'));
- assert.ok(css.includes('top:192px'));
+ assert.ok(css.includes('top:calc(192px'));
  const code=read('src/modules/40-game/update/simulation.js');
  assert.ok(code.includes('bossPct=clamp('));
 });
