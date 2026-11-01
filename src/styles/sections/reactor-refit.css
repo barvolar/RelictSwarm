@@ -1,0 +1,115 @@
+/* RELICT SWARM | REACTOR REFIT v0.12
+   Designed for industrial readability; functional selectors stay untouched. */
+:root{
+ --ink:#090f15;--panel:#152129;--edge:#52636b;--teal:#a4d0bc;
+ --amber:#e4b570;--muted:#b1bdc0;--red:#f17970;--purple:#ba9fcb;
+ --font:'Segoe UI','Trebuchet MS',sans-serif;
+}
+html,body{background:#070d11;color:#e6e9e7}
+#world{background:#0a1218}
+#scanlines{background:repeating-linear-gradient(0deg,#0002 0,#0002 1px,transparent 1px,transparent 8px);opacity:.18}
+#hud .hud-top{
+ background:linear-gradient(180deg,#111f26ef,#13202ad9 80%,#13202a29);
+ border-bottom:1px solid #6271795e;
+}
+.hud-brand{color:#b4cbbf;letter-spacing:1.6px}
+.hud-brand strong{color:#f2e6d4;letter-spacing:2px}
+.sigil{color:#e4b570;text-shadow:none;font-size:31px}
+.barline{color:#acb8be}
+.bartrack{background:#081016;border-color:#52636b;border-radius:1px}
+.bartrack>div{box-shadow:none;background:linear-gradient(90deg,#ae5555,#e89e84)}
+.bartrack.xp>div{box-shadow:none;background:linear-gradient(90deg,#597f84,#c2dec7)}
+.timer{color:#f0e1c9;letter-spacing:2px}
+.icon-btn{border:1px solid #647781;background:#1d303b;color:#e6e1d5;border-radius:3px}
+.icon-btn:hover{border-color:#e9c186}
+#hud .wavebanner{background:#171a1bef;border:1px solid #d0a266;color:#ffe0ad;text-shadow:none;letter-spacing:2.2px}
+#hud .boss-wrap{color:#f4c2b1;letter-spacing:1.8px;text-shadow:0 1px 2px #0009}
+#hud .boss-track{background:#110e11;border-color:#bf766b;border-radius:1px}
+#hud .boss-track>div{background:linear-gradient(90deg,#bd5554,#efb08b);border-radius:0}
+#hud .toast{background:#151f25ec;border-color:#72888a;color:#f1eee3}
+.module-chip{background:#162631f2;border:1px solid #586d75;border-radius:3px}
+.module-chip b{color:#b4c1c4}
+.controls-tip{color:#9baeb2}
+#modal{
+ background:radial-gradient(ellipse at 51% 22%,#162930c7 0%,#070d14e9 68%,#05080aef 100%);
+ backdrop-filter:blur(5px);
+}
+.menu-head{filter:drop-shadow(0 8px 25px #0009)}
+.eyebrow{color:#eac17e;font-size:11px;letter-spacing:2.8px}
+.menu-logo{color:#dbe4e3;letter-spacing:2px;text-shadow:0 3px 0 #111a22}
+.menu-logo strong{color:#e6c08a;letter-spacing:7px;text-shadow:0 3px 0 #332b26}
+.subtitle{color:#aebfc3;letter-spacing:1.8px}
+.subtitle i{background:#dcba7f}
+.modal-panel{
+ background:linear-gradient(150deg,#1a2a33f5,#0b1820fa);
+ border:1px solid #607883;
+ box-shadow:0 24px 80px #000b,0 0 0 4px #c8aa6a10;
+ clip-path:polygon(0 0,calc(100% - 18px) 0,100% 18px,100% 100%,18px 100%,0 calc(100% - 18px));
+}
+.panel-title{letter-spacing:1.8px;color:#f0e8d8}
+.panel-desc,.tiny{color:#a9babe}
+.label{color:#dfbb7b}
+.line{background:linear-gradient(90deg,transparent,#6a7e85,transparent)}
+.btn{border:1px solid #647b82;background:#253842;color:#edf2eb;border-radius:3px;letter-spacing:1px}
+.btn:hover{background:#384e57;border-color:#b8c1b4}
+.btn.primary{color:#1b2223;background:linear-gradient(100deg,#c9d0b9,#f4d19b);border-color:#f2d39f;box-shadow:0 4px 22px #b8a67b25}
+.btn.primary:hover{background:linear-gradient(100deg,#e3dfbb,#f7d8aa)}
+.btn.ghost{border-color:#5e7780}
+.statbox{background:#13242b;border-color:#536874}
+.statbox b{color:#e9bc7f}
+.footer-note{color:#99a5a7}
+.reactor-console{
+ display:grid;grid-template-columns:1fr auto;gap:7px;align-items:center;
+ border-top:2px solid #ba955e;border-bottom:1px solid #51666f;
+ background:repeating-linear-gradient(115deg,#273842 0,#273842 8px,#1b2b34 8px,#1b2b34 14px);
+ padding:12px 15px;color:#f3d6a8;font-size:11px;letter-spacing:1.4px;
+}
+.reactor-console b{font-size:10px;color:#aebfbb;white-space:normal;text-align:right}
+.home-unit{
+ border:1px solid #657880;border-radius:2px;
+ background:radial-gradient(circle at 22% 45%,#58746c2f,transparent 52%),linear-gradient(135deg,#22353f,#111d25);
+}
+.home-unit .skin-art{filter:drop-shadow(0 7px 4px #05080a9c)}
+.home-unit strong{color:#eee8d9}
+.home-unit small{color:#b5c4c3}
+.home-btn{border-left:4px solid #c69b62;text-align:left;padding-left:25px}
+.shop-item,.skin-card,.research-item,.research-summary,.research-tab,.graphics-settings,.graphics-preset,.audio-mixer,.threat-select{
+ background:#182b35;border-color:#586f76;border-radius:3px;
+}
+.research-summary strong,.research-category b,.graphics-heading{color:#e2c28f}
+.research-tab.selected,.graphics-preset.selected{background:#2a403f;border-color:#c4b281;box-shadow:none}
+.research-progress span{background:linear-gradient(90deg,#637f77,#d7c195)}
+#modal:has(.upgrade-v2-screen) .modal-panel{border-color:#6b8288}
+.upgrade-v2-screen .upgrade-card.upgrade-v2{
+ border-radius:3px;
+ background:linear-gradient(140deg,#283b43 0,#12222b 77%);
+ --up-ink:#ecefe9;
+}
+.upgrade-v2-screen .upgrade-card.upgrade-v2.upgrade-card--stat{--type-color:#99c1b9;--type-wash:#223a38}
+.upgrade-v2-screen .upgrade-card.upgrade-v2.upgrade-card--new{--type-color:#e6ac79;--type-wash:#3d302b}
+.upgrade-v2-screen .upgrade-card.upgrade-v2.upgrade-card--weapon{--type-color:#b4a0ca;--type-wash:#2e2b3b}
+.upgrade-v2-screen .upgrade-card.upgrade-v2.upgrade-card--fusion{--type-color:#eac581;--type-wash:#413828}
+.upgrade-v2-screen .upgrade-card.upgrade-v2 .up-name{color:#f3eee3}
+.upgrade-v2-screen .upgrade-card.upgrade-v2 .up-description{color:#becac9}
+.upgrade-v2-screen .upgrade-card.upgrade-v2 .up-stat-row{background:#0e1c24bd;border-color:#4e636c}
+.upgrade-v2-screen .upgrade-card.upgrade-v2 .number{color:#c0cfcc}
+.upgrade-reroll-row{background:#162a31;border-color:#71858a;border-radius:3px}
+.upgrade-reroll-row .upgrade-reroll{background:#344949;color:#e4e4c8;border-color:#92b2a2;border-radius:2px}
+.upgrade-reroll-row .upgrade-reroll:hover:not(:disabled){background:#476257}
+.forge-card{background:linear-gradient(140deg,#20323a,#0e1d25);border-color:#62747b}
+.forge-card.is-ready:not(.is-done){background:linear-gradient(145deg,#403b2d,#1b292c);border-color:#d9b67c;box-shadow:inset 0 0 15px #f9ce6e16}
+.forge-card.is-ready:not(.is-done):hover{border-color:#ffe1aa}
+.forge-btn{border-color:#be9c66!important;color:#f3dbab!important;background:#26312fdd!important}
+.up-key{background:#15262e;border-color:#6a8588}
+@media(max-width:700px){
+ .modal-panel{padding:14px 13px}
+ .menu-logo strong{letter-spacing:3px}
+ .reactor-console{grid-template-columns:1fr;gap:2px;padding:8px 10px;font-size:9px}
+ .reactor-console b{text-align:left;font-size:9px}
+ .home-btn{padding-left:15px}
+ .upgrade-v2-screen .upgrade-card.upgrade-v2{min-height:0}
+}
+@media(max-height:620px){
+ .reactor-console{padding:5px 9px}
+ .menu-head .eyebrow{margin-bottom:5px}
+}
