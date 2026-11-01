@@ -92,3 +92,6 @@
 .upgrade-reroll-row .upgrade-reroll:disabled{opacity:.55;cursor:default;background:#112735;border-color:#315163}
 .up-reroll-count{font-size:11px;color:#98bac6;line-height:1.4}
 @media(max-width:480px){.upgrade-reroll-row{margin:9px 0;padding:8px 9px}.upgrade-reroll-row .upgrade-reroll{flex:1;min-width:100%;min-height:38px}.up-reroll-count{font-size:10px}}
+
+/* Deliberate natural break for long Cyrillic weapon names; no orphan "ЕЛЬ". */
+.upgrade-v2-screen .upgrade-card.upgrade-v2 .up-name{word-break:normal;overflow-wrap:break-word;hyphens:manual}

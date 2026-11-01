@@ -1,14 +1,28 @@
 function fireFusionSpecial(d,pos,target,base,rank){
  const type=d.id.slice(7),col=DRONES[d.id].color,damage=base*(32+Math.sqrt(rank)*7),rate=wm(d,'rate'),radius=wm(d,'radius');
  if(type==='spear'){
-  const shot=fusionLine(pos,target,15+wm(d,'pierce')*3,damage*2.9,900,{color:col,knock:16});
-  for(const e of shot.hits.slice(0,5)){
-   const next=closest(e.x+40,e.y+40,130,e);if(next){launchBullet(e.x,e.y,next,damage*.75,d.id,1);S.fx.push({type:'beam',a:{x:e.x,y:e.y},b:{x:next.x,y:next.y},life:.24,max:.24,col,width:2.5});}
-  }return true;
+  // One extra visible, damaging parallel beam for every "Расщепление" upgrade.
+  // Cap rays and reduce per-ray damage to avoid runaway stacking on huge bosses.
+  const count=Math.min(5,1+wm(d,'beams')),rayDamage=damage/(1+.38*(count-1));
+  for(let j=0;j<count;j++){
+   const offset=(j-(count-1)/2)*30;
+   const shot=fusionLine(pos,target,15+wm(d,'pierce')*3,rayDamage*2.9,900,{color:col,knock:16,offset});
+   for(const e of shot.hits.slice(0,5)){
+    const next=closest(e.x+40,e.y+40,130,e);
+    if(next){launchBullet(e.x,e.y,next,rayDamage*.75,d.id,1);S.fx.push({type:'beam',a:{x:e.x,y:e.y},b:{x:next.x,y:next.y},life:.24,max:.24,col,width:2.5});}
+   }
+  }
+  return true;
  }
  if(type==='polar'){
-  const shot=fusionLine(pos,target,13,damage*1.35,740,{color:col,slow:2.3,stun:.25+wm(d,'freeze')*.12});
-  for(const e of shot.hits){e.frost=2.4;}for(let k=1;k<5;k++)fusionField(shot.origin.x+shot.a.dx*k*110,shot.origin.y+shot.a.dy*k*110,23,damage*.11,1.2,'#b9efff');return true;
+  const count=Math.min(5,1+wm(d,'beams')),rayDamage=damage/(1+.38*(count-1));
+  for(let j=0;j<count;j++){
+   const offset=(j-(count-1)/2)*30;
+   const shot=fusionLine(pos,target,13,rayDamage*1.35,740,{color:col,slow:2.3,stun:.25+wm(d,'freeze')*.12,offset});
+   for(const e of shot.hits)e.frost=2.4;
+   for(let k=1;k<5;k++)fusionField(shot.origin.x+shot.a.dx*k*110,shot.origin.y+shot.a.dy*k*110,23,rayDamage*.11,1.2,'#b9efff');
+  }
+  return true;
  }
  if(type==='prism'){
   const r=Math.min(210,100+radius*16);S.gravityWells.push({x:target.x,y:target.y,r,force:160,damage:damage*.12,life:2.0,clock:.05,col});

@@ -30,4 +30,25 @@ function bindAudioMixer(){refreshAudioControls();for(const [id,key] of [['sfxVol
   if(audioLoaded)play();else audioLoading?.then(play);
  });
 }
-function audioMixerHTML(){return `<div class="audio-mixer" id="audioMixerPanel"><div class="audio-mixer-head"><span>♫ ЗВУКОВОЙ ПУЛЬТ // 0.9.7</span><span style="font-size:9px;color:#789eb0">АУДИОФАЙЛЫ</span></div><label class="audio-mixer-row">Эффекты <input type="range" min="0" max="100" step="1" id="sfxVolume" value="${Math.round(audioSettings.sfx*100)}"/><b id="sfxVolumeValue">${Math.round(audioSettings.sfx*100)}%</b></label><label class="audio-mixer-row">Музыка <input type="range" min="0" max="100" step="1" id="musicVolume" value="${Math.round(audioSettings.music*100)}"/><b id="musicVolumeValue">${Math.round(audioSettings.music*100)}%</b></label><div style="display:flex;gap:7px;flex-wrap:wrap"><button class="btn" type="button" id="musicMenuPreview">♪ МУЗЫКА МЕНЮ</button><button class="btn" type="button" id="musicCombatPreview">♫ МУЗЫКА БОЯ</button><button class="btn" type="button" id="audioPreview">◉ ВЫСТРЕЛ + ВЗРЫВ</button><button class="btn" type="button" id="flamePreview">♨ ОГНЕМЁТ: ПРОВЕРКА</button></div><div class="audio-mixer-head"><span>СЛУШАТЬ ПО ОДНОМУ ОРУЖИЮ</span><span>11 ОБРАЗЦОВ</span></div><div class="sound-test-grid">${BASE_WEAPONS.map(id=>`<button type="button" data-sound-test="${id}">${DRONES[id].glyph} ${DRONES[id].name}</button>`).join('')}</div><small>Огнемёт работает только при доступной цели. Сравни звуки по кнопкам: каждый воспроизводится отдельно. Остальное аудио v0.9.2 сохранено. Звук запускается после нажатия в браузере.</small></div>`}
+// Audio diagnostics are only visible on an explicit developer URL (?dev=1).
+// No sound data is removed; players retain music and effects volume controls.
+function audioDebugEnabled(){
+ return typeof location!=='undefined' && new URLSearchParams(location.search).get('dev')==='1';
+}
+function audioMixerHTML(){
+ const debug=audioDebugEnabled();
+ return `<div class="audio-mixer" id="audioMixerPanel">
+  <div class="audio-mixer-head"><span>НАСТРОЙКИ ЗВУКА</span></div>
+  <label class="audio-mixer-row">Эффекты <input type="range" min="0" max="100" step="1" id="sfxVolume" value="${Math.round(audioSettings.sfx*100)}"/><b id="sfxVolumeValue">${Math.round(audioSettings.sfx*100)}%</b></label>
+  <label class="audio-mixer-row">Музыка <input type="range" min="0" max="100" step="1" id="musicVolume" value="${Math.round(audioSettings.music*100)}"/><b id="musicVolumeValue">${Math.round(audioSettings.music*100)}%</b></label>
+  ${debug?`<div class="audio-mixer-head"><span>РЕЖИМ РАЗРАБОТЧИКА · ТЕСТ ЗВУКА</span></div>
+   <div style="display:flex;gap:7px;flex-wrap:wrap">
+    <button class="btn" type="button" id="musicMenuPreview">♪ МУЗЫКА МЕНЮ</button>
+    <button class="btn" type="button" id="musicCombatPreview">♫ МУЗЫКА БОЯ</button>
+    <button class="btn" type="button" id="audioPreview">◉ ВЫСТРЕЛ + ВЗРЫВ</button>
+    <button class="btn" type="button" id="flamePreview">♨ ОГНЕМЁТ: ПРОВЕРКА</button>
+   </div>
+   <div class="audio-mixer-head"><span>ТЕСТ ЗВУКОВ ОРУЖИЯ</span></div>
+   <div class="sound-test-grid">${BASE_WEAPONS.map(id=>`<button type="button" data-sound-test="${id}">${DRONES[id].glyph} ${DRONES[id].name}</button>`).join('')}</div>`:''}
+ </div>`;
+}
