@@ -474,6 +474,7 @@ button.forge-card:hover{filter:brightness(1.25)}.forge-card.is-done{border-color
  #hud .toast{top:calc(205px + env(safe-area-inset-top,0px))}
 }
 </style>
+
 </head>
 <body>
 <canvas id="world" aria-label="Игровое поле Реликтовый рой"></canvas>
@@ -512,6 +513,74 @@ button.forge-card:hover{filter:brightness(1.25)}.forge-card.is-done{border-color
 <div id="rotateHint" aria-hidden="true"></div>
 <script src="./telemetry-config.js"></script>
 <script src="./telemetry-client.js"></script>
+<script>/* Relict Swarm platform adapter. Self-contained: safe on GitHub Pages,
+ * Yandex initializes only in the separately built Yandex Games edition.
+ * Other portals can supply their own adapter behind the same API. */
+(function(){
+ 'use strict';
+ const provider=window.RELICT_PLATFORM==='yandex'?'yandex':'web';
+ let sdk=null,readyForPlayers=false,sdkPaused=false,gameplayRequested=false,gameplayActive=false;
+ let pauseHandler=()=>{},resumeHandler=()=>{};
+ let language='ru';
+ function syncGameplay(playing){
+  gameplayRequested=!!playing;
+  const active=gameplayRequested&&!sdkPaused&&!document.hidden;
+  if(!sdk)return;
+  if(active===gameplayActive)return;
+  gameplayActive=active;
+  try{
+   if(active)sdk.features?.GameplayAPI?.start?.();
+   else sdk.features?.GameplayAPI?.stop?.();
+  }catch(e){console.warn('[Platform] gameplay event',e);}
+ }
+ function platformPause(){
+  if(sdkPaused)return;
+  sdkPaused=true;
+  syncGameplay(gameplayRequested);
+  pauseHandler();
+ }
+ function platformResume(){
+  if(!sdkPaused)return;
+  sdkPaused=false;
+  resumeHandler();
+  syncGameplay(gameplayRequested);
+ }
+ function markReady(){
+  readyForPlayers=true;
+  if(!sdk)return;
+  try{sdk.features?.LoadingAPI?.ready?.()}catch(e){console.warn('[Platform] Game Ready',e)}
+ }
+ const api={
+  provider,
+  get language(){return language},
+  get sdkAvailable(){return !!sdk},
+  isPaused:()=>sdkPaused,
+  ready:markReady,
+  syncGameplay,
+  attachGameHandlers({pause,resume}={}){
+   if(typeof pause==='function')pauseHandler=pause;
+   if(typeof resume==='function')resumeHandler=resume;
+   if(sdkPaused)pauseHandler();
+  }
+ };
+ window.RelicPlatform=api;
+ document.addEventListener('visibilitychange',()=>syncGameplay(gameplayRequested));
+ if(provider!=='yandex')return;
+ if(!window.YaGames || typeof window.YaGames.init!=='function'){
+  console.warn('[Platform] Yandex SDK missing. Launch this build inside Yandex Games.');
+  return;
+ }
+ Promise.resolve().then(()=>window.YaGames.init()).then(instance=>{
+  sdk=instance;
+  language=instance.environment?.i18n?.lang||'ru';
+  // ru is currently the only translated locale. Keep it as the UI fallback.
+  try{instance.on?.('game_api_pause',platformPause);
+      instance.on?.('game_api_resume',platformResume)}catch(e){console.warn('[Platform] SDK events',e)}
+  if(readyForPlayers)markReady();
+  syncGameplay(gameplayRequested);
+ }).catch(e=>console.warn('[Platform] Yandex SDK initialization failed',e));
+})();
+</script>
 <script>
 
 
@@ -1197,7 +1266,7 @@ function sfxWeapon(id){
 }
 
 function clickSound(){sfx('ui',.68)}
-function setMode(m){if(m!=='playing'){resetFloatingJoy();stopFlameStream(false);silenceMaintainedLoops();}mode=m;perfShow();if(m!=='menu')musicPreviewMode=null;syncMusic();const playVisible=['playing','upgrade','paused','end','forge'].includes(m);$('trainingPanel').classList.toggle('hidden',!(trainingMode&&m==='playing'));$('hud').classList.toggle('hidden',!playVisible);$('touchControls').classList.toggle('hidden',!(touching&&m==='playing'));$('forgeBtn').classList.toggle('hidden',!['playing','upgrade','forge'].includes(m));$('modal').classList.toggle('hidden',m==='playing');$('menuFoot').classList.toggle('hidden',m!=='menu');$('modal').scrollTop=0;}
+function setMode(m){if(m!=='playing'){resetFloatingJoy();stopFlameStream(false);silenceMaintainedLoops();}mode=m;if(typeof window!=='undefined')window.RelicPlatform?.syncGameplay(m==='playing');perfShow();if(m!=='menu')musicPreviewMode=null;syncMusic();const playVisible=['playing','upgrade','paused','end','forge'].includes(m);$('trainingPanel').classList.toggle('hidden',!(trainingMode&&m==='playing'));$('hud').classList.toggle('hidden',!playVisible);$('touchControls').classList.toggle('hidden',!(touching&&m==='playing'));$('forgeBtn').classList.toggle('hidden',!['playing','upgrade','forge'].includes(m));$('modal').classList.toggle('hidden',m==='playing');$('menuFoot').classList.toggle('hidden',m!=='menu');$('modal').scrollTop=0;}
 // TEST SECTOR: completely separate from survival. None of its weapon changes are persisted.
 function leaveTraining(){trainingMode=false;trainingPanelOpen=true;S=null;trainingRecord={damage:0,hits:[],lastDps:0};$('bossWrap').classList.add('hidden');menu()}
 function createTrainingDummy(x,y){const info=ENEMY.brute;return {id:'brute',trainingDummy:true,x,y,hp:100000000,maxHp:100000000,r:25,spd:0,dmg:0,t:0,hit:0,shock:0,marked:0,attack:9999,fire:9999,charge:0,slow:0,stun:0,burn:0,phase:0,special:0,seed:0,elite:false,value:0}}
@@ -2557,8 +2626,8 @@ function loop(now){
  requestAnimationFrame(loop); // Schedule next frame *before* updating; an exception must not silently freeze the browser game.
  try{
   let dt=Math.min(.039,Math.max(0,(now-last)/1000||.016));last=now;ambient+=dt;frame++;
-   const perfPlaying=perf.on&&mode==='playing',cpuStart=perfPlaying?performance.now():0;
-   if(mode==='playing')update(dt);
+   const gameplayRunning=mode==='playing'&&!window.RelicPlatform?.isPaused(),perfPlaying=perf.on&&gameplayRunning,cpuStart=perfPlaying?performance.now():0;
+   if(gameplayRunning)update(dt);
    const afterUpdate=perfPlaying?performance.now():0;
    draw();
    const afterDraw=perfPlaying?performance.now():0;
@@ -2578,7 +2647,28 @@ function loop(now){
 }
 // Minimal read-only debug bridge, enabled only with ?test=1. Not loaded from Yandex or network.
 if(new URLSearchParams(location.search).has('test'))window.__test={state:()=>S,mode:()=>mode,skin:()=>save.skin,skinOwned:()=>save.skins.slice(),chooseSkin:id=>{if(SKINS[id]&&save.skins.includes(id)){save.skin=id;persist()}},threat:()=>S?.threat,events:()=>({boss:S?.bossFlags,synth:S?.synthFlags,raid:S?.raidFlags}),records:()=>save.records,setTime:t=>{if(S){S.t=t;S.spawn=0}},grant:n=>{if(S)gainXP(n)},damage:n=>{if(S)hitPlayer(n,0,0)},shards:n=>{if(S)S.shards+=n},killOmega:()=>{if(S){let b=S.bosses.find(e=>e.id==='omega');if(b){b.hp=-1;killEnemy(b)}}},killBoss:id=>{if(S){const e=S.enemy.find(e=>e.id===id);if(e){e.hp=-1;killEnemy(e)}}},finish:()=>S&&finish(true),fusionIds:()=>eligibleHybrids(),mods:id=>S?.drones.find(x=>x.id===id)?.mods||{},testMod:(id,key,n=1)=>{let d=S?.drones.find(x=>x.id===id),def=weaponBranches(id).find(x=>x[0]===key);if(d&&def){d.mods??={};d.mods[key]=wm(d,key)+n;updateHUD()}},saws:()=>{let d=S?.drones.find(x=>['saw','fusion_thermal','fusion_tesla'].includes(x.id));return d?sawPositions(d,S.drones.indexOf(d)).length:0},addCore:(n=1)=>{if(S){S.fusionCores+=n;updateHUD()}},pickFusion:id=>{if(S&&mode==='playing'&&eligibleHybrids().includes(id)){openForge();forgeHybrid(id)}},install:(id,rank=2)=>{if(!S||!DRONES[id])return;let d=S.drones.find(x=>x.id===id);if(!d&&S.drones.length>=MAX_WEAPONS)return;if(!d)S.drones.push(d={id,lvl:1,cd:0,hitCd:0,mods:{}});d.lvl=rank;updateHUD()},spawn:(id,x,y)=>{if(!S||!ENEMY[id])return;let e=spawnEnemy(id,0,200);if(e){e.x=x??S.player.x+120;e.y=y??S.player.y;}return e},chains:()=>S?.chains.length||0,powerup:(id)=>spawnPowerup(S.player.x+10,S.player.y+10,id),choose:(idx)=>chooseUpgrade(idx),forge:(id)=>{if(S&&mode==='playing'){openForge();forgeHybrid(id)}},frames:()=>frame,audio:()=>({enabled:audioSettings.on,sfx:audioSettings.sfx,music:audioSettings.music,state:audio?.state||'inactive',activeVoices,flameRunning:!!flameStream,flameLastShot}),playSfx:id=>sfx(id,1,true)};
-setMode('menu');menu();requestAnimationFrame(loop);
+// Platform pausing must freeze gameplay and ALL sound (including menu music).
+// Restore an automatic pause only if the SDK itself caused it.
+let sdkOwnsPause=false,sdkSuspendedAudio=false;
+window.RelicPlatform?.attachGameHandlers({
+ pause(){
+  if(mode==='playing'){sdkOwnsPause=true;pause()}
+  if(audio&&audio.state==='running'){
+   sdkSuspendedAudio=true;
+   audio.suspend().catch(()=>{});
+  }
+ },
+ resume(){
+  if(sdkSuspendedAudio&&audio){
+   sdkSuspendedAudio=false;
+   audio.resume().then(()=>syncMusic()).catch(()=>{});
+  }
+  if(sdkOwnsPause&&mode==='paused')resume();
+  sdkOwnsPause=false;
+  last=performance.now();
+ }
+});
+setMode('menu');menu();window.RelicPlatform?.ready();requestAnimationFrame(loop);
 })();
 
 

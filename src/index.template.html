@@ -8,6 +8,7 @@
 <title>РЕЛИКТОВЫЙ РОЙ | HTML5 Roguelite</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23081121'/%3E%3Cpath d='M32 6 54 20v24L32 58 10 44V20Z' fill='none' stroke='%233ce8e0' stroke-width='5'/%3E%3Ccircle cx='32' cy='32' r='11' fill='%23ffb55c'/%3E%3C/svg%3E"/>
 <style>%%RELICT_STYLE%%</style>
+%%RELICT_SDK_LOADER%%
 </head>
 <body>
 <canvas id="world" aria-label="Игровое поле Реликтовый рой"></canvas>
@@ -46,6 +47,7 @@
 <div id="rotateHint" aria-hidden="true"></div>
 <script src="./telemetry-config.js"></script>
 <script src="./telemetry-client.js"></script>
+<script>%%RELICT_PLATFORM_BRIDGE%%</script>
 <script>%%RELICT_MAIN_SCRIPT%%</script>
 </body>
 </html>

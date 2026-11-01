@@ -22,3 +22,14 @@ jobs:
           name: RelictSwarm-test-build
           path: dist/
           if-no-files-found: error
+
+      - name: Pack Yandex Games test ZIP
+        run: |
+          cd dist/yandex
+          zip -q -r ../../RelictSwarm-Yandex-test.zip .
+      - name: Upload Yandex Games package
+        uses: actions/upload-artifact@v4
+        with:
+          name: RelictSwarm-Yandex-test
+          path: RelictSwarm-Yandex-test.zip
+          if-no-files-found: error
