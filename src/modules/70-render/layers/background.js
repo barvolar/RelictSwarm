@@ -1,74 +1,46 @@
 function drawBackground(camX,camY,zoom=1){rect(0,0,W,H,'#08111d');const viewW=W/zoom,viewH=H/zoom,sx=camX-viewW/2,sy=camY-viewH/2;cx.save();cx.translate(W/2-camX,H/2-camY);
- // Alien basalt floor: irregular rock fragments and rare violet energy fissures.
- // Each fragment is generated from fixed world coordinates, with no repeating grid artwork.
- cx.fillStyle='#0e141e';
+ // Minimal tactical deck: smooth navy graphite, sparse fixed-world targeting marks.
+ // Render the visible floor in world coordinates so camera motion never shifts the pattern.
+ cx.fillStyle='#0a1723';
  cx.fillRect(sx-3,sy-3,viewW+6,viewH+6);
- const rockStep=196;
- const rockFirstX=Math.floor((sx-180)/rockStep),rockLastX=Math.ceil((sx+viewW+180)/rockStep);
- const rockFirstY=Math.floor((sy-180)/rockStep),rockLastY=Math.ceil((sy+viewH+180)/rockStep);
- for(let ix=rockFirstX;ix<=rockLastX;ix++)for(let iy=rockFirstY;iy<=rockLastY;iy++){
-  const rockX=ix*rockStep+rockStep*.5+(seed(ix+11,iy+17)-.5)*104;
-  const rockY=iy*rockStep+rockStep*.5+(seed(ix-23,iy+5)-.5)*104;
-  const rockSize=96+seed(ix+43,iy-19)*41;
-  const corners=7+Math.floor(seed(ix+29,iy+31)*3);
-  const angleOffset=seed(ix+73,iy+61)*TAU;
-  const shade=seed(ix-7,iy+47);
-  cx.beginPath();
-  for(let corner=0;corner<corners;corner++){
-   const angle=angleOffset+corner*TAU/corners;
-   const jagged=.77+seed(ix*13+corner+71,iy*19-corner-31)*.34;
-   const x=rockX+Math.cos(angle)*rockSize*jagged;
-   const y=rockY+Math.sin(angle)*rockSize*jagged;
-   if(corner===0)cx.moveTo(x,y);else cx.lineTo(x,y);
-  }
-  cx.closePath();
-  cx.fillStyle=shade<.26?'#131b26':shade<.58?'#171e29':shade<.86?'#1b222d':'#121a24';
-  cx.fill();
+ const sectorSize=680;
+ const firstX=Math.floor((sx-220)/sectorSize),lastX=Math.ceil((sx+viewW+220)/sectorSize);
+ const firstY=Math.floor((sy-220)/sectorSize),lastY=Math.ceil((sy+viewH+220)/sectorSize);
+ for(let ix=firstX;ix<=lastX;ix++)for(let iy=firstY;iy<=lastY;iy++){
+  const marker=seed(ix+31,iy-19);
+  if(marker<.30)continue;
+  const mx=ix*sectorSize+340+(seed(ix+7,iy+13)-.5)*110;
+  const my=iy*sectorSize+340+(seed(ix-17,iy+23)-.5)*110;
+  const radius=132+seed(ix+51,iy-11)*38;
+  cx.save();
+  cx.globalAlpha=.72;
+  cx.lineWidth=1.25;
+  cx.strokeStyle='#1e4451';
+  cx.beginPath();cx.arc(mx,my,radius,0,TAU);cx.stroke();
+  // Two interrupted telemetry arcs, not a grid or a distracting neon halo.
+  cx.strokeStyle='#2a6670';
+  cx.lineWidth=1.8;
+  cx.beginPath();cx.arc(mx,my,radius+7,.16,1.18);cx.stroke();
+  cx.beginPath();cx.arc(mx,my,radius+7,3.30,3.94);cx.stroke();
+  cx.strokeStyle='#234a55';
   cx.lineWidth=1;
-  cx.strokeStyle='#202a35';
-  cx.stroke();
-  // Jagged cracks break up the silhouettes; most stay almost black.
-  const crackSeed=seed(ix+67,iy-89);
-  if(crackSeed>.21){
-   const direction=seed(ix-17,iy+37)*TAU;
-   const crackLength=75+seed(ix+47,iy-59)*111;
-   const ax=rockX-Math.cos(direction)*crackLength*.5;
-   const ay=rockY-Math.sin(direction)*crackLength*.5;
-   const sideX=-Math.sin(direction),sideY=Math.cos(direction);
-   const glowing=seed(ix+113,iy-71)>.86;
-   let branchX=rockX,branchY=rockY;
-   cx.beginPath();
-   for(let step=0;step<=5;step++){
-    const offset=(seed(ix*31+step+19,iy*41-step-7)-.5)*22;
-    const x=ax+Math.cos(direction)*crackLength*step/5+sideX*offset;
-    const y=ay+Math.sin(direction)*crackLength*step/5+sideY*offset;
-    if(step===0)cx.moveTo(x,y);else cx.lineTo(x,y);
-    if(step===3){branchX=x;branchY=y;}
-   }
-   cx.lineWidth=glowing?5:3;
-   cx.strokeStyle=glowing?'#382746':'#0a1019';
-   cx.stroke();
-   cx.lineWidth=glowing?1.65:1;
-   cx.strokeStyle=glowing?'#865aa7':'#2b313c';
-   cx.stroke();
-   if(glowing){
-    cx.beginPath();
-    cx.moveTo(branchX,branchY);
-    const bend=direction+(seed(ix+31,iy+97)>.5?1:-1)*1.15;
-    cx.lineTo(branchX+Math.cos(bend)*37,branchY+Math.sin(bend)*37);
-    cx.lineWidth=3;cx.strokeStyle='#392848';cx.stroke();
-    cx.lineWidth=1.2;cx.strokeStyle='#785296';cx.stroke();
-   }
-  }
-  // Sparse stone chips add surface detail without hiding hostile projectiles.
-  if(seed(ix-59,iy+79)>.46){
-   cx.fillStyle='#27303c';
-   const chips=2+Math.floor(seed(ix+19,iy+109)*3);
-   for(let chip=0;chip<chips;chip++){
-    const px=rockX+(seed(ix*17+chip,iy-13)-.5)*rockSize*1.3;
-    const py=rockY+(seed(ix-29,iy*23+chip)-.5)*rockSize*1.3;
-    cx.fillRect(px,py,2+seed(ix+chip,iy-7)*3,1.4);
-   }
+  cx.beginPath();cx.arc(mx,my,radius*.56,0,TAU);cx.stroke();
+  cx.strokeStyle='#356b73';
+  cx.beginPath();cx.moveTo(mx-11,my);cx.lineTo(mx-4,my);
+  cx.moveTo(mx+4,my);cx.lineTo(mx+11,my);
+  cx.moveTo(mx,my-11);cx.lineTo(mx,my-4);
+  cx.moveTo(mx,my+4);cx.lineTo(mx,my+11);cx.stroke();
+  cx.restore();
+ }
+ // Low-contrast locator dashes provide direction without covering shots or enemies.
+ const guideSize=370;
+ for(let ix=Math.floor(sx/guideSize);ix<=Math.ceil((sx+viewW)/guideSize);ix++){
+  for(let iy=Math.floor(sy/guideSize);iy<=Math.ceil((sy+viewH)/guideSize);iy++){
+   if(seed(ix+109,iy-57)<.78)continue;
+   const mx=ix*guideSize+guideSize*.5,my=iy*guideSize+guideSize*.5;
+   cx.strokeStyle='#1c3e4a';cx.lineWidth=1;
+   cx.beginPath();cx.moveTo(mx-12,my);cx.lineTo(mx-5,my);
+   cx.moveTo(mx+5,my);cx.lineTo(mx+12,my);cx.stroke();
   }
  }
  // Arena perimeter: contrast stripes, unmistakable boundary, and a muted outer danger zone.
