@@ -3,8 +3,8 @@ function loop(now){
  requestAnimationFrame(loop); // Schedule next frame *before* updating; an exception must not silently freeze the browser game.
  try{
   let dt=Math.min(.039,Math.max(0,(now-last)/1000||.016));last=now;ambient+=dt;frame++;
-   const perfPlaying=perf.on&&mode==='playing',cpuStart=perfPlaying?performance.now():0;
-   if(mode==='playing')update(dt);
+   const gameplayRunning=mode==='playing'&&!window.RelicPlatform?.isPaused(),perfPlaying=perf.on&&gameplayRunning,cpuStart=perfPlaying?performance.now():0;
+   if(gameplayRunning)update(dt);
    const afterUpdate=perfPlaying?performance.now():0;
    draw();
    const afterDraw=perfPlaying?performance.now():0;
