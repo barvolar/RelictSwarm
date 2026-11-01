@@ -442,6 +442,9 @@ button.forge-card:hover{filter:brightness(1.25)}.forge-card.is-done{border-color
 .upgrade-reroll-row .upgrade-reroll:disabled{opacity:.55;cursor:default;background:#112735;border-color:#315163}
 .up-reroll-count{font-size:11px;color:#98bac6;line-height:1.4}
 @media(max-width:480px){.upgrade-reroll-row{margin:9px 0;padding:8px 9px}.upgrade-reroll-row .upgrade-reroll{flex:1;min-width:100%;min-height:38px}.up-reroll-count{font-size:10px}}
+
+/* Deliberate natural break for long Cyrillic weapon names; no orphan "ЕЛЬ". */
+.upgrade-v2-screen .upgrade-card.upgrade-v2 .up-name{word-break:normal;overflow-wrap:break-word;hyphens:manual}
 /* v0.10.9: floating thumbstick; the dash button remains fixed at the bottom-right. */
 #touchControls #joystick.floating-stick{
   left:0;top:0;bottom:auto;right:auto;
@@ -453,6 +456,23 @@ button.forge-card:hover{filter:brightness(1.25)}.forge-card.is-done{border-color
 #touchControls #joystick.floating-stick.is-active{opacity:1;visibility:visible}
 #world{touch-action:none}
 
+
+/* Boss health and its warning occupy distinct rows, never the same pixels. */
+#hud .boss-wrap{z-index:2;top:99px;width:min(480px,90vw);max-width:90vw;pointer-events:none}
+#hud .boss-track{position:relative;box-sizing:border-box;overflow:hidden;height:13px;border:1px solid #aa5366;background:#170c18;border-radius:5px}
+#hud .boss-track>div{display:block;box-sizing:border-box;max-width:100%;height:100%;background:linear-gradient(90deg,#cf325b,#ffa181);border-radius:3px 0 0 3px}
+#hud .wavebanner{z-index:1;top:152px;max-width:min(800px,94vw);box-sizing:border-box;text-align:center;white-space:normal;overflow-wrap:break-word;line-height:1.45;pointer-events:none}
+#hud .toast{top:209px}
+@media(max-width:700px), (pointer:coarse) and (max-height:550px){
+ #hud .boss-wrap{top:calc(147px + env(safe-area-inset-top,0px));width:min(390px,92vw)}
+ #hud .wavebanner{top:calc(192px + env(safe-area-inset-top,0px));max-width:92vw}
+ #hud .toast{top:calc(241px + env(safe-area-inset-top,0px))}
+}
+@media(max-height:550px) and (max-width:700px), (pointer:coarse) and (min-width:701px) and (max-height:550px){
+ #hud .boss-wrap{top:calc(112px + env(safe-area-inset-top,0px))}
+ #hud .wavebanner{top:calc(155px + env(safe-area-inset-top,0px))}
+ #hud .toast{top:calc(205px + env(safe-area-inset-top,0px))}
+}
 </style>
 </head>
 <body>
@@ -997,7 +1017,28 @@ function bindAudioMixer(){refreshAudioControls();for(const [id,key] of [['sfxVol
   if(audioLoaded)play();else audioLoading?.then(play);
  });
 }
-function audioMixerHTML(){return `<div class="audio-mixer" id="audioMixerPanel"><div class="audio-mixer-head"><span>♫ ЗВУКОВОЙ ПУЛЬТ // 0.9.7</span><span style="font-size:9px;color:#789eb0">АУДИОФАЙЛЫ</span></div><label class="audio-mixer-row">Эффекты <input type="range" min="0" max="100" step="1" id="sfxVolume" value="${Math.round(audioSettings.sfx*100)}"/><b id="sfxVolumeValue">${Math.round(audioSettings.sfx*100)}%</b></label><label class="audio-mixer-row">Музыка <input type="range" min="0" max="100" step="1" id="musicVolume" value="${Math.round(audioSettings.music*100)}"/><b id="musicVolumeValue">${Math.round(audioSettings.music*100)}%</b></label><div style="display:flex;gap:7px;flex-wrap:wrap"><button class="btn" type="button" id="musicMenuPreview">♪ МУЗЫКА МЕНЮ</button><button class="btn" type="button" id="musicCombatPreview">♫ МУЗЫКА БОЯ</button><button class="btn" type="button" id="audioPreview">◉ ВЫСТРЕЛ + ВЗРЫВ</button><button class="btn" type="button" id="flamePreview">♨ ОГНЕМЁТ: ПРОВЕРКА</button></div><div class="audio-mixer-head"><span>СЛУШАТЬ ПО ОДНОМУ ОРУЖИЮ</span><span>11 ОБРАЗЦОВ</span></div><div class="sound-test-grid">${BASE_WEAPONS.map(id=>`<button type="button" data-sound-test="${id}">${DRONES[id].glyph} ${DRONES[id].name}</button>`).join('')}</div><small>Огнемёт работает только при доступной цели. Сравни звуки по кнопкам: каждый воспроизводится отдельно. Остальное аудио v0.9.2 сохранено. Звук запускается после нажатия в браузере.</small></div>`}
+// Audio diagnostics are only visible on an explicit developer URL (?dev=1).
+// No sound data is removed; players retain music and effects volume controls.
+function audioDebugEnabled(){
+ return typeof location!=='undefined' && new URLSearchParams(location.search).get('dev')==='1';
+}
+function audioMixerHTML(){
+ const debug=audioDebugEnabled();
+ return `<div class="audio-mixer" id="audioMixerPanel">
+  <div class="audio-mixer-head"><span>НАСТРОЙКИ ЗВУКА</span></div>
+  <label class="audio-mixer-row">Эффекты <input type="range" min="0" max="100" step="1" id="sfxVolume" value="${Math.round(audioSettings.sfx*100)}"/><b id="sfxVolumeValue">${Math.round(audioSettings.sfx*100)}%</b></label>
+  <label class="audio-mixer-row">Музыка <input type="range" min="0" max="100" step="1" id="musicVolume" value="${Math.round(audioSettings.music*100)}"/><b id="musicVolumeValue">${Math.round(audioSettings.music*100)}%</b></label>
+  ${debug?`<div class="audio-mixer-head"><span>РЕЖИМ РАЗРАБОТЧИКА · ТЕСТ ЗВУКА</span></div>
+   <div style="display:flex;gap:7px;flex-wrap:wrap">
+    <button class="btn" type="button" id="musicMenuPreview">♪ МУЗЫКА МЕНЮ</button>
+    <button class="btn" type="button" id="musicCombatPreview">♫ МУЗЫКА БОЯ</button>
+    <button class="btn" type="button" id="audioPreview">◉ ВЫСТРЕЛ + ВЗРЫВ</button>
+    <button class="btn" type="button" id="flamePreview">♨ ОГНЕМЁТ: ПРОВЕРКА</button>
+   </div>
+   <div class="audio-mixer-head"><span>ТЕСТ ЗВУКОВ ОРУЖИЯ</span></div>
+   <div class="sound-test-grid">${BASE_WEAPONS.map(id=>`<button type="button" data-sound-test="${id}">${DRONES[id].glyph} ${DRONES[id].name}</button>`).join('')}</div>`:''}
+ </div>`;
+}
 function audioSrc(id){return 'data:'+(RELICT_WAV_IDS.has(id)?'audio/wav':'audio/mpeg')+';base64,'+AUDIO_BANK[id]}
 function unlockAudio(){try{
  if(!audio){const Klass=window.AudioContext||window.webkitAudioContext;if(!Klass)return false;audio=new Klass();masterBus=audio.createDynamicsCompressor();masterBus.threshold.value=-13;masterBus.knee.value=12;masterBus.ratio.value=5;masterBus.attack.value=.006;masterBus.release.value=.21;masterBus.connect(audio.destination);
@@ -1577,7 +1618,7 @@ function weaponBonusRows(id,key,drone){
   {label:'Частота нанесения урона',value:ratio(n=>1+.25*Math.log1p(n))}];
  if(id==='cryo'&&key==='chill')return [
   {label:'Накопление холода',value:ratio(n=>1+.56*Math.log1p(n))},
-  {label:'Бонус по охлаждённым',value:'+'+f(100*.22*(Math.log1p(after)-Math.log1p(before)))+' п.п.'}];
+  {label:'Доп. урон по охлаждённым',value:'+'+f(100*.22*(Math.log1p(after)-Math.log1p(before)))+'%'}];
  if(id==='saw'&&key==='radius')return [{label:'Расстояние пилы от робота',value:delta(n=>Math.min(310,Math.max(69+n*19,Math.min(10,1+wm(drone,'count'))*21)))}];
  if(key==='rate')return [{label:'Частота атак',value:ratio(n=>1+.4*Math.log1p(n))}];
  if(id==='rocket'&&key==='blast')return [{label:'Радиус взрыва',value:delta(n=>54+22*Math.sqrt(n))}];
@@ -1622,10 +1663,11 @@ function describeUpgrade(u){
 function upgradeCardHtml(u,i){
  const d=describeUpgrade(u);
  const rarity=d.rarity?`<span class="up-rarity" style="--rarity-color:${d.rarity.col}"><span class="rarity-dot" aria-hidden="true"></span>${d.rarity.name.toLowerCase()} · ${d.rarity.steps} ${d.rarity.steps===1?'параметр':d.rarity.steps<5?'параметра':'параметров'}</span>`:'';
+ const cardName=d.name.replace('КРИОИЗЛУЧАТЕЛЬ','КРИО<wbr>ИЗЛУЧАТЕЛЬ');
  const rows=(d.rows||[]).map(r=>`<li class="up-stat-row"><span>${r.label}</span><strong>${r.value}</strong></li>`).join('');
  return `<button type="button" class="upgrade-card upgrade-v2 upgrade-card--${d.type}" data-up="${i}" aria-label="${d.kind}: ${d.name}">
   <span class="up-type-row"><span class="kind">${d.kind}</span>${rarity}</span>
-  <span class="up-heading"><span class="glyph" aria-hidden="true">${d.glyph}</span><strong class="up-name">${d.name}</strong></span>
+  <span class="up-heading"><span class="glyph" aria-hidden="true">${d.glyph}</span><strong class="up-name" lang="ru">${cardName}</strong></span>
   ${d.desc?`<span class="up-description">${d.desc}</span>`:''}
   ${rows?`<ul class="up-stats">${rows}</ul>`:''}
   <span class="number"><span class="up-action">ВЫБРАТЬ</span><span class="up-key">${i+1}</span></span>
@@ -1727,7 +1769,7 @@ function updateHybridCombat(dt){} // v0.5.1.1: hybrids are now actual replacemen
 
 // Shared special-weapon physics. New recipes route through distinct patterns.
 function fusionLine(pos,target,width,damage,length,opts={}){
- const a=aimGeometry(pos,target),origin=weaponMuzzle(pos,target,0,25),end={x:origin.x+a.dx*length,y:origin.y+a.dy*length};
+ const a=aimGeometry(pos,target),origin=weaponMuzzle(pos,target,opts.offset||0,25),end={x:origin.x+a.dx*length,y:origin.y+a.dy*length};
  let hits=[];
  for(const e of S.enemy)if(e.hp>0&&pointSegmentDist(e.x,e.y,origin.x,origin.y,end.x,end.y)<e.r+width/2){hurtEnemy(e,damage,opts);hits.push(e)}
  S.fx.push({type:'rail',a:origin,b:end,life:.38,max:.38,col:opts.color||'#bde8ff',width});
@@ -1758,14 +1800,28 @@ function fusionMine(x,y,damage,col,r,variant){
 function fireFusionSpecial(d,pos,target,base,rank){
  const type=d.id.slice(7),col=DRONES[d.id].color,damage=base*(32+Math.sqrt(rank)*7),rate=wm(d,'rate'),radius=wm(d,'radius');
  if(type==='spear'){
-  const shot=fusionLine(pos,target,15+wm(d,'pierce')*3,damage*2.9,900,{color:col,knock:16});
-  for(const e of shot.hits.slice(0,5)){
-   const next=closest(e.x+40,e.y+40,130,e);if(next){launchBullet(e.x,e.y,next,damage*.75,d.id,1);S.fx.push({type:'beam',a:{x:e.x,y:e.y},b:{x:next.x,y:next.y},life:.24,max:.24,col,width:2.5});}
-  }return true;
+  // One extra visible, damaging parallel beam for every "Расщепление" upgrade.
+  // Cap rays and reduce per-ray damage to avoid runaway stacking on huge bosses.
+  const count=Math.min(5,1+wm(d,'beams')),rayDamage=damage/(1+.38*(count-1));
+  for(let j=0;j<count;j++){
+   const offset=(j-(count-1)/2)*30;
+   const shot=fusionLine(pos,target,15+wm(d,'pierce')*3,rayDamage*2.9,900,{color:col,knock:16,offset});
+   for(const e of shot.hits.slice(0,5)){
+    const next=closest(e.x+40,e.y+40,130,e);
+    if(next){launchBullet(e.x,e.y,next,rayDamage*.75,d.id,1);S.fx.push({type:'beam',a:{x:e.x,y:e.y},b:{x:next.x,y:next.y},life:.24,max:.24,col,width:2.5});}
+   }
+  }
+  return true;
  }
  if(type==='polar'){
-  const shot=fusionLine(pos,target,13,damage*1.35,740,{color:col,slow:2.3,stun:.25+wm(d,'freeze')*.12});
-  for(const e of shot.hits){e.frost=2.4;}for(let k=1;k<5;k++)fusionField(shot.origin.x+shot.a.dx*k*110,shot.origin.y+shot.a.dy*k*110,23,damage*.11,1.2,'#b9efff');return true;
+  const count=Math.min(5,1+wm(d,'beams')),rayDamage=damage/(1+.38*(count-1));
+  for(let j=0;j<count;j++){
+   const offset=(j-(count-1)/2)*30;
+   const shot=fusionLine(pos,target,13,rayDamage*1.35,740,{color:col,slow:2.3,stun:.25+wm(d,'freeze')*.12,offset});
+   for(const e of shot.hits)e.frost=2.4;
+   for(let k=1;k<5;k++)fusionField(shot.origin.x+shot.a.dx*k*110,shot.origin.y+shot.a.dy*k*110,23,rayDamage*.11,1.2,'#b9efff');
+  }
+  return true;
  }
  if(type==='prism'){
   const r=Math.min(210,100+radius*16);S.gravityWells.push({x:target.x,y:target.y,r,force:160,damage:damage*.12,life:2.0,clock:.05,col});
@@ -2109,17 +2165,33 @@ function updateHazards(dt){
 }
 function drawHazards(){
  for(const h of S.hazards){
-  if(h.hit)continue;const k=clamp(1-h.delay/1.5,0,1);
-  cx.save();cx.globalAlpha=.3+.4*k;
+  if(h.hit)continue;
+  // Red = ENEMY damage telegraph, regardless of the boss's theme colour.
+  // The shrinking inner ring reaches zero at impact. Damage/timing unchanged.
+  const k=clamp(1-h.delay/1.7,0,1),imminent=h.delay<.32;
+  cx.save();
+  cx.globalAlpha=.58+.35*k;
   if(h.type==='slash'){
-   let x1=h.x+Math.cos(h.ang)*h.len,y1=h.y+Math.sin(h.ang)*h.len;
-   cx.strokeStyle=h.col;cx.lineWidth=h.r*2;cx.lineCap='round';cx.setLineDash([12,12]);
-   cx.beginPath();cx.moveTo(h.x,h.y);cx.lineTo(x1,y1);cx.stroke();cx.setLineDash([]);
-   line(h.x,h.y,x1,y1,'#ffe0c0',3);
+   const x1=h.x+Math.cos(h.ang)*h.len,y1=h.y+Math.sin(h.ang)*h.len;
+   cx.strokeStyle=imminent?'#ffe4be':'#ff6475';
+   cx.lineWidth=h.r*2;cx.lineCap='round';cx.setLineDash([12,12]);
+   cx.beginPath();cx.moveTo(h.x,h.y);cx.lineTo(x1,y1);cx.stroke();
+   cx.setLineDash([]);
+   line(h.x,h.y,x1,y1,imminent?'#fff4d7':'#ffb9a4',3);
   }else{
-   cx.fillStyle=h.col+'32';cx.strokeStyle=h.col;cx.lineWidth=3+k*2;
+   cx.fillStyle=imminent?'#ff495436':'#ff364324';
+   cx.strokeStyle=imminent?'#ffe1b1':'#ff6779';
+   cx.lineWidth=imminent?5:3.5;
    cx.beginPath();cx.arc(h.x,h.y,h.r,0,TAU);cx.fill();cx.stroke();
-   cx.beginPath();cx.arc(h.x,h.y,h.r*(1-k),0,TAU);cx.stroke();
+   cx.setLineDash([8,8]);
+   cx.strokeStyle='#ff9a9c';cx.lineWidth=1.5;
+   cx.beginPath();cx.arc(h.x,h.y,h.r+6,0,TAU);cx.stroke();
+   cx.setLineDash([]);
+   cx.strokeStyle=imminent?'#fff5d9':'#ffccd0';cx.lineWidth=2.8;
+   cx.beginPath();cx.arc(h.x,h.y,Math.max(2,h.r*(1-k)),0,TAU);cx.stroke();
+   cx.fillStyle=imminent?'#fff5d9':'#ffb2b8';
+   cx.beginPath();cx.moveTo(h.x-6,h.y-6);cx.lineTo(h.x+6,h.y+6);
+   cx.moveTo(h.x+6,h.y-6);cx.lineTo(h.x-6,h.y+6);cx.lineWidth=2;cx.strokeStyle=cx.fillStyle;cx.stroke();
   }
   cx.restore();
  }
@@ -2232,7 +2304,7 @@ function update(dt){if(!S)return;if(trainingMode){updateTraining(dt);return;}S.t
     }
    }
  droneUpdate(dt);updateHybridCombat(dt);updateAreaWeapons(dt);updateProjectiles(dt);if(mode!=='playing')return;updateEnemies(dt);if(mode!=='playing')return;updateHazards(dt);updateDrops(dt);if(mode!=='playing')return;balTick(dt);
- shake=Math.max(0,shake-dt*26);if(S.t>showToastUntil)$('toast').classList.add('hidden');if(S.t>showBannerUntil)$('wavebanner').classList.add('hidden');if(S.bosses.length){const b=S.bosses[S.bosses.length-1];$('bossWrap').classList.remove('hidden');$('bossName').textContent=ENEMY[b.id].name;$('bossFill').style.width=(Math.max(0,b.hp)/b.maxHp*100)+'%'}else $('bossWrap').classList.add('hidden');S.clock-=dt;if(S.clock<=0){S.clock=.15;updateHUD()}}
+ shake=Math.max(0,shake-dt*26);if(S.t>showToastUntil)$('toast').classList.add('hidden');if(S.t>showBannerUntil)$('wavebanner').classList.add('hidden');if(S.bosses.length){const b=S.bosses[S.bosses.length-1];$('bossWrap').classList.remove('hidden');const bossPct=clamp(100*b.hp/Math.max(1,b.maxHp),0,100);$('bossName').textContent=ENEMY[b.id].name+' · '+Math.ceil(bossPct)+'%';$('bossFill').style.width=bossPct+'%'}else $('bossWrap').classList.add('hidden');S.clock-=dt;if(S.clock<=0){S.clock=.15;updateHUD()}}
 function updateHUD(){
  if(!S)return;const p=S.player;
  $('hpfill').style.width=Math.max(0,p.hp/p.maxHp*100)+'%';$('hptext').textContent=Math.ceil(p.hp)+'/'+Math.ceil(p.maxHp);
