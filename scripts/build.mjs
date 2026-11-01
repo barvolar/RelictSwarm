@@ -31,7 +31,7 @@ const base=template.replace('%%RELICT_STYLE%%',styles)
   .replace('%%RELICT_PLATFORM_BRIDGE%%',platformCode);
 const html=base.replace('%%RELICT_SDK_LOADER%%','');
 const yandexHtml=base.replace('%%RELICT_SDK_LOADER%%',
-  '<script>window.RELICT_PLATFORM="yandex"</script>\\n<script src="/sdk.js"></script>');
+  '<script>window.RELICT_PLATFORM="yandex"</script>\n<script src="/sdk.js"></script>');
 
 const dist=path.join(root,'dist'); fs.mkdirSync(dist,{recursive:true});
 fs.writeFileSync(path.join(dist,'index.html'),html);
