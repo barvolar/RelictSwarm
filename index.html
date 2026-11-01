@@ -108,6 +108,12 @@ button.forge-card:hover{filter:brightness(1.25)}.forge-card.is-done{border-color
 .qa-inventory{display:flex;flex-wrap:wrap;gap:5px;margin:8px 0}
 .qa-inventory span{font-size:10px;padding:5px 7px;border:1px solid #2d5965;background:#112b3c}
 @media(max-width:480px){.qa-pause{padding:9px}.qa-row{gap:5px}.qa-pause button{font-size:10px}}
+
+/* Expand the tester's pause menu instead of wasting vertical space on the title. */
+#modal:has(#qaPause) .menu-head{display:none}
+#modal:has(#qaPause) .modal-panel{width:min(760px,100%);max-height:calc(100dvh - 26px);padding:16px 22px;overflow-y:auto}
+#modal:has(#qaPause) .qa-pause{margin:12px 0}
+@media(max-width:700px){#modal:has(#qaPause) .modal-panel{padding:10px!important;max-height:calc(100dvh - 16px)}}
 /* v0.9.2 embedded original soundtrack and effect samples. */
 .audio-mixer{margin-top:12px;padding:13px 14px;border:1px solid #31556b;background:linear-gradient(110deg,#0c2331,#0a1727);border-radius:5px;display:grid;gap:10px}
 .audio-mixer-head{display:flex;align-items:center;justify-content:space-between;gap:8px;font-weight:900;letter-spacing:1.3px;color:#79ddce;font-size:10px}
