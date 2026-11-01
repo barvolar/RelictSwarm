@@ -11,7 +11,7 @@ function weaponBonusRows(id,key,drone){
   {label:'Частота нанесения урона',value:ratio(n=>1+.25*Math.log1p(n))}];
  if(id==='cryo'&&key==='chill')return [
   {label:'Накопление холода',value:ratio(n=>1+.56*Math.log1p(n))},
-  {label:'Бонус по охлаждённым',value:'+'+f(100*.22*(Math.log1p(after)-Math.log1p(before)))+' п.п.'}];
+  {label:'Доп. урон по охлаждённым',value:'+'+f(100*.22*(Math.log1p(after)-Math.log1p(before)))+'%'}];
  if(id==='saw'&&key==='radius')return [{label:'Расстояние пилы от робота',value:delta(n=>Math.min(310,Math.max(69+n*19,Math.min(10,1+wm(drone,'count'))*21)))}];
  if(key==='rate')return [{label:'Частота атак',value:ratio(n=>1+.4*Math.log1p(n))}];
  if(id==='rocket'&&key==='blast')return [{label:'Радиус взрыва',value:delta(n=>54+22*Math.sqrt(n))}];
@@ -56,10 +56,11 @@ function describeUpgrade(u){
 function upgradeCardHtml(u,i){
  const d=describeUpgrade(u);
  const rarity=d.rarity?`<span class="up-rarity" style="--rarity-color:${d.rarity.col}"><span class="rarity-dot" aria-hidden="true"></span>${d.rarity.name.toLowerCase()} · ${d.rarity.steps} ${d.rarity.steps===1?'параметр':d.rarity.steps<5?'параметра':'параметров'}</span>`:'';
+ const cardName=d.name.replace('КРИОИЗЛУЧАТЕЛЬ','КРИО<wbr>ИЗЛУЧАТЕЛЬ');
  const rows=(d.rows||[]).map(r=>`<li class="up-stat-row"><span>${r.label}</span><strong>${r.value}</strong></li>`).join('');
  return `<button type="button" class="upgrade-card upgrade-v2 upgrade-card--${d.type}" data-up="${i}" aria-label="${d.kind}: ${d.name}">
   <span class="up-type-row"><span class="kind">${d.kind}</span>${rarity}</span>
-  <span class="up-heading"><span class="glyph" aria-hidden="true">${d.glyph}</span><strong class="up-name">${d.name}</strong></span>
+  <span class="up-heading"><span class="glyph" aria-hidden="true">${d.glyph}</span><strong class="up-name" lang="ru">${cardName}</strong></span>
   ${d.desc?`<span class="up-description">${d.desc}</span>`:''}
   ${rows?`<ul class="up-stats">${rows}</ul>`:''}
   <span class="number"><span class="up-action">ВЫБРАТЬ</span><span class="up-key">${i+1}</span></span>
