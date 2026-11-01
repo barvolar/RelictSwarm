@@ -1,14 +1,23 @@
 function showUpgrades(){
  if(S.pendingUp<1)return;
  S.upgrades=upgradeChoices();setMode('upgrade');
+ renderUpgradeScreen();
+ clickSound(810,.14,'triangle');
+}
+function renderUpgradeScreen(){
+ const available=canUseReroll();
  $('modalContent').innerHTML=`<div class="upgrade-v2-screen">
   <div class="upgrade-topline"><div class="panel-title">ВЫБЕРИ МОДИФИКАЦИЮ</div><div class="label">УР. ${S.lvl}</div></div>
   <p class="up-short-summary">Оружие: ${S.drones.length}/${MAX_WEAPONS} · Выбери одну из трёх модификаций</p>
   <div class="upgrade-list">${S.upgrades.map((u,i)=>upgradeCardHtml(u,i)).join('')}</div>
-  <p class="up-bottom-hint">Цвет рамки означает тип выбора. Редкость улучшения показана отдельно.</p>
+  <div class="upgrade-reroll-row">
+   <button type="button" class="btn upgrade-reroll" data-reroll="free" ${available?'':'disabled'}>${available?'↻ ПЕРЕБРОСИТЬ 3 КАРТОЧКИ':'↻ РЕРОЛЛ ИСПОЛЬЗОВАН'}</button>
+   <span class="up-reroll-count">Бесплатных перебросов: ${Math.max(0,S.rerollsRemaining||0)} / 1 за забег</span>
+  </div>
+  <p class="up-bottom-hint">Реролл заменяет все три карточки без повторов. Цвет рамки означает тип выбора, редкость показана отдельно.</p>
  </div>`;
  $('modalContent').querySelectorAll('[data-up]').forEach(el=>el.onclick=()=>chooseUpgrade(+el.dataset.up));
- clickSound(810,.14,'triangle');
+ const reroll=$('modalContent').querySelector('[data-reroll]');if(reroll)reroll.onclick=requestReroll;
 }
 function chooseUpgrade(idx){
  if(mode!=='upgrade'||!S.upgrades[idx])return;
