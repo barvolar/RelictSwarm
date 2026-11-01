@@ -2438,8 +2438,57 @@ function rect(x,y,w,h,col){cx.fillStyle=col;cx.fillRect(x,y,w,h)}
 function ring(x,y,r,col,w=2){cx.beginPath();cx.arc(x,y,r,0,TAU);cx.strokeStyle=col;cx.lineWidth=w;cx.stroke()}
 function seed(x,y){let n=Math.sin(x*127.1+y*311.7)*43758.5453;return n-Math.floor(n)}
 function drawBackground(camX,camY,zoom=1){rect(0,0,W,H,'#08111d');const viewW=W/zoom,viewH=H/zoom,sx=camX-viewW/2,sy=camY-viewH/2;cx.save();cx.translate(W/2-camX,H/2-camY);
- let gx=Math.floor(sx/80)*80,gy=Math.floor(sy/80)*80;cx.lineWidth=1;for(let x=gx;x<sx+viewW+80;x+=80){line(x,sy-100,x,sy+viewH+100,'#16303c',.9);if((Math.round(x/80)%4)===0)line(x,sy-100,x,sy+H+100,'#234459',1.3)}for(let y=gy;y<sy+viewH+80;y+=80){line(sx-100,y,sx+viewW+100,y,'#16303c',.9);if((Math.round(y/80)%4)===0)line(sx-100,y,sx+W+100,y,'#234459',1.3)}
- for(let x=Math.floor(sx/320)*320;x<sx+viewW+330;x+=320)for(let y=Math.floor(sy/320)*320;y<sy+viewH+330;y+=320){let v=seed(x/9,y/11);if(v<.22)continue;let px=x+seed(x,6+y)*225+20,py=y+seed(y,x)*220+30,k=seed(x+19,y+31);cx.save();cx.translate(px,py);cx.rotate(v*TAU);if(v>.75){poly([[-27,-13],[-6,-22],[25,-4],[18,9],[-17,16]],'#0e202b','#284552',1);poly([[-18,-11],[-4,-15],[12,-4],[-10,3]],'#18323b');line(-7,0,9,8,'#296273',1.4)}else{line(-17,3,3,-8,'#245061',1);line(3,-8,17,-2,'#245061',1);circ(3,-8,2.2,'#23737b')}if(k>.6){glow(28,12,25,'#21dbc7',.12);circ(28,12,2,'#207e8b')}cx.restore()}
+ // Large graphite armor hexes. Anchored in world space so the floor never swims with the camera.
+ const tileRadius=84, tileStepX=tileRadius*1.5, tileStepY=tileRadius*Math.sqrt(3);
+ const firstColumn=Math.floor((sx-tileRadius*2)/tileStepX);
+ const lastColumn=Math.ceil((sx+viewW+tileRadius*2)/tileStepX);
+ for(let column=firstColumn;column<=lastColumn;column++){
+  const tileX=column*tileStepX;
+  const stagger=((column%2+2)%2)*tileStepY*.5;
+  const firstRow=Math.floor((sy-tileStepY-stagger)/tileStepY);
+  const lastRow=Math.ceil((sy+viewH+tileStepY-stagger)/tileStepY);
+  for(let row=firstRow;row<=lastRow;row++){
+   const tileY=row*tileStepY;
+   const cy=tileY+stagger,variation=seed(column,row),detail=seed(column+37,row-19);
+   // Flat-top honeycomb: tiles meet without gaps or hard rectangular seams.
+   cx.beginPath();
+   for(let corner=0;corner<6;corner++){
+    const angle=corner*Math.PI/3;
+    const x=tileX+tileRadius*Math.cos(angle),y=cy+tileRadius*Math.sin(angle);
+    if(corner===0)cx.moveTo(x,y);else cx.lineTo(x,y);
+   }
+   cx.closePath();
+   cx.fillStyle=variation<.24?'#0b1824':variation<.75?'#0d1c29':'#10212f';
+   cx.fill();
+   cx.lineWidth=2;
+   cx.strokeStyle='#28616c';
+   cx.stroke();
+   // Recessed inner bevel: armored plates, not a bright neon wireframe.
+   cx.beginPath();
+   for(let corner=0;corner<6;corner++){
+    const angle=corner*Math.PI/3;
+    const x=tileX+(tileRadius-9)*Math.cos(angle),y=cy+(tileRadius-9)*Math.sin(angle);
+    if(corner===0)cx.moveTo(x,y);else cx.lineTo(x,y);
+   }
+   cx.closePath();
+   cx.lineWidth=1;
+   cx.strokeStyle='#193440';
+   cx.stroke();
+   // Rare service vents and cyan-lit seams for detail without overwhelming projectiles.
+   if(detail>.91){
+    cx.lineWidth=1.5;cx.strokeStyle='#2d6471';
+    for(let slit=-1;slit<=1;slit++){
+     cx.beginPath();cx.moveTo(tileX-14,cy+slit*7);
+     cx.lineTo(tileX+14,cy+slit*7);cx.stroke();
+    }
+   }else if(detail<.09){
+    cx.beginPath();
+    cx.moveTo(tileX+tileRadius*.63,cy-tileRadius*.60);
+    cx.lineTo(tileX+tileRadius*.85,cy-tileRadius*.21);
+    cx.lineWidth=2.5;cx.strokeStyle='#48a5ad';cx.stroke();
+   }
+  }
+ }
  // Arena perimeter: contrast stripes, unmistakable boundary, and a muted outer danger zone.
   const edge=1785;
   if(sx< -edge+100 || sy< -edge+100 || sx+viewW>edge-100 || sy+viewH>edge-100){
