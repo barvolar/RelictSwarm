@@ -18,17 +18,33 @@ function updateHazards(dt){
 }
 function drawHazards(){
  for(const h of S.hazards){
-  if(h.hit)continue;const k=clamp(1-h.delay/1.5,0,1);
-  cx.save();cx.globalAlpha=.3+.4*k;
+  if(h.hit)continue;
+  // Red = ENEMY damage telegraph, regardless of the boss's theme colour.
+  // The shrinking inner ring reaches zero at impact. Damage/timing unchanged.
+  const k=clamp(1-h.delay/1.7,0,1),imminent=h.delay<.32;
+  cx.save();
+  cx.globalAlpha=.58+.35*k;
   if(h.type==='slash'){
-   let x1=h.x+Math.cos(h.ang)*h.len,y1=h.y+Math.sin(h.ang)*h.len;
-   cx.strokeStyle=h.col;cx.lineWidth=h.r*2;cx.lineCap='round';cx.setLineDash([12,12]);
-   cx.beginPath();cx.moveTo(h.x,h.y);cx.lineTo(x1,y1);cx.stroke();cx.setLineDash([]);
-   line(h.x,h.y,x1,y1,'#ffe0c0',3);
+   const x1=h.x+Math.cos(h.ang)*h.len,y1=h.y+Math.sin(h.ang)*h.len;
+   cx.strokeStyle=imminent?'#ffe4be':'#ff6475';
+   cx.lineWidth=h.r*2;cx.lineCap='round';cx.setLineDash([12,12]);
+   cx.beginPath();cx.moveTo(h.x,h.y);cx.lineTo(x1,y1);cx.stroke();
+   cx.setLineDash([]);
+   line(h.x,h.y,x1,y1,imminent?'#fff4d7':'#ffb9a4',3);
   }else{
-   cx.fillStyle=h.col+'32';cx.strokeStyle=h.col;cx.lineWidth=3+k*2;
+   cx.fillStyle=imminent?'#ff495436':'#ff364324';
+   cx.strokeStyle=imminent?'#ffe1b1':'#ff6779';
+   cx.lineWidth=imminent?5:3.5;
    cx.beginPath();cx.arc(h.x,h.y,h.r,0,TAU);cx.fill();cx.stroke();
-   cx.beginPath();cx.arc(h.x,h.y,h.r*(1-k),0,TAU);cx.stroke();
+   cx.setLineDash([8,8]);
+   cx.strokeStyle='#ff9a9c';cx.lineWidth=1.5;
+   cx.beginPath();cx.arc(h.x,h.y,h.r+6,0,TAU);cx.stroke();
+   cx.setLineDash([]);
+   cx.strokeStyle=imminent?'#fff5d9':'#ffccd0';cx.lineWidth=2.8;
+   cx.beginPath();cx.arc(h.x,h.y,Math.max(2,h.r*(1-k)),0,TAU);cx.stroke();
+   cx.fillStyle=imminent?'#fff5d9':'#ffb2b8';
+   cx.beginPath();cx.moveTo(h.x-6,h.y-6);cx.lineTo(h.x+6,h.y+6);
+   cx.moveTo(h.x+6,h.y-6);cx.lineTo(h.x-6,h.y+6);cx.lineWidth=2;cx.strokeStyle=cx.fillStyle;cx.stroke();
   }
   cx.restore();
  }
