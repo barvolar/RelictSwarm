@@ -25,9 +25,20 @@ const js=order.map((p,i)=>read(p)+(i===0?'\n'+embeddedRules+'\n':'')).join('');
 const template=read('src/index.template.html');
 if ((template.match(/%%RELICT_STYLE%%/g)||[]).length!==1 || (template.match(/%%RELICT_MAIN_SCRIPT%%/g)||[]).length!==1) throw Error('Invalid build template');
 const styles=JSON.parse(read('src/style-order.json')).map(read).join('');
-const html=template.replace('%%RELICT_STYLE%%',styles).replace('%%RELICT_MAIN_SCRIPT%%',js);
+const platformCode=read('src/platform/platform-bridge.js');
+const base=template.replace('%%RELICT_STYLE%%',styles)
+  .replace('%%RELICT_MAIN_SCRIPT%%',js)
+  .replace('%%RELICT_PLATFORM_BRIDGE%%',platformCode);
+const html=base.replace('%%RELICT_SDK_LOADER%%','');
+const yandexHtml=base.replace('%%RELICT_SDK_LOADER%%',
+  '<script>window.RELICT_PLATFORM="yandex"</script>\\n<script src="/sdk.js"></script>');
+
 const dist=path.join(root,'dist'); fs.mkdirSync(dist,{recursive:true});
 fs.writeFileSync(path.join(dist,'index.html'),html);
+// Explicit platform edition: never point GitHub Pages at /sdk.js.
+const yandexDir=path.join(dist,'yandex');fs.mkdirSync(yandexDir,{recursive:true});
+fs.writeFileSync(path.join(yandexDir,'index.html'),yandexHtml);
+for(const p of ['telemetry-config.js','telemetry-client.js'])fs.copyFileSync(path.join(root,p),path.join(yandexDir,p));
 const check=path.join(dist,'game-check.js'); fs.writeFileSync(check,js);
 try {execFileSync(process.execPath,['--check',check],{stdio:'pipe'});} finally {fs.rmSync(check,{force:true});}
 for (const p of ['telemetry-config.js','telemetry-client.js','.nojekyll']) fs.copyFileSync(path.join(root,p),path.join(dist,p));
