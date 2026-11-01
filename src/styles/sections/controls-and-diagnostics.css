@@ -9,3 +9,20 @@
 #touchControls #joystick.floating-stick.is-active{opacity:1;visibility:visible}
 #world{touch-action:none}
 
+
+/* Boss health and its warning occupy distinct rows, never the same pixels. */
+#hud .boss-wrap{z-index:2;top:99px;width:min(480px,90vw);max-width:90vw;pointer-events:none}
+#hud .boss-track{position:relative;box-sizing:border-box;overflow:hidden;height:13px;border:1px solid #aa5366;background:#170c18;border-radius:5px}
+#hud .boss-track>div{display:block;box-sizing:border-box;max-width:100%;height:100%;background:linear-gradient(90deg,#cf325b,#ffa181);border-radius:3px 0 0 3px}
+#hud .wavebanner{z-index:1;top:152px;max-width:min(800px,94vw);box-sizing:border-box;text-align:center;white-space:normal;overflow-wrap:break-word;line-height:1.45;pointer-events:none}
+#hud .toast{top:209px}
+@media(max-width:700px), (pointer:coarse) and (max-height:550px){
+ #hud .boss-wrap{top:calc(147px + env(safe-area-inset-top,0px));width:min(390px,92vw)}
+ #hud .wavebanner{top:calc(192px + env(safe-area-inset-top,0px));max-width:92vw}
+ #hud .toast{top:calc(241px + env(safe-area-inset-top,0px))}
+}
+@media(max-height:550px) and (max-width:700px), (pointer:coarse) and (min-width:701px) and (max-height:550px){
+ #hud .boss-wrap{top:calc(112px + env(safe-area-inset-top,0px))}
+ #hud .wavebanner{top:calc(155px + env(safe-area-inset-top,0px))}
+ #hud .toast{top:calc(205px + env(safe-area-inset-top,0px))}
+}
