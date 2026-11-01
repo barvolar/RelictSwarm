@@ -151,7 +151,7 @@
   function setConsent(next) {
     consent = !!next;
     try {localStorage.setItem(CONSENT_KEY, consent ? 'yes' : 'no');} catch {}
-    if (!consent) { queue = []; storeQueue(); }
+    if (!consent) { queue = []; storeQueue(); try{localStorage.removeItem(REJECTED_KEY)}catch{} }
     renderConsent();
     if (consent) flush();
   }
@@ -211,5 +211,5 @@
   // A player may have won on their phone and closed the tab while an oversized
   // finish was stuck locally. Retry that saved event on their next visit.
   if(consent===true)flush();
-  addEventListener('visibilitychange',()=>{if(!document.hidden)flush();});
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden)flush();});
 })();
