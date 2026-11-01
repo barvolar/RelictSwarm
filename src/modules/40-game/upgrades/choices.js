@@ -7,7 +7,8 @@ function rarityRoll(){
  for(let i=0;i<RARITIES.length;i++){k-=weights[i];if(k<=0)return RARITIES[i]}
  return RARITIES[0];
 }
-function upgradeChoices(){
+function upgradeChoices(excluded=[]){
+ const excludedIds=new Set(excluded.map(u=>u.kind+':'+u.id));
  const pool=[];
  for(const id of Object.keys(DRONES)){
   const d=S.drones.find(x=>x.id===id);
@@ -20,9 +21,11 @@ function upgradeChoices(){
     if(id==='heal' && S.player.hp>S.player.maxHp-24)continue;
     pool.push({kind:'stat',id,weight:2.2});
   }
+ // Rerolled offers must not contain any card from the previous set.
+ const available=pool.filter(u=>!excludedIds.has(u.kind+':'+u.id));
  const out=[];
- while(out.length<3&&pool.length){let sum=pool.reduce((a,o)=>a+o.weight,0),r=rand(0,sum),chosen=pool[pool.length-1];for(const o of pool){r-=o.weight;if(r<=0){chosen=o;break}}
-  out.push(chosen);pool.splice(pool.indexOf(chosen),1);
+ while(out.length<3&&available.length){let sum=available.reduce((a,o)=>a+o.weight,0),r=rand(0,sum),chosen=available[available.length-1];for(const o of available){r-=o.weight;if(r<=0){chosen=o;break}}
+  out.push(chosen);available.splice(available.indexOf(chosen),1);
  }
  return out;
 }
