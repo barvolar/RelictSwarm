@@ -90,6 +90,24 @@ button.forge-card:hover{filter:brightness(1.25)}.forge-card.is-done{border-color
 @media(max-height:600px){#trainingPanel{top:85px;max-height:calc(100vh - 105px)}}
 .tp-preview{margin:9px 0;padding:9px 10px;border:1px solid #315875;background:#0b2334;display:grid;gap:5px;font-size:10px;color:#b7d6e2}.tp-preview>b{font-size:9px;color:#7fe0cb;letter-spacing:1px}.tp-preview small{font-size:9px;color:#7497a8;line-height:1.35}
 
+
+
+/* Only bundled in the isolated QA build: pause-time gameplay inspection tools. */
+.qa-pause{margin:16px 0;padding:12px;border:1px solid #4c949a;background:#081e2af0;border-radius:7px;color:#cbeef0}
+.qa-pause summary{font-weight:900;color:#8ef4e4;cursor:pointer;font-size:12px;letter-spacing:.4px}
+.qa-pause p,.qa-pause small{color:#9fb8c4;font-size:11px;line-height:1.55}
+.qa-pause label{display:grid;gap:4px;min-width:0;font-size:11px;color:#99dacc;margin:8px 0}
+.qa-pause input,.qa-pause select,.qa-pause button{box-sizing:border-box;min-height:36px;font:700 12px inherit;background:#123246;color:#eefcff;border:1px solid #457080;border-radius:5px;padding:7px;max-width:100%}
+.qa-pause select{width:100%;font-family:inherit}
+.qa-pause input{width:100%;font-family:inherit}
+.qa-pause button{font-family:inherit;cursor:pointer;flex:1;min-width:0;white-space:normal}
+.qa-pause button:hover{background:#1a4656;border-color:#8ef4e4}
+.qa-row{display:flex;align-items:end;gap:8px;margin:8px 0}
+.qa-row label,.qa-row select{flex:1;min-width:0}
+.qa-row label{margin:0}
+.qa-inventory{display:flex;flex-wrap:wrap;gap:5px;margin:8px 0}
+.qa-inventory span{font-size:10px;padding:5px 7px;border:1px solid #2d5965;background:#112b3c}
+@media(max-width:480px){.qa-pause{padding:9px}.qa-row{gap:5px}.qa-pause button{font-size:10px}}
 /* v0.9.2 embedded original soundtrack and effect samples. */
 .audio-mixer{margin-top:12px;padding:13px 14px;border:1px solid #31556b;background:linear-gradient(110deg,#0c2331,#0a1727);border-radius:5px;display:grid;gap:10px}
 .audio-mixer-head{display:flex;align-items:center;justify-content:space-between;gap:8px;font-weight:900;letter-spacing:1.3px;color:#79ddce;font-size:10px}
@@ -896,7 +914,7 @@ const RAID_EVENTS=[
  {t:835,name:'ПОСЛЕДНИЙ РУБЕЖ РОЯ',units:[['hive',4],['brute',7],['sentry',9]]}
 ];
 const BOSS_EVENTS=[{t:180,id:'boss1'},{t:420,id:'boss2'},{t:660,id:'boss3'},{t:900,id:'omega'}];
-const SYNTH_EVENTS=[{t:365,id:'synth1'},{t:550,id:'synth2'},{t:765,id:'synth3'}];
+const SYNTH_EVENTS=[{t:265,id:'synth1'},{t:550,id:'synth2'},{t:765,id:'synth3'}];
 let trainingMode=false,trainingSelected='pulse',trainingThreat='dummies',trainingPanelOpen=true,trainingRecord={damage:0,hits:[],lastDps:0},trainingRespawn=0;
 // Cosmetic looks: saved separately from weapon stats, hull, and progression.
 const SKINS={
@@ -1558,7 +1576,62 @@ function balFinalize(won,giveup){
 }
 function start(){perfReset();trainingMode=false;runId++;selectedThreat=Math.max(1,Math.min(save.threatUnlocked,selectedThreat));S={threat:selectedThreat,t:0,elapsed:0,player:{x:0,y:0,hp:120+metaBonus('hull'),maxHp:120+metaBonus('hull'),speed:225*(1+metaBonus('speed')),rad:17,inv:1,hit:0,dx:0,dy:-1,dashCd:0,dashTime:0,regen:metaBonus('regen')},cam:{x:0,y:0},lvl:1,xp:0,xpNeed:19,playerDmg:1+metaBonus('power'),magnet:100+metaBonus('magnet'),haste:1+metaBonus('haste'),armor:metaBonus('armor'),healBonus:metaBonus('repair'),critChance:metaBonus('critChance'),critMultiplier:1.5+metaBonus('critDamage'),xpBonus:metaBonus('xp'),buffDuration:1+metaBonus('duration'),dashCooldown:3.6*(1-metaBonus('dash')),score:0,kills:0,shards:0,enemy:[],bullets:[],enemyBullets:[],pickups:[],parts:[],fx:[],floaters:[],drones:[{id:'pulse',lvl:1,cd:0,hitCd:0,mods:{}}],mines:[],gravityWells:[],effects:[],chains:[],hazards:[],hybrids:[],fusionCores:0,synthFlags:[false,false,false],powerupClock:25,rageTimer:0,invulnTimer:0,magnetTimer:0,dead:false,wins:false,spawn:0,spawnCount:0,raidFlags:RAID_EVENTS.map(()=>false),upgrades:[],pendingUp:0,rerollsRemaining:1,rerollsUsed:0,bossFlags:BOSS_EVENTS.map(()=>false),bosses:[],clock:0,regenT:0};balInit();$('bossWrap').classList.add('hidden');$('wavebanner').classList.add('hidden');$('toast').classList.add('hidden');setMode('playing');toast('СИСТЕМА АКТИВИРОВАНА // СОБИРАЙ ДАННЫЕ');sfx('level',.75);for(let i=0;i<9;i++)spawnEnemy('scarab',i*TAU/9,rand(235,340));updateHUD()}
 function weaponSummary(){return `<div class="line"></div><div class="label">КОНФИГУРАЦИЯ ОРУЖИЯ</div><div class="tiny" style="margin:10px 0;line-height:1.9">${S.drones.map(d=>`<b style="color:${DRONES[d.id].color}">${DRONES[d.id].name} ур. ${d.lvl}</b>: ${weaponBranches(d.id).filter(m=>wm(d,m[0])>0).map(m=>m[1]+' '+wm(d,m[0])).join(', ')||'Без модулей'}`).join('<br>')}</div>`}
-function pause(){if(mode!=='playing')return;if(trainingMode){setMode('paused');$('modalContent').innerHTML=`<div class="label">[ ПОЛИГОН ]</div><div class="panel-title">Испытание приостановлено</div><p class="panel-desc">Изменения оружия здесь не сохраняются в обычный забег.</p><div class="button-row"><button class="btn primary" id="resumeBtn">▶ ПРОДОЛЖИТЬ</button><button class="btn ghost" id="quitBtn">◂ В ГЛАВНОЕ МЕНЮ</button></div>`;$('resumeBtn').onclick=resume;$('quitBtn').onclick=leaveTraining;return;}setMode('paused');$('modalContent').innerHTML=`<div class="label">[ ПАУЗА ]</div><div class="panel-title" style="margin-top:9px">Система ожидает</div><p class="panel-desc">На поле уже ${S.kills} обломков. Машины терпеливо дождутся твоего возвращения.</p>${weaponSummary()}${renderQualityControls()}<div class="button-row"><button id="resumeBtn" class="btn primary">▶ ПРОДОЛЖИТЬ</button><button id="quitBtn" class="btn ghost">ЗАВЕРШИТЬ ЗАБЕГ</button></div>`;$('resumeBtn').onclick=resume;$('quitBtn').onclick=()=>finish(false,true)}
+// Isolated gameplay QA build only: debug controls appear during ordinary pause.
+let qaWeapon='pulse',qaEnemy='scarab',qaSlot='new',qaCount=12,qaLevel=1;
+function qaPauseHTML(){
+ const opts=(map,picked)=>Object.entries(map).map(([id,v])=>'<option value="'+id+'"'+(id===picked?' selected':'')+'>'+v.name+'</option>').join('');
+ const slots='<option value="new">Свободный слот</option>'+S.drones.map((d,i)=>'<option value="'+i+'"'+(qaSlot===String(i)?' selected':'')+'>'+(i+1)+': '+DRONES[d.id].name+'</option>').join('');
+ const active=S.drones[Number(qaSlot)];
+ const mods=active?weaponBranches(active.id).map(([key,name])=>'<option value="'+key+'">'+name+' +'+wm(active,key)+'</option>').join(''):'';
+ return '<details class="qa-pause" id="qaPause" open><summary>⚙ ТЕСТОВАЯ ПАНЕЛЬ: ОРУЖИЕ И ВРАГИ</summary>'+
+ '<p>Меняй арсенал и создавай врагов прямо во время паузы. Текущий опубликованный билд не затрагивается.</p>'+
+ '<div class="qa-inventory">'+(S.drones.map((d,i)=>'<span>'+(i+1)+'. '+DRONES[d.id].name+' ур.'+d.lvl+'</span>').join('')||'Оружия нет')+'</div>'+
+ '<label>Оружие<select id="qaWeapon">'+opts(DRONES,qaWeapon)+'</select></label>'+
+ '<label>Слот<select id="qaSlot">'+slots+'</select></label>'+
+ '<div class="qa-row"><label>Уровень<input id="qaLevel" type="number" min="1" max="150" value="'+qaLevel+'"></label><button id="qaEquip" type="button">ДОБАВИТЬ / ЗАМЕНИТЬ</button></div>'+
+ (active?'<div class="qa-row"><select id="qaMod">'+mods+'</select><button id="qaBoost" type="button">+5 УЛУЧШЕНИЙ</button></div>':'')+
+ '<div class="qa-row"><button id="qaRemove" type="button">УБРАТЬ СЛОТ</button><button id="qaEmpty" type="button">ОЧИСТИТЬ АРСЕНАЛ</button></div>'+
+ '<label>Тип врага<select id="qaEnemy">'+opts(ENEMY,qaEnemy)+'</select></label>'+
+ '<div class="qa-row"><label>Количество<input id="qaCount" type="number" min="1" max="40" value="'+qaCount+'"></label><button id="qaSpawn" type="button">СОЗДАТЬ ВРАГОВ</button></div>'+
+ '<div class="qa-row"><button id="qaKill" type="button">УБРАТЬ ВРАГОВ</button><button id="qaCore" type="button">+1 ЯДРО</button></div>'+
+ '<small>Боссы создаются по одному; обычные враги ограничены лимитом игры. После настройки нажми «Продолжить».</small></details>';
+}
+
+function qaWirePause(){
+ const el=id=>document.getElementById(id);
+ const refresh=()=>{el('qaPause').outerHTML=qaPauseHTML();qaWirePause();updateHUD();};
+ el('qaWeapon').onchange=()=>qaWeapon=el('qaWeapon').value;
+ el('qaEnemy').onchange=()=>qaEnemy=el('qaEnemy').value;
+ el('qaSlot').onchange=()=>{qaSlot=el('qaSlot').value;refresh();};
+ el('qaLevel').onchange=()=>qaLevel=Math.max(1,Math.min(150,+el('qaLevel').value||1));
+ el('qaCount').onchange=()=>qaCount=Math.max(1,Math.min(40,+el('qaCount').value||1));
+ el('qaEquip').onclick=()=>{
+  qaLevel=Math.max(1,Math.min(150,+el('qaLevel').value||1));
+  if(qaSlot==='new'&&S.drones.length>=MAX_WEAPONS){toast('ВЫБЕРИ СЛОТ ДЛЯ ЗАМЕНЫ',2);return;}
+  const d={id:qaWeapon,lvl:qaLevel,mods:{},cd:0,hitCd:0};
+  if(qaSlot==='new')S.drones.push(d);else S.drones[+qaSlot]=d;
+  qaSlot=String(S.drones.indexOf(d));qaSyncFusions();refresh();
+ };
+ if(el('qaBoost'))el('qaBoost').onclick=()=>{
+  const d=S.drones[+qaSlot],key=el('qaMod').value;if(!d||!key)return;
+  d.mods[key]=(d.mods[key]||0)+5;d.lvl+=5;refresh();
+ };
+ el('qaRemove').onclick=()=>{if(qaSlot!=='new'&&S.drones[+qaSlot]){S.drones.splice(+qaSlot,1);qaSlot='new';qaSyncFusions();refresh();}};
+ el('qaEmpty').onclick=()=>{S.drones=[];S.hybrids=[];qaSlot='new';refresh();};
+ el('qaSpawn').onclick=()=>{
+  qaCount=Math.max(1,Math.min(40,+el('qaCount').value||1));
+  const boss=qaEnemy.startsWith('boss')||qaEnemy.startsWith('synth')||qaEnemy==='omega';
+  const n=boss?1:qaCount;
+  for(let i=0;i<n;i++)spawnEnemy(qaEnemy,TAU*(i+.5)/n,210+(i%4)*62);
+  refresh();
+ };
+ el('qaKill').onclick=()=>{S.enemy=[];S.bosses=[];S.enemyBullets=[];S.hazards=[];S.chains=[];refresh();};
+ el('qaCore').onclick=()=>{S.fusionCores++;refresh();};
+}
+function qaSyncFusions(){
+ S.hybrids=S.drones.filter(d=>d.id.startsWith('fusion_')).map(d=>({id:d.id.slice(7)}));
+}
+function pause(){if(mode!=='playing')return;if(trainingMode){setMode('paused');$('modalContent').innerHTML=`<div class="label">[ ПОЛИГОН ]</div><div class="panel-title">Испытание приостановлено</div><p class="panel-desc">Изменения оружия здесь не сохраняются в обычный забег.</p><div class="button-row"><button class="btn primary" id="resumeBtn">▶ ПРОДОЛЖИТЬ</button><button class="btn ghost" id="quitBtn">◂ В ГЛАВНОЕ МЕНЮ</button></div>`;$('resumeBtn').onclick=resume;$('quitBtn').onclick=leaveTraining;return;}setMode('paused');$('modalContent').innerHTML=`<div class="label">[ ПАУЗА ]</div><div class="panel-title" style="margin-top:9px">Система ожидает</div><p class="panel-desc">На поле уже ${S.kills} обломков. Машины терпеливо дождутся твоего возвращения.</p>${weaponSummary()}${renderQualityControls()}${qaPauseHTML()}<div class="button-row"><button id="resumeBtn" class="btn primary">▶ ПРОДОЛЖИТЬ</button><button id="quitBtn" class="btn ghost">ЗАВЕРШИТЬ ЗАБЕГ</button></div>`;$('resumeBtn').onclick=resume;$('quitBtn').onclick=()=>finish(false,true);qaWirePause()}
 function resume(){if(mode!=='paused')return;setMode('playing');last=performance.now()}
 function toast(v,time=2.8){$('toast').textContent=v;$('toast').classList.remove('hidden');showToastUntil=(S?.t||0)+time}
 function banner(v,time=4.5){$('wavebanner').textContent=v;$('wavebanner').classList.remove('hidden');showBannerUntil=S.t+time;/* Баннер и toast показываются независимо: не дублируем одно событие. */if(/БОСС|УГРОЗ|ПРОРЫВ|ПЕРЕХВАТ|ОСАДА|ВТОРАЯ ФАЗА/.test(v))sfx('warning');else clickSound(360,.16,'triangle',.023)}
@@ -1816,7 +1889,7 @@ function forgeReadiness(id){const h=HYBRIDS[id],a=S.drones.find(d=>d.id===h.a),b
  if(S.fusionCores<1)return 'Нужно ядро особого босса синтеза';
  if(S.hybrids.length>=3)return 'Предел: 3 синтеза за забег';
  return '✦ ГОТОВО К ПРЕОБРАЗОВАНИЮ';}
-function openForge(){if(trainingMode){renderTrainingPanel(true);return;}if(!S||mode!=='playing')return;setMode('forge');const ready=eligibleHybrids();$('modalContent').innerHTML=`<div class="label">◈ ПРОТОКОЛ СИНТЕЗА</div><div class="panel-title">ДВА ОРУЖИЯ → ОДНО НОВОЕ</div><p class="panel-desc">Ядра: <b style="color:#ffcb71">◈ ${S.fusionCores}</b>. Уровень оружия не важен: даже оружия 1-го уровня подходят. За камень победи и подбери добычу Хранителя ядра (≈4:25), Кузнеца хаоса (≈9:10) или Сбоя реактора (≈12:45). Синтез <b>уничтожит два исходных оружия</b> и создаст одно уникальное с новой механикой и последующей бесконечной прокачкой.</p><div class="label">${ready.length} РЕЦЕПТОВ ДОСТУПНО · ${Object.keys(HYBRIDS).length} ВСЕГО</div><div class="forge-filter"><label for="recipeFilter">ФИЛЬТР</label><select id="recipeFilter"><option value="all">Все 25 рецептов</option><option value="ready">Только доступные</option>${BASE_WEAPONS.map(id=>`<option value="${id}">${DRONES[id].name}</option>`).join('')}</select><button type="button" id="allRecipes">СБРОСИТЬ</button></div><div class="forge-grid">${Object.entries(HYBRIDS).sort(([id1],[id2])=>Number(ready.includes(id2))-Number(ready.includes(id1))).map(([id,h])=>{const ok=ready.includes(id),done=S.hybrids.some(z=>z.id===id);return `<${ok?'button type="button"':'div'} data-a="${h.a}" data-b="${h.b}" data-ready="${ok}" class="forge-card ${done?'is-done':ok?'is-ready':'is-locked'}" ${ok?`data-forge="${id}"`:''}><b style="color:${h.color}">${h.glyph} ${h.name}</b><small>${DRONES[h.a].name} + ${DRONES[h.b].name}</small><p>${h.desc}</p><small>${forgeReadiness(id)}</small></${ok?'button':'div'}>`}).join('')}</div><button class="btn primary" id="backForge">◂ НАЗАД В БОЙ</button>`;$('modalContent').querySelectorAll('[data-forge]').forEach(el=>el.onclick=()=>forgeHybrid(el.dataset.forge));$('backForge').onclick=()=>{setMode('playing');last=performance.now()};const applyRecipeFilter=()=>{const val=$('recipeFilter').value;for(const el of $('modalContent').querySelectorAll('.forge-card'))el.hidden=val==='all'?false:val==='ready'?el.dataset.ready!=='true':(el.dataset.a!==val&&el.dataset.b!==val)};$('recipeFilter').onchange=applyRecipeFilter;$('allRecipes').onclick=()=>{$('recipeFilter').value='all';applyRecipeFilter()};}
+function openForge(){if(trainingMode){renderTrainingPanel(true);return;}if(!S||mode!=='playing')return;setMode('forge');const ready=eligibleHybrids();$('modalContent').innerHTML=`<div class="label">◈ ПРОТОКОЛ СИНТЕЗА</div><div class="panel-title">ДВА ОРУЖИЯ → ОДНО НОВОЕ</div><p class="panel-desc">Ядра: <b style="color:#ffcb71">◈ ${S.fusionCores}</b>. Уровень оружия не важен: даже оружия 1-го уровня подходят. За камень победи и подбери добычу Хранителя ядра (не раньше ≈4:25), Кузнеца хаоса (≈9:10) или Сбоя реактора (≈12:45). Синтез <b>уничтожит два исходных оружия</b> и создаст одно уникальное с новой механикой и последующей бесконечной прокачкой.</p><div class="label">${ready.length} РЕЦЕПТОВ ДОСТУПНО · ${Object.keys(HYBRIDS).length} ВСЕГО</div><div class="forge-filter"><label for="recipeFilter">ФИЛЬТР</label><select id="recipeFilter"><option value="all">Все 25 рецептов</option><option value="ready">Только доступные</option>${BASE_WEAPONS.map(id=>`<option value="${id}">${DRONES[id].name}</option>`).join('')}</select><button type="button" id="allRecipes">СБРОСИТЬ</button></div><div class="forge-grid">${Object.entries(HYBRIDS).sort(([id1],[id2])=>Number(ready.includes(id2))-Number(ready.includes(id1))).map(([id,h])=>{const ok=ready.includes(id),done=S.hybrids.some(z=>z.id===id);return `<${ok?'button type="button"':'div'} data-a="${h.a}" data-b="${h.b}" data-ready="${ok}" class="forge-card ${done?'is-done':ok?'is-ready':'is-locked'}" ${ok?`data-forge="${id}"`:''}><b style="color:${h.color}">${h.glyph} ${h.name}</b><small>${DRONES[h.a].name} + ${DRONES[h.b].name}</small><p>${h.desc}</p><small>${forgeReadiness(id)}</small></${ok?'button':'div'}>`}).join('')}</div><button class="btn primary" id="backForge">◂ НАЗАД В БОЙ</button>`;$('modalContent').querySelectorAll('[data-forge]').forEach(el=>el.onclick=()=>forgeHybrid(el.dataset.forge));$('backForge').onclick=()=>{setMode('playing');last=performance.now()};const applyRecipeFilter=()=>{const val=$('recipeFilter').value;for(const el of $('modalContent').querySelectorAll('.forge-card'))el.hidden=val==='all'?false:val==='ready'?el.dataset.ready!=='true':(el.dataset.a!==val&&el.dataset.b!==val)};$('recipeFilter').onchange=applyRecipeFilter;$('allRecipes').onclick=()=>{$('recipeFilter').value='all';applyRecipeFilter()};}
 function forgeHybrid(id){if(mode!=='forge'||!eligibleHybrids().includes(id))return;const h=HYBRIDS[id],a=S.drones.find(d=>d.id===h.a),b=S.drones.find(d=>d.id===h.b);
  const newWeapon=createFusionWeapon(id,a,b,weaponBranches('fusion_'+id));
  S.drones=S.drones.filter(d=>d!==a&&d!==b);
@@ -1891,12 +1964,22 @@ function fusionBoomer(pos,target,d,damage,col,n,variant){
  const a=aimGeometry(pos,target);
  for(let k=0;k<Math.min(6,n);k++){
   const angle=Math.atan2(a.dy,a.dx)+(k-(n-1)/2)*.15,source=weaponMuzzle(pos,target,(k-(n-1)/2)*8,20);
-  S.bullets.push({type:'boomer',x:source.x,y:source.y,vx:Math.cos(angle)*505,vy:Math.sin(angle)*505,spd:505,travel:0,range:Math.min(800,260+wm(d,'range')*35),returning:false,owner:d,damage,life:3.7,col,r:15,hitIds:new Set(),pierce:999,fireDisc:variant==='fire',trailClock:0,specialDisc:variant});
+  S.bullets.push({type:'boomer',x:source.x,y:source.y,vx:Math.cos(angle)*505,vy:Math.sin(angle)*505,spd:505,travel:0,range:Math.min(800,260+wm(d,'range')*35),returning:false,owner:d,damage,life:3.7,col,r:15,hitIds:new Set(),pierce:999,fireDisc:variant==='fire',trailClock:0,specialDisc:variant,mineBlast:58+wm(d,'blast')*16});
  }
 }
-function fusionMine(x,y,damage,col,r,variant){
- S.mines.push({x,y,r:13,blast:r,damage,life:17,arm:.35,col,gravityMine:false,specialMine:variant,freezeStrength:arguments[6]||0});
+function fusionMine(x,y,damage,col,r,variant,freezeStrength=0){
+ S.mines.push({x,y,r:13,blast:r,damage,life:17,arm:.35,col,gravityMine:false,specialMine:variant,freezeStrength});
  if(S.mines.length>48)S.mines.splice(0,S.mines.length-48);
+}
+
+// Shattering adds a short-range explosion to an already frozen target.
+// A lock stops overlapping beams and orbit blades from triggering it every frame.
+function shatterFrozen(e,damage,r=62){
+ if(!e||e.hp<=0||e.frost<=0||(e.shatterLock||0)>S.t)return false;
+ e.frost=0;e.shatterLock=S.t+1.15;
+ damageArea(e.x,e.y,r,damage,{color:'#b9edff',slow:.55});
+ burst(e.x,e.y,'#cbf7ff',12,85);
+ return true;
 }
 function fireFusionSpecial(d,pos,target,base,rank){
  const type=d.id.slice(7),col=DRONES[d.id].color,damage=base*(32+Math.sqrt(rank)*7),rate=wm(d,'rate'),radius=wm(d,'radius');
@@ -1919,7 +2002,7 @@ function fireFusionSpecial(d,pos,target,base,rank){
   for(let j=0;j<count;j++){
    const offset=(j-(count-1)/2)*30;
    const shot=fusionLine(pos,target,13,rayDamage*1.35,740,{color:col,slow:2.3,stun:.25+wm(d,'freeze')*.12,offset});
-   for(const e of shot.hits)e.frost=2.4;
+   for(const e of shot.hits){if(e.hp<=0)continue;shatterFrozen(e,rayDamage*.6,64);e.frost=2.4;applyChill(e,18+wm(d,'freeze')*6);}
    for(let k=1;k<5;k++)fusionField(shot.origin.x+shot.a.dx*k*110,shot.origin.y+shot.a.dy*k*110,23,rayDamage*.11,1.2,'#b9efff');
   }
   return true;
@@ -1931,19 +2014,19 @@ function fireFusionSpecial(d,pos,target,base,rank){
   }burst(target.x,target.y,col,13,100);return true;
  }
  if(type==='siege'){
-  const shot=fusionLine(pos,target,18,damage*2.0,750,{color:col,knock:18});damageArea(target.x,target.y,85+wm(d,'blast')*13,damage*1.15,{color:col,knock:14});
+  const shot=fusionLine(pos,target,18,damage*2.0,Math.min(1300,750+wm(d,'pierce')*90),{color:col,knock:18});damageArea(target.x,target.y,85+wm(d,'blast')*13,damage*1.15,{color:col,knock:14});for(const e of shot.hits.slice(1,1+Math.min(5,wm(d,'pierce'))))if(e.hp>0)damageArea(e.x,e.y,35,damage*.26,{color:col});
   S.fx.push({type:'ring',x:target.x,y:target.y,r:85,life:.5,max:.5,col});return true;
  }
  if(type==='thunder'){
-  const shot=fusionLine(pos,target,11,damage*1.6,780,{color:col,stun:.2});
-  for(const e of shot.hits.slice(0,4))scheduleChain({x:e.x,y:e.y},closest(e.x+25,e.y+25,220,e),3+Math.min(8,wm(d,'jumps')),damage*.5,225,'#d7c4ff',.22);return true;
+  const shot=fusionLine(pos,target,11,damage*1.6,Math.min(1250,780+wm(d,'pierce')*80),{color:col,stun:.2});
+  for(const e of shot.hits.slice(0,Math.min(8,4+wm(d,'pierce'))))scheduleChain({x:e.x,y:e.y},closest(e.x+25,e.y+25,220,e),3+Math.min(8,wm(d,'jumps')),damage*.5,225,'#d7c4ff',.22);return true;
  }
  if(type==='overload'){
-  fusionField(target.x,target.y,88+radius*15,damage*.2,2.5,'#ab87ff');
+  fusionField(target.x,target.y,88+radius*15,damage*.2,2.5,'#ab87ff',{chain:3+Math.min(5,wm(d,'jumps'))});
   scheduleChain(pos,target,4+wm(d,'jumps'),damage*.8,240,'#d6b5ff',.3);return true;
  }
  if(type==='frostwell'){
-  const r=Math.min(255,125+radius*18);S.gravityWells.push({x:target.x,y:target.y,r,force:170,damage:damage*.16,life:3,clock:.04,col});
+  const r=Math.min(255,125+radius*18);S.gravityWells.push({x:target.x,y:target.y,r,force:170,damage:damage*.16,life:3,clock:.04,col,coldCollapse:damage*.88});
   damageArea(target.x,target.y,r,damage*.7,{color:col,slow:2.5,stun:.4+wm(d,'freeze')*.13});for(const e of S.enemy)if(e.hp>0&&Math.hypot(e.x-target.x,e.y-target.y)<r)e.frost=2.5;return true;
  }
  if(type==='thermoshock'){
@@ -1968,16 +2051,16 @@ function fireFusionSpecial(d,pos,target,base,rank){
   const r=Math.min(260,130+radius*18);S.gravityWells.push({x:target.x,y:target.y,r,force:175+wm(d,'force')*24,damage:damage*.15,life:3,clock:.04,col});fusionField(target.x,target.y,r*.7,damage*.22,2.6,'#ff9450',{fire:true});return true;
  }
  if(type==='frostmine'){
-  for(let k=0;k<Math.min(6,2+wm(d,'count'));k++){const a=S.t*1.7+k*TAU/Math.max(2,2+wm(d,'count'));fusionMine(S.player.x+Math.cos(a)*60,S.player.y+Math.sin(a)*60,damage,col,86+wm(d,'blast')*13,'ice');}return true;
+  for(let k=0;k<Math.min(6,2+wm(d,'count'));k++){const a=S.t*1.7+k*TAU/Math.max(2,2+wm(d,'count'));fusionMine(S.player.x+Math.cos(a)*60,S.player.y+Math.sin(a)*60,damage,col,86+wm(d,'blast')*13,'ice',wm(d,'freeze'));}return true;
  }
  if(type==='plasmamelt'){
   const a=aimGeometry(pos,target),length=Math.min(460,205+wm(d,'range')*23),half=(33+wm(d,'angle')*8)*Math.PI/360;
   for(const e of S.enemy){if(e.hp<=0)continue;const dx=e.x-pos.x,dy=e.y-pos.y,rr=Math.hypot(dx,dy);if(rr<length+e.r&&Math.atan2(Math.abs(a.dx*dy-a.dy*dx),a.dx*dx+a.dy*dy)<half){hurtEnemy(e,damage*.76,{burn:4});}}
-  fusionField(target.x,target.y,75,damage*.22,2.3,'#ff99bb',{fire:true});S.fx.push({type:'flame',x:pos.x,y:pos.y,ang:Math.atan2(a.dy,a.dx),length,half,life:.39,max:.39});return true;
+  for(let k=1;k<=3;k++)fusionField(pos.x+a.dx*length*k/4,pos.y+a.dy*length*k/4,52+wm(d,'angle')*3,damage*.16,2.3,'#ff99bb',{fire:true});S.fx.push({type:'flame',x:pos.x,y:pos.y,ang:Math.atan2(a.dy,a.dx),length,half,life:.39,max:.39});return true;
  }
  if(type==='railplasma'){
   const shot=fusionLine(pos,target,16+wm(d,'width')*4,damage*1.65,820,{color:col,knock:7});
-  for(const e of shot.hits.slice(0,7))fusionField(e.x,e.y,50,damage*.2,2.3,col);return true;
+  for(const e of shot.hits.slice(0,Math.min(15,5+wm(d,'pierce'))))fusionField(e.x,e.y,50,damage*.2,2.3,col);return true;
  }
  return false;
 }
@@ -1997,7 +2080,9 @@ function droneUpdate(dt){
    if(d.hitCd<=0){let found=0;
     for(const pp of positions){for(const e of S.enemy){
       if(e.hp>0&&Math.hypot(e.x-pp.x,e.y-pp.y)<e.r+(26+Math.min(12,Math.sqrt(rank)*2))){
-       hurtEnemy(e,(16+Math.sqrt(rank)*4)*baseDmg*speedBoost*overflow,{knock:rank>=7?8:4,burn:thermal?1.3:0,stun:tesla?.08:frost?.35:0,slow:frost?2:0});if(frost)e.frost=Math.max(e.frost||0,1.8);found++;
+       if(frost&&e.frost>0)shatterFrozen(e,18*baseDmg,56);
+       if(e.hp<=0)continue;
+       hurtEnemy(e,(16+Math.sqrt(rank)*4)*baseDmg*speedBoost*overflow,{knock:rank>=7?8:4,burn:thermal?1.3:0,stun:tesla?.08:frost?.35:0,slow:frost?2:0});if(frost&&e.hp>0){e.frost=Math.max(e.frost||0,1.8);applyChill(e,15)}found++;
       }
     }}
     if(tesla&&found){const near=closest(pos.x,pos.y,280);if(near)scheduleChain(pos,near,2+Math.min(8,wm(d,'jumps')),22*baseDmg,235,'#ffe9a1',.20)}
@@ -2048,9 +2133,16 @@ function droneUpdate(dt){
   }
   if(d.id==='fusion_starfall'||d.id==='fusion_predator'){
    const star=d.id==='fusion_starfall',n=Math.min(8,3+wm(d,'salvo'));
-   if(!star){S.fx.push({type:'beam',a:weaponMuzzle(pos,target,0,30),b:{x:target.x,y:target.y},life:.28,max:.28,col:RED,width:4});target.marked=4;}
+   let marks=[target];
+   if(!star){
+    const maxMarks=1+Math.min(4,wm(d,'beams'));
+    marks=S.enemy.filter(e=>e.hp>0&&Math.hypot(e.x-target.x,e.y-target.y)<260)
+     .sort((a,b)=>Math.hypot(a.x-target.x,a.y-target.y)-Math.hypot(b.x-target.x,b.y-target.y)).slice(0,maxMarks);
+    if(!marks.length)marks=[target];
+    for(const e of marks){e.marked=4;S.fx.push({type:'beam',a:weaponMuzzle(pos,e,0,30),b:{x:e.x,y:e.y},life:.28,max:.28,col:RED,width:4});}
+   }
    for(let j=0;j<n;j++){const angle=j*TAU/n+S.t;
-    S.bullets.push({type:'rocket',x:pos.x+Math.cos(angle)*14,y:pos.y+Math.sin(angle)*14,vx:Math.cos(angle)*90,vy:Math.sin(angle)*90,target,spd:390,life:4,r:7,dmg:(star?39:47)*baseDmg,col:star?BLUE:RED,blast:Math.min(175,74+wm(d,'blast')*19),hybrid:star?'starfall':'predator'});
+    S.bullets.push({type:'rocket',x:pos.x+Math.cos(angle)*14,y:pos.y+Math.sin(angle)*14,vx:Math.cos(angle)*90,vy:Math.sin(angle)*90,target:star?target:marks[j%marks.length],spd:390,life:4,r:7,dmg:(star?39:47)*baseDmg,col:star?BLUE:RED,blast:Math.min(175,74+wm(d,'blast')*19),hybrid:star?'starfall':'predator'});
    }continue;
   }
   // v0.7: each recipe below is a real alternative combat mechanism, not just a renamed drone.
@@ -2072,7 +2164,7 @@ function droneUpdate(dt){
    const isIce=d.id==='fusion_glacier',a=aimGeometry(pos,target),origin=weaponMuzzle(pos,target,0,27),length=Math.min(1500,640+55*Math.sqrt(wm(d,'pierce'))),width=(isIce?17:11)+6*Math.sqrt(wm(d,'width'));
    const end={x:origin.x+a.dx*length,y:origin.y+a.dy*length};
    let hits=0;
-   for(const e of S.enemy){if(e.hp>0&&pointSegmentDist(e.x,e.y,origin.x,origin.y,end.x,end.y)<e.r+width/2){hurtEnemy(e,((isIce?84:100)*baseDmg+rank*7)*attackOverflow,{knock:isIce?8:20,stun:isIce?.9+wm(d,'freeze')*.13:.07,slow:isIce?2.2:0});hits++;}}
+   for(const e of S.enemy){if(e.hp>0&&pointSegmentDist(e.x,e.y,origin.x,origin.y,end.x,end.y)<e.r+width/2){if(isIce&&e.frost>0)shatterFrozen(e,20*baseDmg,60);if(e.hp<=0)continue;hurtEnemy(e,((isIce?84:100)*baseDmg+rank*7)*attackOverflow,{knock:isIce?8:20,stun:isIce?.9+wm(d,'freeze')*.13:.07,slow:isIce?2.2:0});if(isIce&&e.hp>0){e.frost=1.9;applyChill(e,21+wm(d,'freeze')*6);}hits++;}}
    S.fx.push({type:'rail',a:origin,b:end,life:.44,max:.44,col:isIce?'#a6edff':'#ffd886',width});
    burst(origin.x,origin.y,isIce?'#b6f4ff':'#ffecb9',21,120);if(hits)shake=Math.max(shake,4);continue;
   }
@@ -2147,7 +2239,7 @@ function updateAreaWeapons(dt){
   if(mine.gravityMine)for(const e of S.enemy){if(e.hp<=0||e.elite)continue;const dx=mine.x-e.x,dy=mine.y-e.y,dd=Math.hypot(dx,dy);if(dd<mine.gravRadius&&dd>5){e.x+=dx/dd*mine.force*dt;e.y+=dy/dd*mine.force*dt;}}
   const e=closest(mine.x,mine.y,28);if(e){sfx('explosion',mine.gravityMine?1:.7);damageArea(mine.x,mine.y,mine.blast,mine.damage,{color:mine.col,knock:16,burn:mine.specialMine==='ice'?0:.5,slow:mine.specialMine==='ice'?3:0,stun:mine.specialMine==='ice'?.5+(mine.freezeStrength||0)*.13:0});if(mine.specialMine==='ice')fusionField(mine.x,mine.y,mine.blast*.8,mine.damage*.10,2.5,'#a3ebff',{ice:true,chill:12+(mine.freezeStrength||0)*5});mine.life=-1;S.fx.push({type:'ring',x:mine.x,y:mine.y,r:mine.blast,life:.5,max:.5,col:mine.col});shake=Math.max(shake,3)}
  }S.mines=S.mines.filter(m=>m.life>0);
- for(const g of S.gravityWells){g.life-=dt;g.clock-=dt;if(g.life<=0&&!g.collapsed){g.collapsed=true;sfx('gravityCollapse',.65);if(g.coldCollapse){damageArea(g.x,g.y,g.r,g.coldCollapse,{color:'#a9edff',slow:2,stun:.35});for(const foe of S.enemy)if(foe.hp>0&&Math.hypot(foe.x-g.x,foe.y-g.y)<g.r)applyChill(foe,45);}}
+ for(const g of S.gravityWells){g.life-=dt;g.clock-=dt;if(g.life<=0&&!g.collapsed){g.collapsed=true;sfx('gravityCollapse',.65);if(g.coldCollapse){damageArea(g.x,g.y,g.r,g.coldCollapse,{color:'#a9edff',slow:2,stun:.35});for(const foe of [...S.enemy])if(foe.hp>0&&Math.hypot(foe.x-g.x,foe.y-g.y)<g.r){shatterFrozen(foe,g.coldCollapse*.55,56);if(foe.hp>0)applyChill(foe,45);}}}
   for(const e of S.enemy){if(e.hp<=0||e.elite)continue;const dx=g.x-e.x,dy=g.y-e.y,d=Math.hypot(dx,dy);if(d<g.r&&d>8){const force=g.force*(.45+.55*(1-d/g.r));e.x+=dx/d*force*dt;e.y+=dy/d*force*dt;e.slow=Math.max(e.slow,.12);}}
   if(g.clock<=0){g.clock=.27;for(const e of S.enemy){if(e.hp>0&&Math.hypot(e.x-g.x,e.y-g.y)<e.r+g.r)hurtEnemy(e,g.damage,{slow:.22})}}
  }S.gravityWells=S.gravityWells.filter(g=>g.life>0);
@@ -2166,14 +2258,14 @@ function updateProjectiles(dt){for(let b of S.bullets){b.life-=dt;
  }else if(b.type==='boomer'){
    b.travel+=b.spd*dt;const ownerPos=getDronePos(b.owner,Math.max(0,S.drones.indexOf(b.owner)));
    if(!b.returning&&b.travel>=b.range){b.returning=true;b.hitIds.clear();sfx('boomerReturn',.55)}
-   if(b.specialDisc){b.trailClock-=dt;if(b.trailClock<=0){if(b.specialDisc==='mine')fusionMine(b.x,b.y,b.damage*.58,'#ffd78f',58,'normal');b.trailClock=.24;}}
+   if(b.specialDisc){b.trailClock-=dt;if(b.trailClock<=0){if(b.specialDisc==='mine')fusionMine(b.x,b.y,b.damage*.58,'#ffd78f',b.mineBlast||58,'normal');b.trailClock=.24;}}
    if(b.fireDisc){b.trailClock-=dt;if(b.trailClock<=0){b.trailClock=.22;if(S.effects.filter(x=>x.infernoTrail).length<35)S.effects.push({x:b.x,y:b.y,r:24,life:1.9,clock:0,damage:b.damage*.16,col:'#ff8f4f',fire:true,infernoTrail:true});}}
    if(b.returning){const vec=hypot(ownerPos.x-b.x,ownerPos.y-b.y);b.vx=(ownerPos.x-b.x)/vec*b.spd*1.35;b.vy=(ownerPos.y-b.y)/vec*b.spd*1.35;if(vec<25)b.life=-1;}
    b.x+=b.vx*dt;b.y+=b.vy*dt;for(const e of S.enemy){if(e.hp<=0||b.hitIds.has(e))continue;if(Math.hypot(e.x-b.x,e.y-b.y)<e.r+b.r){hurtEnemy(e,b.damage,{knock:7,burn:b.fireDisc?2.2:0});b.hitIds.add(e);if(b.specialDisc==='lightning')scheduleChain({x:b.x,y:b.y},e,3+Math.min(10,wm(b.owner,'jumps')),b.damage*.42,180,'#c3baff',.17);burst(e.x,e.y,b.col,4,60)}}
   }else if(b.type==='rocket'){if(!b.target||b.target.hp<=0)b.target=closest(b.x,b.y,420);if(b.target){let m=hypot(b.target.x-b.x,b.target.y-b.y),tx=(b.target.x-b.x)/m*b.spd,ty=(b.target.y-b.y)/m*b.spd;b.vx=lerp(b.vx,tx,Math.min(1,dt*5));b.vy=lerp(b.vy,ty,Math.min(1,dt*5))}b.x+=b.vx*dt;b.y+=b.vy*dt;const e=closest(b.x,b.y,19);if(e||b.life<=0){sfx('explosion',b.hybrid==='napalm'?1.1:.74);damageArea(b.x,b.y,b.blast,b.dmg,{color:b.hybrid==='starfall'?BLUE:b.hybrid==='napalm'?'#ff904f':RED,slow:b.hybrid==='starfall'?.8:0,knock:11,burn:b.hybrid==='napalm'?2.8:0,markedMultiplier:b.hybrid==='predator'?1.65:1});if(b.hybrid==='napalm')fusionField(b.x,b.y,b.blast*.95,b.dmg*.19,3,'#ff8742',{fire:true});if(b.hybrid==='starfall'){S.effects.push({x:b.x,y:b.y,r:73,life:1.65,clock:0,damage:b.dmg*.25,col:BLUE});burst(b.x,b.y,'#bef5ff',25,230);}b.life=-1;shake=Math.max(shake,2)}}else{b.x+=b.vx*dt;b.y+=b.vy*dt;for(let e of S.enemy){if(e.hp>0&&!(b.hitIds&&b.hitIds.has(e))&&Math.abs(e.x-b.x)<e.r+b.r&&Math.abs(e.y-b.y)<e.r+b.r&&Math.hypot(e.x-b.x,e.y-b.y)<e.r+b.r){hurtEnemy(e,b.dmg,{knock:5});if((b.type==='pulse'||b.type==='fusion_ion')&&performance.now()/1000-lastLaserImpact>.085){sfx('laserHit',.70);lastLaserImpact=performance.now()/1000}if(b.hitIds)b.hitIds.add(e);burst(b.x,b.y,TEAL,3,65);if(b.pierce>0){b.pierce--;b.dmg*=.75;b.x+=b.vx*dt*3;b.y+=b.vy*dt*3}else b.life=-1;break}}}}
  S.bullets=S.bullets.filter(b=>b.life>0);
  for(let b of S.enemyBullets){b.life-=dt;b.x+=b.vx*dt;b.y+=b.vy*dt;if(Math.hypot(S.player.x-b.x,S.player.y-b.y)<S.player.rad+b.r){hitPlayer(b.dmg,b.x,b.y);b.life=-1;burst(b.x,b.y,RED,6,60)}}S.enemyBullets=S.enemyBullets.filter(b=>b.life>0);
- for(let eff of S.effects){eff.life-=dt;eff.clock-=dt;if(eff.clock<=0){eff.clock=.28;for(let e of S.enemy){if(e.hp>0&&Math.hypot(e.x-eff.x,e.y-eff.y)<e.r+eff.r){hurtEnemy(e,eff.damage,{slow:eff.ice?1.2:.34,burn:eff.fire?.5:0});if(eff.ice)applyChill(e,eff.chill||9)}}}if(eff.chain&&eff.life>0){const near=closest(eff.x,eff.y,eff.r);if(near)scheduleChain({x:eff.x,y:eff.y},near,Math.min(7,eff.chain),eff.damage*1.1,Math.min(200,eff.r+60),'#ceb0ff',.16)}}S.effects=S.effects.filter(x=>x.life>0);
+ for(let eff of S.effects){eff.life-=dt;eff.clock-=dt;eff.chainClock=(eff.chainClock??0)-dt;if(eff.clock<=0){eff.clock=.28;for(let e of S.enemy){if(e.hp>0&&Math.hypot(e.x-eff.x,e.y-eff.y)<e.r+eff.r){hurtEnemy(e,eff.damage,{slow:eff.ice?1.2:.34,burn:eff.fire?.5:0});if(eff.ice)applyChill(e,eff.chill||9)}}}if(eff.chain&&eff.life>0&&eff.chainClock<=0){eff.chainClock=.65;const near=closest(eff.x,eff.y,eff.r);if(near)scheduleChain({x:eff.x,y:eff.y},near,Math.min(7,eff.chain),eff.damage*1.1,Math.min(200,eff.r+60),'#ceb0ff',.16)}}S.effects=S.effects.filter(x=>x.life>0);
  updateChains(dt);for(let fx of S.fx)fx.life-=dt;S.fx=S.fx.filter(x=>x.life>0);if(S.fx.length>180)S.fx.splice(0,S.fx.length-180);
 }
 
