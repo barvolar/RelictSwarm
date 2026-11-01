@@ -7,7 +7,7 @@ function fusionLine(pos,target,width,damage,length,opts={}){
 }
 function fusionField(x,y,r,damage,life,col,opts={}){
  if(S.effects.length>64)S.effects.shift();
- S.effects.push({x,y,r,life,clock:0,damage,col,fire:!!opts.fire});
+ S.effects.push({x,y,r,life,clock:0,damage,col,fire:!!opts.fire,ice:!!opts.ice,chill:opts.chill||0,chain:opts.chain||0});
  S.fx.push({type:'ring',x,y,r,life:.48,max:.48,col});
 }
 function fusionRocket(pos,target,dmg,col,variant,blast,n=1){
@@ -24,6 +24,6 @@ function fusionBoomer(pos,target,d,damage,col,n,variant){
  }
 }
 function fusionMine(x,y,damage,col,r,variant){
- S.mines.push({x,y,r:13,blast:r,damage,life:17,arm:.35,col,gravityMine:false,specialMine:variant});
+ S.mines.push({x,y,r:13,blast:r,damage,life:17,arm:.35,col,gravityMine:false,specialMine:variant,freezeStrength:arguments[6]||0});
  if(S.mines.length>48)S.mines.splice(0,S.mines.length-48);
 }
