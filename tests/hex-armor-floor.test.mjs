@@ -8,7 +8,7 @@ const source=fs.readFileSync(new URL('../src/modules/70-render/layers/background
 function drawSample(camX=0,camY=0,zoom=1){
  const fills=[],strokes=[],calls={path:0};
  const cx={
-  save(){},restore(){},translate(){},
+  save(){},restore(){},translate(){},rotate(){},
   beginPath(){calls.path++;},moveTo(){},lineTo(){},closePath(){},
   fill(){fills.push(this.fillStyle);},stroke(){strokes.push(this.strokeStyle);},
   fillRect(){},strokeRect(){},setLineDash(){},fillText(){}
