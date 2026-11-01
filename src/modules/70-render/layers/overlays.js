@@ -1,3 +1,23 @@
-function drawScreenTint(){let g=cx.createRadialGradient(W*.5,H*.45,Math.min(W,H)*.17,W*.5,H*.55,Math.max(W,H)*.83);g.addColorStop(0,'#06151b00');g.addColorStop(.75,'#02050b35');g.addColorStop(1,'#010208be');cx.fillStyle=g;cx.fillRect(0,0,W,H)}
-function drawMenuVisual(){drawBackground(ambient*8,ambient*4);cx.save();cx.translate(W*.5,H*.5);cx.rotate(ambient*.042);for(let i=0;i<3;i++){cx.strokeStyle=['#22425e','#164b50','#20384c'][i];cx.lineWidth=2;cx.setLineDash([8,13]);cx.beginPath();cx.arc(0,0,120+i*95,0,TAU);cx.stroke();cx.setLineDash([])}cx.restore();glow(W*.5,H*.48,Math.min(350,W*.42),TEAL,.12);cx.save();cx.translate(W*.5,H*.5);cx.rotate(ambient*.2);for(let i=0;i<6;i++){let a=i*TAU/6;cx.save();cx.translate(Math.cos(a)*150,Math.sin(a)*150);poly([[0,-10],[8,-3],[9,8],[0,14],[-9,8],[-8,-3]],'#25435a','#4fd1c5',2);circ(0,0,3,i%2?AMBER:TEAL);cx.restore()}cx.restore();drawScreenTint()}
+// Atmospheric edge tint for a mechanical indoor arena.
+function drawScreenTint(){
+ const g=cx.createRadialGradient(W*.5,H*.4,Math.min(W,H)*.23,W*.5,H*.5,Math.max(W,H)*.9);
+ g.addColorStop(0,'#050b1000');g.addColorStop(.8,'#0104093b');g.addColorStop(1,'#000307b8');
+ cx.fillStyle=g;cx.fillRect(0,0,W,H);
+}
+// Menu hangar: an inactive assembly reactor behind the foreground controls.
+function drawMenuVisual(){
+ drawBackground(ambient*1.5,ambient*.7);
+ cx.save();cx.translate(W*.5,H*.51);
+ cx.rotate(-.23);
+ drawReactorSeal(0,0,155,7);
+ for(const side of [-1,1]){
+  rect(side*205-12,-210,24,420,'#101b22');
+  rect(side*205-4,-206,8,412,'#53616a');
+  for(let i=-3;i<=3;i++){
+   rect(side*205-17,i*53-12,34,8,'#775934');
+  }
+ }
+ cx.restore();
+ drawScreenTint();
+}
 function arenaZoom(){if(!touching)return 1;if(W<=390)return .52;if(W<=430)return .56;if(W<=650)return .62;return .82;}
