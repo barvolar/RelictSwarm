@@ -1,16 +1,39 @@
+// Four graphics presets. Gameplay and enemy simulation never depend on visual quality.
 const renderQualityKey='relictswarm_render_quality';
+const RENDER_PRESETS=[
+ {id:'high',name:'ВЫСОКОЕ',desc:'Полная детализация, максимум эффектов и разрешения.'},
+ {id:'normal',name:'ОБЫЧНОЕ',desc:'Детальные враги и сбалансированные эффекты.'},
+ {id:'low',name:'НИЗКОЕ',desc:'Детальные враги, меньше свечений и частиц.'},
+ {id:'minimal',name:'МИНИМАЛЬНОЕ',desc:'Облегчённые враги и минимальная графическая нагрузка.'}
+];
 let renderQuality='normal';
-try{renderQuality=localStorage.getItem(renderQualityKey)==='eco'?'eco':'normal'}catch{}
-// Resolution is a rendering-only budget. Never change enemy counts, collision or weapon damage.
+try{
+ const stored=localStorage.getItem(renderQualityKey);
+ // Old ECO upgrades to LOW instead of unexpectedly replacing enemies with polygons.
+ renderQuality=stored==='eco'?'low':RENDER_PRESETS.some(p=>p.id===stored)?stored:'normal';
+}catch{}
 let adaptiveRenderScale=1,adaptiveRenderLastChange=-100;
-function renderIsLite(){return renderQuality==='eco'||adaptiveRenderScale<.99}
-function effectiveRenderDpr(){
- const touch=matchMedia('(pointer:coarse)').matches||'ontouchstart' in window;
- const base=Math.min(devicePixelRatio||1,touch?(renderQuality==='eco'?1.25:2):2);
- const ecoCap=renderQuality==='eco'?(touch?1.0:.8):base;
- return Math.max(.5,Math.min(base,ecoCap)*adaptiveRenderScale);
+function renderSimplifyEnemies(){return renderQuality==='minimal'}
+function renderIsLite(){return renderQuality==='low'||renderQuality==='minimal'||adaptiveRenderScale<.99}
+function renderGlowFactor(){return renderQuality==='high'?1:renderQuality==='normal'?.85:renderQuality==='low'?.4:0}
+function renderEffectDensity(){
+ const base=renderQuality==='high'?1.2:renderQuality==='normal'?1:renderQuality==='low'?.55:.32;
+ return base*(adaptiveRenderScale<.99?.8:1);
 }
-function setRenderQuality(next){renderQuality=next==='eco'?'eco':'normal';adaptiveRenderScale=1;adaptiveRenderLastChange=-100;try{localStorage.setItem(renderQualityKey,renderQuality)}catch{}resize()}
+function effectiveRenderDpr(){
+ const dpr=Math.min(devicePixelRatio||1,2);
+ const caps={high:2,normal:1.6,low:1.05,minimal:.8};
+ const presetCap=caps[renderQuality]||1.6;
+ const desktopRatio=renderQuality==='low'?.9:renderQuality==='minimal'?.72:1;
+ return Math.max(.5,Math.min(dpr*desktopRatio,presetCap)*adaptiveRenderScale);
+}
+function setRenderQuality(next){
+ if(!RENDER_PRESETS.some(p=>p.id===next))return;
+ renderQuality=next;adaptiveRenderScale=1;adaptiveRenderLastChange=-100;
+ try{localStorage.setItem(renderQualityKey,renderQuality)}catch{}
+ if(typeof bal!=='undefined'&&bal)bal.graphicsQuality=renderQuality;
+ resize();
+}
 function resetRenderAdaptation(){adaptiveRenderScale=1;adaptiveRenderLastChange=-100;resize()}
 function adjustRenderFidelity(samples){
  if(!S||samples.length<5)return;
@@ -26,9 +49,12 @@ function adjustRenderFidelity(samples){
  else if(enemies>=25&&fps<43)target=.85;
  else if(fps>56&&recent.every(x=>x.fps>50))target=1;
  if(target===adaptiveRenderScale)return;
- // Recover only after sustained headroom: prevents resolution oscillation.
  if(target>adaptiveRenderScale&&recent.some(x=>x.fps<50))return;
  adaptiveRenderScale=target;adaptiveRenderLastChange=time;resize();
 }
-function resize(){W=innerWidth;H=innerHeight;scale=effectiveRenderDpr();C.width=Math.max(1,Math.floor(W*scale));C.height=Math.max(1,Math.floor(H*scale));C.style.width=W+'px';C.style.height=H+'px';cx.setTransform(scale,0,0,scale,0,0)}
+function resize(){
+ W=innerWidth;H=innerHeight;scale=effectiveRenderDpr();
+ C.width=Math.max(1,Math.floor(W*scale));C.height=Math.max(1,Math.floor(H*scale));
+ C.style.width=W+'px';C.style.height=H+'px';cx.setTransform(scale,0,0,scale,0,0);
+}
 addEventListener('resize',resize,{passive:true});resize();
