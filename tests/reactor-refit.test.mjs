@@ -95,3 +95,13 @@ test('reactor look is integrated in published build pipeline and platform SDKs r
  assert.ok(read('dist/yandex/index.html').includes('RELICT_PLATFORM="yandex"'));
  assert.ok(read('dist/crazygames/index.html').includes('RELICT_PLATFORM="crazygames"'));
 });
+
+test('boss-core synthesis visually assembles a hybrid but changes no balance rules',()=>{
+ const f=read('src/modules/40-game/upgrades/fusion-ui.js');
+ const particles=read('src/modules/70-render/layers/projectile-effects.js');
+ assert.ok(f.includes("type:'fabrication'"));
+ assert.ok(particles.includes("fx.type==='fabrication'"));
+ assert.ok(f.includes('Хранителя ядра (≈6:05)'));
+ assert.ok(f.includes("createFusionWeapon(id,a,b"));
+ assert.ok(f.includes("S.fusionCores--"));
+});
