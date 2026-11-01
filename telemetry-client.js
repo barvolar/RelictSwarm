@@ -1,4 +1,4 @@
-/* Relict Swarm v0.11.0: consent-based, anonymous test telemetry.
+/* Relict Swarm v0.11.1: consent-based, anonymous test telemetry.
    Sends only game measurements. No IP, raw user-agent, name, or persistent player ID. */
 (() => {
   'use strict';
@@ -47,7 +47,7 @@
       perf: perfView(samples),
       device: { category: screenCategory(report.environment?.width || innerWidth),
         widthBucket: Math.round((report.environment?.width || innerWidth) / 100) * 100,
-        quality: report.environment?.graphicsQuality || 'unknown' }
+        quality: ['low','minimal','eco'].includes(report.environment?.graphicsQuality)?'eco':'normal' }
     };
   }
   function allowed() { return configured && consent === true; }
@@ -107,7 +107,7 @@
   function start() { sessionId = randomId(); }
   function sample(report, samples) {
     if (!allowed() || !report?.totals || !sessionId) return;
-    enqueue({v:1,type:'snapshot',sessionId,build:'0.11.0-permanent-research',data:compactSnapshot(report,samples)});
+    enqueue({v:1,type:'snapshot',sessionId,build:'0.11.1-graphics-'+(report.environment?.graphicsQuality||'normal'),data:compactSnapshot(report,samples)});
   }
   function finish(report, samples) {
     if (!allowed() || !report?.result || !sessionId) return;
@@ -127,7 +127,7 @@
     const details = {result:report.result,totals:report.totals,bosses:report.bosses,
       choices:report.choices,fusions:report.fusions,timeline:report.timeline,
       finalWeapons:report.finalWeapons,events:report.events,perfOverall,perfTimeline};
-    enqueue({v:1,type:'finish',sessionId,build:'0.11.0-permanent-research',data:summary,details});
+    enqueue({v:1,type:'finish',sessionId,build:'0.11.1-graphics-'+(report.environment?.graphicsQuality||'normal'),data:summary,details});
   }
   window.SwarmTelemetry = { start, sample, finish, settingsHTML:consentHtml };
   addEventListener('online',flush);
