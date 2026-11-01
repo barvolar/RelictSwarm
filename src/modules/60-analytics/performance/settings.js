@@ -1,3 +1,14 @@
-function renderQualityControls(){return `<div class="perf-quality" style="padding:10px 0;display:grid;gap:6px"><strong>КАЧЕСТВО ГРАФИКИ</strong><p style="margin:0">«Обычное» — максимальная детализация. «ЭКО» — облегчённые эффекты и более низкое разрешение на ПК и телефонах. При перегрузке игра автоматически снижает нагрузку на графику. Сложность и характеристики оружия не меняются.</p><button type="button" class="btn" id="qualityToggle">${renderQuality==='eco'?'◉ ЭКО · ПЕРЕКЛЮЧИТЬ':'◉ ОБЫЧНОЕ · ПЕРЕКЛЮЧИТЬ'}</button></div>`}
-document.addEventListener('click',e=>{if(e.target?.id==='qualityToggle'){setRenderQuality(renderQuality==='normal'?'eco':'normal');e.target.textContent=renderQuality==='eco'?'◉ ЭКО · ПЕРЕКЛЮЧИТЬ':'◉ ОБЫЧНОЕ · ПЕРЕКЛЮЧИТЬ';}});
+function renderQualityControls(){
+ return `<section class="graphics-settings"><div class="graphics-heading"><strong>КАЧЕСТВО ГРАФИКИ</strong><span>4 ПРЕСЕТА</span></div>
+  <div class="graphics-presets" role="group" aria-label="Качество графики">
+   ${RENDER_PRESETS.map(p=>`<button type="button" data-graphics-preset="${p.id}" aria-pressed="${renderQuality===p.id}" class="graphics-preset ${renderQuality===p.id?'selected':''}"><b>${p.name}</b><small>${p.desc}</small></button>`).join('')}
+  </div>
+  <p class="graphics-hint">Враги упрощаются <b>только на «Минимальном»</b>. При падении FPS разрешение может снижаться автоматически, но обычные модели врагов сохраняются. Настройки не меняют урон и сложность.</p>
+ </section>`;
+}
+document.addEventListener('click',e=>{
+ const button=e.target?.closest?.('[data-graphics-preset]');if(!button)return;
+ setRenderQuality(button.dataset.graphicsPreset);
+ const section=button.closest('.graphics-settings');if(section)section.outerHTML=renderQualityControls();
+});
 addEventListener('visibilitychange',()=>{perf.lastRaf=0;perf.bucketFrom=0;});
