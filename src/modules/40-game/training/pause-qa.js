@@ -18,3 +18,38 @@ function qaPauseHTML(){
  '<div class="qa-row"><button id="qaKill" type="button">УБРАТЬ ВРАГОВ</button><button id="qaCore" type="button">+1 ЯДРО</button></div>'+
  '<small>Боссы создаются по одному; обычные враги ограничены лимитом игры. После настройки нажми «Продолжить».</small></details>';
 }
+
+function qaWirePause(){
+ const el=id=>document.getElementById(id);
+ const refresh=()=>{el('qaPause').outerHTML=qaPauseHTML();qaWirePause();updateHUD();};
+ el('qaWeapon').onchange=()=>qaWeapon=el('qaWeapon').value;
+ el('qaEnemy').onchange=()=>qaEnemy=el('qaEnemy').value;
+ el('qaSlot').onchange=()=>{qaSlot=el('qaSlot').value;refresh();};
+ el('qaLevel').onchange=()=>qaLevel=Math.max(1,Math.min(150,+el('qaLevel').value||1));
+ el('qaCount').onchange=()=>qaCount=Math.max(1,Math.min(40,+el('qaCount').value||1));
+ el('qaEquip').onclick=()=>{
+  qaLevel=Math.max(1,Math.min(150,+el('qaLevel').value||1));
+  if(qaSlot==='new'&&S.drones.length>=MAX_WEAPONS){toast('ВЫБЕРИ СЛОТ ДЛЯ ЗАМЕНЫ',2);return;}
+  const d={id:qaWeapon,lvl:qaLevel,mods:{},cd:0,hitCd:0};
+  if(qaSlot==='new')S.drones.push(d);else S.drones[+qaSlot]=d;
+  qaSlot=String(S.drones.indexOf(d));qaSyncFusions();refresh();
+ };
+ if(el('qaBoost'))el('qaBoost').onclick=()=>{
+  const d=S.drones[+qaSlot],key=el('qaMod').value;if(!d||!key)return;
+  d.mods[key]=(d.mods[key]||0)+5;d.lvl+=5;refresh();
+ };
+ el('qaRemove').onclick=()=>{if(qaSlot!=='new'&&S.drones[+qaSlot]){S.drones.splice(+qaSlot,1);qaSlot='new';qaSyncFusions();refresh();}};
+ el('qaEmpty').onclick=()=>{S.drones=[];S.hybrids=[];qaSlot='new';refresh();};
+ el('qaSpawn').onclick=()=>{
+  qaCount=Math.max(1,Math.min(40,+el('qaCount').value||1));
+  const boss=qaEnemy.startsWith('boss')||qaEnemy.startsWith('synth')||qaEnemy==='omega';
+  const n=boss?1:qaCount;
+  for(let i=0;i<n;i++)spawnEnemy(qaEnemy,TAU*(i+.5)/n,210+(i%4)*62);
+  refresh();
+ };
+ el('qaKill').onclick=()=>{S.enemy=[];S.bosses=[];S.enemyBullets=[];S.hazards=[];S.chains=[];refresh();};
+ el('qaCore').onclick=()=>{S.fusionCores++;refresh();};
+}
+function qaSyncFusions(){
+ S.hybrids=S.drones.filter(d=>d.id.startsWith('fusion_')).map(d=>({id:d.id.slice(7)}));
+}
