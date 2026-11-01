@@ -43,6 +43,7 @@
   "src/modules/40-game/entities/deaths.js",
   "src/modules/40-game/entities/player-progression.js",
   "src/modules/40-game/upgrades/choices.js",
+  "src/modules/40-game/upgrades/reroll.js",
   "src/modules/40-game/upgrades/cards.js",
   "src/modules/40-game/upgrades/apply-upgrades.js",
   "src/modules/40-game/upgrades/fusion-ui.js",
