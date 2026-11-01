@@ -83,3 +83,12 @@
  #modal:has(.upgrade-v2-screen) .modal-panel{max-height:calc(100dvh - 10px)}
 }
 
+
+/* One free reroll per run. Rewarded-ad grants can reuse the same controller later. */
+.upgrade-reroll-row{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px 14px;margin:12px 0 8px;padding:10px 12px;border:1px solid #2b5864;border-radius:8px;background:#0b2432}
+.upgrade-reroll-row .upgrade-reroll{background:#153d48;color:#aafdec;border:1px solid #55baad;border-radius:7px;min-height:40px;font-size:11px;font-weight:800;letter-spacing:.5px;cursor:pointer}
+.upgrade-reroll-row .upgrade-reroll:hover:not(:disabled){background:#215765;border-color:#82f4dd}
+.upgrade-reroll-row .upgrade-reroll:focus-visible{outline:2px solid #d2fff4;outline-offset:2px}
+.upgrade-reroll-row .upgrade-reroll:disabled{opacity:.55;cursor:default;background:#112735;border-color:#315163}
+.up-reroll-count{font-size:11px;color:#98bac6;line-height:1.4}
+@media(max-width:480px){.upgrade-reroll-row{margin:9px 0;padding:8px 9px}.upgrade-reroll-row .upgrade-reroll{flex:1;min-width:100%;min-height:38px}.up-reroll-count{font-size:10px}}
