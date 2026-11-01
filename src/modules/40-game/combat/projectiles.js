@@ -12,7 +12,7 @@ function updateProjectiles(dt){for(let b of S.bullets){b.life-=dt;
  }else if(b.type==='boomer'){
    b.travel+=b.spd*dt;const ownerPos=getDronePos(b.owner,Math.max(0,S.drones.indexOf(b.owner)));
    if(!b.returning&&b.travel>=b.range){b.returning=true;b.hitIds.clear();sfx('boomerReturn',.55)}
-   if(b.specialDisc){b.trailClock-=dt;if(b.trailClock<=0){if(b.specialDisc==='mine')fusionMine(b.x,b.y,b.damage*.58,'#ffd78f',58,'normal');b.trailClock=.24;}}
+   if(b.specialDisc){b.trailClock-=dt;if(b.trailClock<=0){if(b.specialDisc==='mine')fusionMine(b.x,b.y,b.damage*.58,'#ffd78f',b.mineBlast||58,'normal');b.trailClock=.24;}}
    if(b.fireDisc){b.trailClock-=dt;if(b.trailClock<=0){b.trailClock=.22;if(S.effects.filter(x=>x.infernoTrail).length<35)S.effects.push({x:b.x,y:b.y,r:24,life:1.9,clock:0,damage:b.damage*.16,col:'#ff8f4f',fire:true,infernoTrail:true});}}
    if(b.returning){const vec=hypot(ownerPos.x-b.x,ownerPos.y-b.y);b.vx=(ownerPos.x-b.x)/vec*b.spd*1.35;b.vy=(ownerPos.y-b.y)/vec*b.spd*1.35;if(vec<25)b.life=-1;}
    b.x+=b.vx*dt;b.y+=b.vy*dt;for(const e of S.enemy){if(e.hp<=0||b.hitIds.has(e))continue;if(Math.hypot(e.x-b.x,e.y-b.y)<e.r+b.r){hurtEnemy(e,b.damage,{knock:7,burn:b.fireDisc?2.2:0});b.hitIds.add(e);if(b.specialDisc==='lightning')scheduleChain({x:b.x,y:b.y},e,3+Math.min(10,wm(b.owner,'jumps')),b.damage*.42,180,'#c3baff',.17);burst(e.x,e.y,b.col,4,60)}}
