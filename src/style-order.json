@@ -6,6 +6,5 @@
   "src/styles/sections/home-and-skins.css",
   "src/styles/sections/mobile-hud.css",
   "src/styles/sections/upgrade-cards.css",
-  "src/styles/sections/controls-and-diagnostics.css",
-  "src/styles/sections/reactor-refit.css"
+  "src/styles/sections/controls-and-diagnostics.css"
 ]

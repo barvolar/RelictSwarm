@@ -17,160 +17,21 @@ function drawLiteEnemy(e){
  if(e.hp<e.maxHp*.55){cx.fillStyle='#09141d';cx.fillRect(-r,-r-9,r*2,3);cx.fillStyle=col;cx.fillRect(-r,-r-9,r*2*clamp(e.hp/e.maxHp,0,1),3)}
  cx.restore();
 }
-// Reactor Refit: each type is a recognizable machine, even without glow.
-// All coordinates below are visual only; hitboxes, speeds, AI and drops stay intact.
-function drawMachineEnemy(e){
- const col=ENEMY[e.id].col,r=e.r||18,s=(e.t||0),anim=Math.sin(s*8+(e.seed||0));
- const sideColor=e.hit>0?'#78414a':'#465762',edge=e.hit>0?'#ff9f9b':'#8da1a8';
- cx.save();cx.translate(e.x,e.y);
- cx.rotate(Math.atan2(S.player.y-e.y,S.player.x-e.x)+Math.PI/2);
- if(e.elite)cx.scale(1.15,1.15);
- if(e.champion){ring(0,0,r+10,'#e5b668',2);glow(0,0,r*2,'#d5a05b',.18)}
- if(e.hunterWind>0||e.bruteWind>0)ring(0,0,r+11,'#ec8b5b',3);
- if(e.shock>0)ring(0,0,r+6,'#cdd8ff',2);
- if(e.frost>0||e.chill>25)ring(0,0,r+5,'#a3deea',1.8);
- if(e.burn>0)ring(0,0,r+5,'#d47b44',2);
- if(e.marked>0){ring(0,0,r+12,'#e6c078',1.6);line(-9,-r-16,9,-r-16,'#e6c078',2)}
- // Contact shadow. Kept subtle even during full particle-heavy gameplay.
- cx.save();cx.scale(1,.49);circ(0,10,r,'#010508a4');cx.restore();
- const accent=e.frost>0?'#a2e9ed':e.shock>0?'#c4caff':col;
- if(e.id==='scarab'){
-  // Six-legged salvage crawler, broad shoulders and protected center.
-  for(const side of [-1,1]){
-   for(let i=0;i<3;i++){
-    const y=-11+i*10,kick=anim*(i%2?2:-2);
-    line(side*9,y,side*(r-2),y+kick,'#6e7f84',2.5);
-    line(side*(r-2),y+kick,side*(r+6),y+5+kick,'#adad95',1.8);
-   }
-  }
-  poly([[0,-r-4],[r*.67,-r*.56],[r*.72,r*.37],[0,r*.85],[-r*.72,r*.37],[-r*.67,-r*.56]],
-   '#283943',edge,1.7);
-  poly([[-9,-8],[0,-14],[9,-8],[7,9],[0,12],[-7,9]],'#526e70','#9db1a8',1);
-  rect(-4,-7,8,12,'#122b32');rect(-2,-4,4,7,accent);
-  for(const side of [-1,1])line(side*6,-r*.68,side*9,-r,'#d8cba8',1.6);
- }else if(e.id==='hunter'){
-  // Interceptor with swept blades: silhouette distinguishes it at a glance.
-  for(const side of [-1,1]){
-   poly([[side*5,-14],[side*(r+12),-r],[side*(r+16),9],[side*16,4]],'#45525b','#b58c62',2);
-   poly([[side*16,-10],[side*(r+9),-r+1],[side*(r+7),-4]],'#9a733e');
-  }
-  poly([[0,-r-9],[11,-6],[10,r*.8],[0,r+2],[-10,r*.8],[-11,-6]],'#343e46','#d6ad69',2);
-  poly([[0,-r-5],[5,-8],[-5,-8]],'#ebd8a8');
-  rect(-4,2,8,7,'#252f37');rect(-2,4,4,4,accent);
- }else if(e.id==='sentry'){
-  // Twin-barrel walking gun platform.
-  for(const side of [-1,1]){
-   poly([[side*8,-7],[side*(r+2),-12],[side*(r+6),9],[side*9,13]],'#344d59','#82a1af',1.7);
-   rect(side*13-4,11,7,6,'#627d86');
-  }
-  poly([[-12,-14],[12,-14],[r*.85,9],[0,18],[-r*.85,9]],'#334550','#a9c3cc',2);
-  rect(-5,-r-9,10,25,'#1d2d37');
-  rect(-4,-r-9,8,18,'#6b8796');
-  rect(-2,-r-14,4,9,'#c8d6dc');
-  circ(0,4,6,'#152832','#c3d2cc',1.5);circ(0,4,2.5,accent);
- }else if(e.id==='brute'){
-  // Armored tank, two tracks and heavy triangular ram plate.
-  for(const side of [-1,1]){
-   rect(side*r*.64-5,-r*.7,11,r*1.45,'#1e2b34');
-   for(let k=-2;k<=2;k++)rect(side*r*.64-4,k*8,9,4,'#506572');
-  }
-  poly([[0,-r-7],[r*.75,-r*.51],[r*.85,r*.6],[0,r],[-r*.85,r*.6],[-r*.75,-r*.51]],
-   '#43505c','#b5aaa1',2.4);
-  poly([[0,-r-6],[r*.48,-r*.28],[r*.42,r*.48],[0,r*.64],[-r*.42,r*.48],[-r*.48,-r*.28]],'#74716b','#a1a7a3',1.4);
-  line(-r*.4,-r*.3,r*.4,-r*.3,'#252f36',3);
-  rect(-5,1,10,9,'#1d2a31');rect(-3,3,6,4,accent);
- }else if(e.id==='hive'){
-  // Deployable carrier: four visible cargo capsules on a central chassis.
-  for(const side of [-1,1]){
-   for(const yy of [-13,12]){
-    poly([[side*9,yy-8],[side*(r+8),yy-8],[side*(r+11),yy+9],[side*9,yy+9]],
-      '#3a4250','#a198ae',1.5);
-    circ(side*(r+1),yy,3.3,side<0?'#d6ae75':'#83c0ae');
-   }
-  }
-  poly([[-13,-r],[13,-r],[r*.78,r*.4],[0,r],[-r*.78,r*.4]],'#403d4f','#b3a3c5',2);
-  poly([[0,-r+4],[10,-7],[7,14],[-7,14],[-10,-7]],'#777087','#c0b0ce',1);
-  rect(-5,-5,10,13,'#1c2638');rect(-3,-3,6,8,accent);
- }else if(e.id==='phantom'){
-  // Phase enemy: visibly split mechanical shell; no 'magic circle' silhouette.
-  cx.save();cx.globalAlpha=.84+.11*Math.sin(s*13);
-  for(const side of [-1,1]){
-   poly([[side*3,-r],[side*(r+10),-8],[side*(r+4),r],[side*10,9]],'#2a4b57','#85b8c4',2);
-   line(side*(r+7),2,side*(r+17),10+anim*2,'#6ab3b8',2);
-  }
-  poly([[0,-r-7],[8,-4],[0,r+5],[-8,-4]],'#304b5b','#a6d1d6',1.5);
-  poly([[0,-12],[5,-3],[0,10],[-5,-3]],accent);
-  cx.restore();
- }
- if(e.elite)ring(0,0,r+4,'#edb876',1.5);
- // Rotate back for a world-aligned, readable damage bar.
- if(e.elite||e.hp<e.maxHp*.56){
-  cx.rotate(-(Math.atan2(S.player.y-e.y,S.player.x-e.x)+Math.PI/2));
-  const w=e.elite?r*1.8:r*1.5;
-  rect(-w/2,-r-19,w,4,'#050a0d');
-  rect(-w/2,-r-19,w*clamp(e.hp/e.maxHp,0,1),4,e.elite?'#e9ba78':'#86b9a0');
- }
- cx.restore();
-}
-function drawReactorBoss(e){
- const R=e.r||55,col=ENEMY[e.id].col,t=e.t||0;
- cx.save();cx.translate(e.x,e.y);
- cx.rotate(Math.atan2(S.player.y-e.y,S.player.x-e.x)+Math.PI/2);
- cx.scale(R/54,R/54);
- cx.save();cx.scale(1,.48);circ(0,11,59,'#020408bb');cx.restore();
- // Radial plating has broad silhouettes and industrial teeth.
- for(let i=0;i<8;i++){
-  cx.save();cx.rotate(i*TAU/8);
-  const isSynth=e.id.startsWith('synth');
-  poly([[-9,-49],[-16,-69],[0,-77],[16,-69],[9,-49]],
-   isSynth?'#6b5842':'#3d4650',isSynth?'#dec38f':'#a6adb4',1.7);
-  rect(-4,-66,8,11,i%2?col:'#b9b9ae');
-  cx.restore();
- }
- ring(0,0,49,'#77868a',3);
- ring(0,0,43,'#273a47',8);
- poly([[0,-44],[34,-29],[43,7],[28,37],[0,46],[-28,37],[-43,7],[-34,-29]],
-  '#263842','#a1b0b0',3);
- for(let i=0;i<4;i++){
-  cx.save();cx.rotate(i*Math.PI/2);
-  poly([[-17,-39],[17,-39],[20,-22],[0,-15],[-20,-22]],
-   i%2?'#45515c':'#59636b','#9ba6a8',1.3);
-  line(-10,-31,10,-31,col,2);
-  cx.restore();
- }
- // The boss can now be identified as a reactor carrier, not a neon star.
- circ(0,0,20,'#101f28','#d4c09a',3);
- ring(0,0,14,col,3);
- poly([[0,-11],[11,0],[0,11],[-11,0]],'#7d6a54','#e6d1a4',2);
- circ(0,0,5,col);
- if(e.id==='omega'){
-  ring(0,0,59,'#f2c47a',5);
-  for(let i=0;i<4;i++){
-   const a=i*TAU/4+t*.5;
-   circ(Math.cos(a)*54,Math.sin(a)*54,4,'#f6e6ba');
-  }
- }else if(e.id==='boss2'||e.id==='boss3'){
-  for(let i=0;i<3;i++){
-   cx.save();cx.rotate(t*.18+i*TAU/3);
-   rect(-8,-62,16,7,'#bd91c7');cx.restore();
-  }
- }
- if(e.shield>0)ring(0,0,60,'#aedcea',3);
- if(e.phase)ring(0,0,66,'#f3d38d',2);
- if(e.hit>0){cx.globalAlpha=.32;circ(0,0,48,'#f78f85')}
- cx.restore();
-}
-function drawEnemy(e){
- if(renderSimplifyEnemies()&&!e.elite&&!e.champion&&!e.trainingDummy){drawLiteEnemy(e);return;}
- if(e.trainingDummy){
-  cx.save();cx.translate(e.x,e.y);
-  poly([[0,-e.r],[e.r,0],[0,e.r],[-e.r,0]],'#263d48','#c1c2a0',3);
-  circ(0,0,e.r*.5,'#101c25','#82c3c0',3);
-  line(-e.r,0,e.r,0,'#a9c7c2',2);line(0,-e.r,0,e.r,'#a9c7c2',2);
-  cx.restore();return;
- }
- if(e.id.startsWith('boss')||e.id.startsWith('synth')||e.id==='omega'){
-  drawReactorBoss(e);return;
- }
- drawMachineEnemy(e);
-}
+function drawEnemy(e){if(renderSimplifyEnemies()&&!e.elite&&!e.champion&&!e.trainingDummy){drawLiteEnemy(e);return;}if(e.trainingDummy){cx.save();cx.translate(e.x,e.y);glow(0,0,63,'#60e2df',.23);ring(0,0,e.r+8,'#499aab',3);circ(0,0,e.r,'#132b38','#65dfd9',3);ring(0,0,e.r*.58,'#8df6f1',2);ring(0,0,e.r*.25,'#e6c67d',2);line(-e.r*1.4,0,e.r*1.4,0,'#b5f8f2',1.2);line(0,-e.r*1.4,0,e.r*1.4,'#b5f8f2',1.2);cx.font='bold 10px Trebuchet MS';cx.textAlign='center';cx.fillStyle='#b5f8f2';cx.fillText('ЦЕЛЬ',0,e.r+24);cx.restore();return;}const info=ENEMY[e.id],big=e.elite,motion=Math.sin(e.t*9+e.seed)*2;cx.save();cx.translate(e.x,e.y);cx.rotate(Math.atan2(S.player.y-e.y,S.player.x-e.x)+Math.PI/2);cx.scale(big?1.15:1, big?1.15:1);if(e.hunterWind>0||e.bruteWind>0){ring(0,0,e.r+10+Math.sin(e.t*15)*3,'#ffb480',3)}if(e.boosted>0){ring(0,0,e.r+5,'#b5a3ff',2)}if(e.champion){glow(0,0,e.r*2.6,'#ffb257',.25);ring(0,0,e.r+7,'#ffc16d',2.2)}if(e.hit>0)glow(0,0,e.r*2,RED,.43);if(e.shock>0){glow(0,0,e.r*2.4,'#b8faff',.45);ring(0,0,e.r+6,'#a8ebff',1.8)}
+ if(e.burn>0){glow(0,0,e.r*1.9,'#ff792e',.32);for(let f=0;f<3;f++){let aa=ambient*3+f*TAU/3;circ(Math.cos(aa)*e.r*.6,Math.sin(aa)*e.r*.7,3+Math.sin(ambient*9+f)*1.7,f%2?'#ffb84f':'#f45a32')}}
+ if(e.frost>0||e.chill>25){glow(0,0,e.r*1.8,'#8defff',.26);ring(0,0,e.r*.9,'#91eaff',1.3);}if(e.marked>0){ring(0,0,e.r+11,AMBER,2);line(-9,-e.r-17,9,-e.r-17,AMBER,2);}cx.save();cx.scale(1,.54);circ(0,8,e.r*1.05,'#020b12a8');cx.restore();const c=info.col;
+ if(e.id==='scarab'||e.id==='hunter'){for(let s of [-1,1])for(let k=0;k<3;k++){let y=-10+k*11,ext=e.r+(e.id==='hunter'?12:8),knee=motion*(k%2===0?1:-1);line(s*9,y,s*(ext*.8),y+7+knee,'#354957',3.5);line(s*(ext*.8),y+7+knee,s*ext,y+13+knee,'#72909b',2.4)}poly([[-13,-12],[0,-21],[13,-12],[16,8],[0,20],[-16,8]],'#213545',c,2);poly([[-10,-8],[0,-16],[10,-8],[8,8],[0,13],[-8,8]],e.id==='hunter'?'#664d37':'#3b6570','#94cdd3',1);circ(0,0,5,c);for(let s of [-1,1]){circ(s*8,-9,2.5,AMBER);line(s*5,-16,s*8,-24,c,2)}}
+ else if(e.id==='brute'||e.id.startsWith('boss')||e.id.startsWith('synth')){let R=e.r;for(let s of [-1,1]){poly([[s*11,-R*.5],[s*(R*.92),-R*.7],[s*(R*1.2),R*.05],[s*(R*.94),R*.55],[s*18,R*.32]],'#2b3548',c,2);poly([[s*13,R*.3],[s*(R*.7),R*.72],[s*(R*.45),R]],'#36495b','#7b93a1',1.5)}poly([[0,-R*.95],[R*.55,-R*.64],[R*.85,.1*R],[R*.42,R*.82],[0,R],[-R*.42,R*.82],[-R*.85,.1*R],[-R*.55,-R*.64]],'#273746',c,2.7);poly([[0,-R*.68],[R*.36,-R*.36],[R*.43,R*.27],[0,R*.58],[-R*.43,R*.27],[-R*.36,-R*.36]],'#667889','#a0a2a1',1.1);for(let s of [-1,1]){poly([[s*R*.31,-R*.5],[s*R*.65,-R*.9],[s*R*.45,-R*.25]],c,'#ffe1bd',.8);circ(s*R*.25,-R*.15,3.8,'#ffe9e0')}glow(0,0,R,c,.18);circ(0,0,R*.2,c);circ(0,0,R*.09,'#fff');if(big){ring(0,0,R*.9,c,3);
+ if(e.id.startsWith('synth')){for(let k=0;k<8;k++){const a=k*TAU/8+e.t*.5;poly([[Math.cos(a)*R*.92,Math.sin(a)*R*.92],[Math.cos(a-.16)*R*1.5,Math.sin(a-.16)*R*1.5],[Math.cos(a+.16)*R*1.5,Math.sin(a+.16)*R*1.5]],e.id==='synth1'?'#f8a65a':e.id==='synth2'?'#34bcdd':'#fa91bf','#fff8c5',2)}ring(0,0,R*1.06,'#fcf7d2',5);circ(0,0,R*.3,e.id==='synth1'?'#ffb83e':'#b1fcff','#ffffff',3);}
+ else if(e.id==='boss1'){for(let k=0;k<5;k++){let a=k*TAU/5;line(Math.cos(a)*R*.7,Math.sin(a)*R*.7,Math.cos(a)*R*1.35,Math.sin(a)*R*1.35,c,5)}
+ poly([[-R*.65,-R*.25],[0,-R*1.45],[R*.65,-R*.25],[0,-R*.4]],'#782c2e','#ffc0ac',2)}
+ else if(e.id==='boss2'){for(let k=0;k<6;k++){let a=k*TAU/6+e.t*.4;circ(Math.cos(a)*R*1.22,Math.sin(a)*R*1.22,6,'#c7acff');line(0,0,Math.cos(a)*R*1.22,Math.sin(a)*R*1.22,c,1.2)}}
+ else if(e.id==='boss3'){for(let k=0;k<6;k++){const a=k*TAU/6-e.t*.2;poly([[Math.cos(a)*R*.83,Math.sin(a)*R*.83],[Math.cos(a-.12)*R*1.15,Math.sin(a-.12)*R*1.15],[Math.cos(a+.12)*R*1.15,Math.sin(a+.12)*R*1.15]],'#5e273e','#ff9dae',2)}}
+  else if(e.id==='omega'){for(let k=0;k<8;k++){let a=k*TAU/8-e.t*.5;poly([[Math.cos(a)*R,Math.sin(a)*R],[Math.cos(a-.14)*R*1.32,Math.sin(a-.14)*R*1.32],[Math.cos(a+.14)*R*1.32,Math.sin(a+.14)*R*1.32]],'#94622c','#ffdf9e',1)}}
+ if(e.phase){ring(0,0,R*1.28,'#fffbcb',3+Math.sin(e.t*10)*1.5);glow(0,0,R*2,c,.2)}
+ if(e.shield>0){ring(0,0,R*1.15,'#baf9ff',5);glow(0,0,R*1.4,BLUE,.2)}
+ }}
+ else if(e.id==='sentry'){for(let s of [-1,1]){poly([[s*8,-6],[s*21,-12],[s*22,8],[s*10,14]],'#263d4f','#628e9c',2);line(s*18,0,s*18,16,c,2)}poly([[-15,-9],[0,-21],[15,-9],[14,11],[0,20],[-14,11]],'#264155',c,2);poly([[-6,-23],[6,-23],[5,-6],[-5,-6]],'#9baeb7',c,1.5);circ(0,0,7,c);rect(-5,-24,10,3,'#d0efff')}
+ else if(e.id==='hive'){for(let k=0;k<8;k++){let a=k*TAU/8+motion*.018;line(Math.cos(a)*9,Math.sin(a)*9,Math.cos(a)*(e.r+12),Math.sin(a)*(e.r+12),c,3)}poly([[0,-29],[19,-18],[23,5],[12,20],[-12,20],[-23,5],[-19,-18]],'#4d3762',c,2.5);poly([[0,-20],[12,-9],[9,13],[-9,13],[-12,-9]],'#a17bc2');for(let s of [-1,1])circ(s*9,-8,4,TEAL)}
+ else if(e.id==='phantom'){glow(0,0,39,TEAL,.24);for(let s of [-1,1]){poly([[s*7,-15],[s*23,-4],[s*18,11],[s*11,2]],'#31596a',c,2);line(s*16,5,s*23,19,c,2)}poly([[0,-23],[16,-11],[12,15],[0,24],[-12,15],[-16,-11]],'#204252',c,2);poly([[0,-13],[7,-3],[0,10],[-7,-3]],c);circ(0,-3,3,'#fff')}
+ if(e.elite||e.hp<e.maxHp*.55){cx.rotate(-(Math.atan2(S.player.y-e.y,S.player.x-e.x)+Math.PI/2));let rr=e.elite?50:21;rect(-rr,-e.r-23,rr*2,5,'#070e17');rect(-rr,-e.r-23,rr*2*clamp(e.hp/e.maxHp,0,1),5,c)}cx.restore()}

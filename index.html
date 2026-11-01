@@ -473,121 +473,6 @@ button.forge-card:hover{filter:brightness(1.25)}.forge-card.is-done{border-color
  #hud .wavebanner{top:calc(155px + env(safe-area-inset-top,0px))}
  #hud .toast{top:calc(205px + env(safe-area-inset-top,0px))}
 }
-/* RELICT SWARM | REACTOR REFIT v0.12
-   Designed for industrial readability; functional selectors stay untouched. */
-:root{
- --ink:#090f15;--panel:#152129;--edge:#52636b;--teal:#a4d0bc;
- --amber:#e4b570;--muted:#b1bdc0;--red:#f17970;--purple:#ba9fcb;
- --font:'Segoe UI','Trebuchet MS',sans-serif;
-}
-html,body{background:#070d11;color:#e6e9e7}
-#world{background:#0a1218}
-#scanlines{background:repeating-linear-gradient(0deg,#0002 0,#0002 1px,transparent 1px,transparent 8px);opacity:.18}
-#hud .hud-top{
- background:linear-gradient(180deg,#111f26ef,#13202ad9 80%,#13202a29);
- border-bottom:1px solid #6271795e;
-}
-.hud-brand{color:#b4cbbf;letter-spacing:1.6px}
-.hud-brand strong{color:#f2e6d4;letter-spacing:2px}
-.sigil{color:#e4b570;text-shadow:none;font-size:31px}
-.barline{color:#acb8be}
-.bartrack{background:#081016;border-color:#52636b;border-radius:1px}
-.bartrack>div{box-shadow:none;background:linear-gradient(90deg,#ae5555,#e89e84)}
-.bartrack.xp>div{box-shadow:none;background:linear-gradient(90deg,#597f84,#c2dec7)}
-.timer{color:#f0e1c9;letter-spacing:2px}
-.icon-btn{border:1px solid #647781;background:#1d303b;color:#e6e1d5;border-radius:3px}
-.icon-btn:hover{border-color:#e9c186}
-#hud .wavebanner{background:#171a1bef;border:1px solid #d0a266;color:#ffe0ad;text-shadow:none;letter-spacing:2.2px}
-#hud .boss-wrap{color:#f4c2b1;letter-spacing:1.8px;text-shadow:0 1px 2px #0009}
-#hud .boss-track{background:#110e11;border-color:#bf766b;border-radius:1px}
-#hud .boss-track>div{background:linear-gradient(90deg,#bd5554,#efb08b);border-radius:0}
-#hud .toast{background:#151f25ec;border-color:#72888a;color:#f1eee3}
-.module-chip{background:#162631f2;border:1px solid #586d75;border-radius:3px}
-.module-chip b{color:#b4c1c4}
-.controls-tip{color:#9baeb2}
-#modal{
- background:radial-gradient(ellipse at 51% 22%,#162930c7 0%,#070d14e9 68%,#05080aef 100%);
- backdrop-filter:blur(5px);
-}
-.menu-head{filter:drop-shadow(0 8px 25px #0009)}
-.eyebrow{color:#eac17e;font-size:11px;letter-spacing:2.8px}
-.menu-logo{color:#dbe4e3;letter-spacing:2px;text-shadow:0 3px 0 #111a22}
-.menu-logo strong{color:#e6c08a;letter-spacing:7px;text-shadow:0 3px 0 #332b26}
-.subtitle{color:#aebfc3;letter-spacing:1.8px}
-.subtitle i{background:#dcba7f}
-.modal-panel{
- background:linear-gradient(150deg,#1a2a33f5,#0b1820fa);
- border:1px solid #607883;
- box-shadow:0 24px 80px #000b,0 0 0 4px #c8aa6a10;
- clip-path:polygon(0 0,calc(100% - 18px) 0,100% 18px,100% 100%,18px 100%,0 calc(100% - 18px));
-}
-.panel-title{letter-spacing:1.8px;color:#f0e8d8}
-.panel-desc,.tiny{color:#a9babe}
-.label{color:#dfbb7b}
-.line{background:linear-gradient(90deg,transparent,#6a7e85,transparent)}
-.btn{border:1px solid #647b82;background:#253842;color:#edf2eb;border-radius:3px;letter-spacing:1px}
-.btn:hover{background:#384e57;border-color:#b8c1b4}
-.btn.primary{color:#1b2223;background:linear-gradient(100deg,#c9d0b9,#f4d19b);border-color:#f2d39f;box-shadow:0 4px 22px #b8a67b25}
-.btn.primary:hover{background:linear-gradient(100deg,#e3dfbb,#f7d8aa)}
-.btn.ghost{border-color:#5e7780}
-.statbox{background:#13242b;border-color:#536874}
-.statbox b{color:#e9bc7f}
-.footer-note{color:#99a5a7}
-.reactor-console{
- display:grid;grid-template-columns:1fr auto;gap:7px;align-items:center;
- border-top:2px solid #ba955e;border-bottom:1px solid #51666f;
- background:repeating-linear-gradient(115deg,#273842 0,#273842 8px,#1b2b34 8px,#1b2b34 14px);
- padding:12px 15px;color:#f3d6a8;font-size:11px;letter-spacing:1.4px;
-}
-.reactor-console b{font-size:10px;color:#aebfbb;white-space:normal;text-align:right}
-.home-unit{
- border:1px solid #657880;border-radius:2px;
- background:radial-gradient(circle at 22% 45%,#58746c2f,transparent 52%),linear-gradient(135deg,#22353f,#111d25);
-}
-.home-unit .skin-art{filter:drop-shadow(0 7px 4px #05080a9c)}
-.home-unit strong{color:#eee8d9}
-.home-unit small{color:#b5c4c3}
-.home-btn{border-left:4px solid #c69b62;text-align:left;padding-left:25px}
-.shop-item,.skin-card,.research-item,.research-summary,.research-tab,.graphics-settings,.graphics-preset,.audio-mixer,.threat-select{
- background:#182b35;border-color:#586f76;border-radius:3px;
-}
-.research-summary strong,.research-category b,.graphics-heading{color:#e2c28f}
-.research-tab.selected,.graphics-preset.selected{background:#2a403f;border-color:#c4b281;box-shadow:none}
-.research-progress span{background:linear-gradient(90deg,#637f77,#d7c195)}
-#modal:has(.upgrade-v2-screen) .modal-panel{border-color:#6b8288}
-.upgrade-v2-screen .upgrade-card.upgrade-v2{
- border-radius:3px;
- background:linear-gradient(140deg,#283b43 0,#12222b 77%);
- --up-ink:#ecefe9;
-}
-.upgrade-v2-screen .upgrade-card.upgrade-v2.upgrade-card--stat{--type-color:#99c1b9;--type-wash:#223a38}
-.upgrade-v2-screen .upgrade-card.upgrade-v2.upgrade-card--new{--type-color:#e6ac79;--type-wash:#3d302b}
-.upgrade-v2-screen .upgrade-card.upgrade-v2.upgrade-card--weapon{--type-color:#b4a0ca;--type-wash:#2e2b3b}
-.upgrade-v2-screen .upgrade-card.upgrade-v2.upgrade-card--fusion{--type-color:#eac581;--type-wash:#413828}
-.upgrade-v2-screen .upgrade-card.upgrade-v2 .up-name{color:#f3eee3}
-.upgrade-v2-screen .upgrade-card.upgrade-v2 .up-description{color:#becac9}
-.upgrade-v2-screen .upgrade-card.upgrade-v2 .up-stat-row{background:#0e1c24bd;border-color:#4e636c}
-.upgrade-v2-screen .upgrade-card.upgrade-v2 .number{color:#c0cfcc}
-.upgrade-reroll-row{background:#162a31;border-color:#71858a;border-radius:3px}
-.upgrade-reroll-row .upgrade-reroll{background:#344949;color:#e4e4c8;border-color:#92b2a2;border-radius:2px}
-.upgrade-reroll-row .upgrade-reroll:hover:not(:disabled){background:#476257}
-.forge-card{background:linear-gradient(140deg,#20323a,#0e1d25);border-color:#62747b}
-.forge-card.is-ready:not(.is-done){background:linear-gradient(145deg,#403b2d,#1b292c);border-color:#d9b67c;box-shadow:inset 0 0 15px #f9ce6e16}
-.forge-card.is-ready:not(.is-done):hover{border-color:#ffe1aa}
-.forge-btn{border-color:#be9c66!important;color:#f3dbab!important;background:#26312fdd!important}
-.up-key{background:#15262e;border-color:#6a8588}
-@media(max-width:700px){
- .modal-panel{padding:14px 13px}
- .menu-logo strong{letter-spacing:3px}
- .reactor-console{grid-template-columns:1fr;gap:2px;padding:8px 10px;font-size:9px}
- .reactor-console b{text-align:left;font-size:9px}
- .home-btn{padding-left:15px}
- .upgrade-v2-screen .upgrade-card.upgrade-v2{min-height:0}
-}
-@media(max-height:620px){
- .reactor-console{padding:5px 9px}
- .menu-head .eyebrow{margin-bottom:5px}
-}
 </style>
 
 </head>
@@ -621,9 +506,9 @@ html,body{background:#070d11;color:#e6e9e7}
  <button class="dash" id="dashBtn"><span>⚡</span><small>РЫВОК</small><span class="dash-cool" id="dashCool"></span></button>
 </div>
 <div id="modal" class="modal">
- <div class="menu-head"><div class="eyebrow">[ REACTOR REFIT // СЕКТОР R-07 ]</div><div class="menu-logo"><span>РЕЛИКТОВЫЙ</span><strong>РОЙ</strong></div><div class="subtitle">БОЕВАЯ ПЛАТФОРМА <i></i> СИНТЕЗ ТЕХНОЛОГИЙ</div></div>
+ <div class="menu-head"><div class="eyebrow">[ 10.15: ONLINE TEST ]</div><div class="menu-logo"><span>РЕЛИКТОВЫЙ</span><strong>РОЙ</strong></div><div class="subtitle">НУЛЕВОЙ ПРОТОКОЛ <i></i> 10 // ПЯТНАДЦАТЬ МИНУТ</div></div>
  <div class="modal-panel" id="modalContent"></div>
- <div class="footer-note" id="menuFoot">© 2026 · РЕАКТОРНЫЙ ОТСЕК R-07 · ПОЛИГОН БОЕВЫХ СИСТЕМ</div>
+ <div class="footer-note" id="menuFoot">© 2026 · Оригинальная векторная графика · Без внешних загрузок</div>
 </div>
 <div id="rotateHint" aria-hidden="true"></div>
 <script src="./telemetry-config.js"></script>
@@ -1453,7 +1338,7 @@ function skinSvg(id){
 function menu(){
  setMode('menu');
  const skin=equippedSkin();
- $('modalContent').innerHTML=`<div class="main-home"><div class="reactor-console"><span>РЕАКТОРНЫЙ ОТСЕК // R-07</span><b>СИСТЕМЫ В РЕЖИМЕ ОЖИДАНИЯ</b></div><div class="home-unit">${skinSvg(save.skin)}<div><span class="label">АКТИВНАЯ ОБОЛОЧКА</span><strong>${skin.name}</strong><small>✧ ${save.shards} кристаллов · лучший счёт ${save.best.toLocaleString('ru')}</small></div></div><div class="home-actions"><button id="mainPlay" class="btn primary home-btn">▶ ИГРАТЬ</button><button id="mainUpgrade" class="btn home-btn">⬡ ПРОКАЧКА</button><button id="mainSettings" class="btn home-btn">⚙ НАСТРОЙКИ</button></div></div>`;
+ $('modalContent').innerHTML=`<div class="main-home"><div class="home-unit">${skinSvg(save.skin)}<div><span class="label">АКТИВНАЯ ОБОЛОЧКА</span><strong>${skin.name}</strong><small>✧ ${save.shards} кристаллов · лучший счёт ${save.best.toLocaleString('ru')}</small></div></div><div class="home-actions"><button id="mainPlay" class="btn primary home-btn">▶ ИГРАТЬ</button><button id="mainUpgrade" class="btn home-btn">⬡ ПРОКАЧКА</button><button id="mainSettings" class="btn home-btn">⚙ НАСТРОЙКИ</button></div></div>`;
  $('mainPlay').onclick=showPlayMenu;
  $('mainUpgrade').onclick=()=>showProgression('upgrades');
  $('mainSettings').onclick=showSettings;
@@ -1931,13 +1816,13 @@ function forgeReadiness(id){const h=HYBRIDS[id],a=S.drones.find(d=>d.id===h.a),b
  if(S.fusionCores<1)return 'Нужно ядро особого босса синтеза';
  if(S.hybrids.length>=3)return 'Предел: 3 синтеза за забег';
  return '✦ ГОТОВО К ПРЕОБРАЗОВАНИЮ';}
-function openForge(){if(trainingMode){renderTrainingPanel(true);return;}if(!S||mode!=='playing')return;setMode('forge');const ready=eligibleHybrids();$('modalContent').innerHTML=`<div class="label">◈ ПРОТОКОЛ СИНТЕЗА</div><div class="panel-title">ДВА ОРУЖИЯ → ОДНО НОВОЕ</div><p class="panel-desc">Ядра: <b style="color:#ffcb71">◈ ${S.fusionCores}</b>. Уровень оружия не важен: даже оружия 1-го уровня подходят. За камень победи и подбери добычу Хранителя ядра (≈6:05), Кузнеца хаоса (≈9:10) или Сбоя реактора (≈12:45). Синтез <b>уничтожит два исходных оружия</b> и создаст одно уникальное с новой механикой и последующей бесконечной прокачкой.</p><div class="label">${ready.length} РЕЦЕПТОВ ДОСТУПНО · ${Object.keys(HYBRIDS).length} ВСЕГО</div><div class="forge-filter"><label for="recipeFilter">ФИЛЬТР</label><select id="recipeFilter"><option value="all">Все 25 рецептов</option><option value="ready">Только доступные</option>${BASE_WEAPONS.map(id=>`<option value="${id}">${DRONES[id].name}</option>`).join('')}</select><button type="button" id="allRecipes">СБРОСИТЬ</button></div><div class="forge-grid">${Object.entries(HYBRIDS).sort(([id1],[id2])=>Number(ready.includes(id2))-Number(ready.includes(id1))).map(([id,h])=>{const ok=ready.includes(id),done=S.hybrids.some(z=>z.id===id);return `<${ok?'button type="button"':'div'} data-a="${h.a}" data-b="${h.b}" data-ready="${ok}" class="forge-card ${done?'is-done':ok?'is-ready':'is-locked'}" ${ok?`data-forge="${id}"`:''}><b style="color:${h.color}">${h.glyph} ${h.name}</b><small>${DRONES[h.a].name} + ${DRONES[h.b].name}</small><p>${h.desc}</p><small>${forgeReadiness(id)}</small></${ok?'button':'div'}>`}).join('')}</div><button class="btn primary" id="backForge">◂ НАЗАД В БОЙ</button>`;$('modalContent').querySelectorAll('[data-forge]').forEach(el=>el.onclick=()=>forgeHybrid(el.dataset.forge));$('backForge').onclick=()=>{setMode('playing');last=performance.now()};const applyRecipeFilter=()=>{const val=$('recipeFilter').value;for(const el of $('modalContent').querySelectorAll('.forge-card'))el.hidden=val==='all'?false:val==='ready'?el.dataset.ready!=='true':(el.dataset.a!==val&&el.dataset.b!==val)};$('recipeFilter').onchange=applyRecipeFilter;$('allRecipes').onclick=()=>{$('recipeFilter').value='all';applyRecipeFilter()};}
+function openForge(){if(trainingMode){renderTrainingPanel(true);return;}if(!S||mode!=='playing')return;setMode('forge');const ready=eligibleHybrids();$('modalContent').innerHTML=`<div class="label">◈ ПРОТОКОЛ СИНТЕЗА</div><div class="panel-title">ДВА ОРУЖИЯ → ОДНО НОВОЕ</div><p class="panel-desc">Ядра: <b style="color:#ffcb71">◈ ${S.fusionCores}</b>. Уровень оружия не важен: даже оружия 1-го уровня подходят. За камень победи и подбери добычу Хранителя ядра (≈4:25), Кузнеца хаоса (≈9:10) или Сбоя реактора (≈12:45). Синтез <b>уничтожит два исходных оружия</b> и создаст одно уникальное с новой механикой и последующей бесконечной прокачкой.</p><div class="label">${ready.length} РЕЦЕПТОВ ДОСТУПНО · ${Object.keys(HYBRIDS).length} ВСЕГО</div><div class="forge-filter"><label for="recipeFilter">ФИЛЬТР</label><select id="recipeFilter"><option value="all">Все 25 рецептов</option><option value="ready">Только доступные</option>${BASE_WEAPONS.map(id=>`<option value="${id}">${DRONES[id].name}</option>`).join('')}</select><button type="button" id="allRecipes">СБРОСИТЬ</button></div><div class="forge-grid">${Object.entries(HYBRIDS).sort(([id1],[id2])=>Number(ready.includes(id2))-Number(ready.includes(id1))).map(([id,h])=>{const ok=ready.includes(id),done=S.hybrids.some(z=>z.id===id);return `<${ok?'button type="button"':'div'} data-a="${h.a}" data-b="${h.b}" data-ready="${ok}" class="forge-card ${done?'is-done':ok?'is-ready':'is-locked'}" ${ok?`data-forge="${id}"`:''}><b style="color:${h.color}">${h.glyph} ${h.name}</b><small>${DRONES[h.a].name} + ${DRONES[h.b].name}</small><p>${h.desc}</p><small>${forgeReadiness(id)}</small></${ok?'button':'div'}>`}).join('')}</div><button class="btn primary" id="backForge">◂ НАЗАД В БОЙ</button>`;$('modalContent').querySelectorAll('[data-forge]').forEach(el=>el.onclick=()=>forgeHybrid(el.dataset.forge));$('backForge').onclick=()=>{setMode('playing');last=performance.now()};const applyRecipeFilter=()=>{const val=$('recipeFilter').value;for(const el of $('modalContent').querySelectorAll('.forge-card'))el.hidden=val==='all'?false:val==='ready'?el.dataset.ready!=='true':(el.dataset.a!==val&&el.dataset.b!==val)};$('recipeFilter').onchange=applyRecipeFilter;$('allRecipes').onclick=()=>{$('recipeFilter').value='all';applyRecipeFilter()};}
 function forgeHybrid(id){if(mode!=='forge'||!eligibleHybrids().includes(id))return;const h=HYBRIDS[id],a=S.drones.find(d=>d.id===h.a),b=S.drones.find(d=>d.id===h.b);
  const newWeapon=createFusionWeapon(id,a,b,weaponBranches('fusion_'+id));
  S.drones=S.drones.filter(d=>d!==a&&d!==b);
  S.drones.push(newWeapon);
  S.fusionCores--;S.hybrids.push({id});balFusion(id);save.recipes[id]=true;persist();
- setMode('playing');last=performance.now();burst(S.player.x,S.player.y,h.color,100,340);S.fx.push({type:'ring',x:S.player.x,y:S.player.y,r:80,life:1.2,max:1.2,col:h.color});S.fx.push({type:'fabrication',x:S.player.x,y:S.player.y,life:1.45,max:1.45,col:h.color});shake=15;banner('◈ НОВОЕ ОРУЖИЕ: '+h.name,5);sfx('fusion');updateHUD();
+ setMode('playing');last=performance.now();burst(S.player.x,S.player.y,h.color,100,340);S.fx.push({type:'ring',x:S.player.x,y:S.player.y,r:80,life:1.2,max:1.2,col:h.color});shake=15;banner('◈ НОВОЕ ОРУЖИЕ: '+h.name,5);sfx('fusion');updateHUD();
 }
 function closest(x,y,max=360,except=null){let best=null,bestD=max*max;for(let e of S.enemy){if(e.hp<=0||e===except)continue;let d=(e.x-x)**2+(e.y-y)**2;if(d<bestD){best=e;bestD=d}}return best}
 // Ranged weapons favor a reachable boss, but switch to immediate threats when surrounded.
@@ -2552,187 +2437,52 @@ function glow(x,y,r,col,alpha=.36){const factor=renderGlowFactor();if(factor<=0)
 function rect(x,y,w,h,col){cx.fillStyle=col;cx.fillRect(x,y,w,h)}
 function ring(x,y,r,col,w=2){cx.beginPath();cx.arc(x,y,r,0,TAU);cx.strokeStyle=col;cx.lineWidth=w;cx.stroke()}
 function seed(x,y){let n=Math.sin(x*127.1+y*311.7)*43758.5453;return n-Math.floor(n)}
-// Reactor Refit: world-anchored industrial deck. No texture downloads or gameplay edits.
-// Objects are deterministic in world space so movement cannot make panels shimmer.
-function deckPlate(x,y,s){
- const n=seed(x*.17+7,y*.19+31),b=seed(x*.23-9,y*.29+19);
- rect(x+3,y+3,s-6,s-6,n>.54?'#14212a':'#111d26');
- cx.strokeStyle=n>.5?'#2b3d47':'#26333e';cx.lineWidth=1;
- cx.strokeRect(x+5.5,y+5.5,s-11,s-11);
- // Recessed maintenance channels replace the former bright global grid.
- if(n>.38){
-  rect(x+17,y+17,s-34,3,'#1d313e');
-  rect(x+17,y+20,s-34,1,'#09131b');
- }
- if(n>.73){
-  rect(x+16,y+s-33,s-32,14,'#0a141d');
-  for(let k=0;k<5;k++)rect(x+23+k*(s-48)/5,y+s-30,(s-48)/8,7,'#2f4651');
- }
- if(b>.78){
-  // Static amber warning paint, separated from actual red attack telegraphs.
-  rect(x+s-25,y+13,5,44,'#ae793d');
-  rect(x+s-18,y+13,2,44,'#5a4832');
- }
- circ(x+10,y+10,1.7,'#41525b');
- circ(x+s-11,y+s-11,1.7,'#41525b');
-}
-function drawReactorSeal(x,y,r,index){
- cx.save();cx.translate(x,y);
- circ(0,0,r,'#0c1821','#39505d',3);
- ring(0,0,r-9,'#2a4c57',2);
- ring(0,0,r*.6,'#253f4d',3);
- cx.setLineDash([7,13]);ring(0,0,r*.79,'#7b7460',2);cx.setLineDash([]);
- for(let k=0;k<8;k++){
-  const a=k*TAU/8;
-  cx.save();cx.rotate(a);
-  rect(-5,-r+14,10,22,k%2?'#805a34':'#a16d34');
-  line(0,-r+40,0,-r+55,'#496679',2);
-  cx.restore();
- }
- poly([[-24,-6],[0,-28],[24,-6],[17,22],[-17,22]],'#22343d','#72818b',2);
- circ(0,0,11,'#1d4e54','#8dc7b7',2);
- circ(0,0,4,'#d6c58b');
- cx.font='bold 10px monospace';cx.textAlign='center';cx.fillStyle='#8b9a94';
- cx.fillText('RX-'+String(index).padStart(2,'0'),0,r+19);
- cx.restore();
-}
-function drawBackground(camX,camY,zoom=1){
- rect(0,0,W,H,'#080e14');
- const viewW=W/zoom,viewH=H/zoom,sx=camX-viewW/2,sy=camY-viewH/2;
- const tile=192;
- cx.save();cx.translate(W/2-camX,H/2-camY);
- rect(sx-16,sy-16,viewW+32,viewH+32,'#0b141c');
- const minX=Math.floor((sx-10)/tile),maxX=Math.ceil((sx+viewW+10)/tile);
- const minY=Math.floor((sy-10)/tile),maxY=Math.ceil((sy+viewH+10)/tile);
- for(let ix=minX;ix<=maxX;ix++)for(let iy=minY;iy<=maxY;iy++){
-  const x=ix*tile,y=iy*tile;
-  deckPlate(x,y,tile);
-  // Maintenance numbering forms a stable world scale, not a floating HUD.
-  if((ix+iy*3)%5===0){
-   cx.fillStyle='#3c5967';cx.font='bold 10px monospace';cx.textAlign='left';
-   cx.fillText('S'+String(Math.abs(ix*17+iy*7)%100).padStart(2,'0')+' / REACTOR',x+22,y+tile-15);
-  }
- }
- // Power bus lanes connect tiles into long industrial pathways.
- const cable=tile*3;
- for(let ix=Math.floor(sx/cable);ix<=Math.ceil((sx+viewW)/cable);ix++){
-  const x=ix*cable+tile*.4;
-  rect(x,sy-20,12,viewH+40,'#07121a');
-  rect(x+4,sy-20,3,viewH+40,ix%2?'#365362':'#73643e');
- }
- // Seal stations are sparse and large: one unmistakable landmark per sector.
- const step=tile*6;
- for(let ix=Math.floor(sx/step);ix<=Math.ceil((sx+viewW)/step);ix++)
-  for(let iy=Math.floor(sy/step);iy<=Math.ceil((sy+viewH)/step);iy++){
-   if((ix+iy)%2!==0)continue;
-   drawReactorSeal(ix*step+tile*2.5,iy*step+tile*2.5,86,Math.abs(ix*5+iy*9)%99);
-  }
- // World perimeter is a solid, high-contrast physical bulkhead.
- const edge=1785;
- if(sx<-edge+100||sy<-edge+100||sx+viewW>edge-100||sy+viewH>edge-100){
+function drawBackground(camX,camY,zoom=1){rect(0,0,W,H,'#08111d');const viewW=W/zoom,viewH=H/zoom,sx=camX-viewW/2,sy=camY-viewH/2;cx.save();cx.translate(W/2-camX,H/2-camY);
+ let gx=Math.floor(sx/80)*80,gy=Math.floor(sy/80)*80;cx.lineWidth=1;for(let x=gx;x<sx+viewW+80;x+=80){line(x,sy-100,x,sy+viewH+100,'#16303c',.9);if((Math.round(x/80)%4)===0)line(x,sy-100,x,sy+H+100,'#234459',1.3)}for(let y=gy;y<sy+viewH+80;y+=80){line(sx-100,y,sx+viewW+100,y,'#16303c',.9);if((Math.round(y/80)%4)===0)line(sx-100,y,sx+W+100,y,'#234459',1.3)}
+ for(let x=Math.floor(sx/320)*320;x<sx+viewW+330;x+=320)for(let y=Math.floor(sy/320)*320;y<sy+viewH+330;y+=320){let v=seed(x/9,y/11);if(v<.22)continue;let px=x+seed(x,6+y)*225+20,py=y+seed(y,x)*220+30,k=seed(x+19,y+31);cx.save();cx.translate(px,py);cx.rotate(v*TAU);if(v>.75){poly([[-27,-13],[-6,-22],[25,-4],[18,9],[-17,16]],'#0e202b','#284552',1);poly([[-18,-11],[-4,-15],[12,-4],[-10,3]],'#18323b');line(-7,0,9,8,'#296273',1.4)}else{line(-17,3,3,-8,'#245061',1);line(3,-8,17,-2,'#245061',1);circ(3,-8,2.2,'#23737b')}if(k>.6){glow(28,12,25,'#21dbc7',.12);circ(28,12,2,'#207e8b')}cx.restore()}
+ // Arena perimeter: contrast stripes, unmistakable boundary, and a muted outer danger zone.
+  const edge=1785;
+  if(sx< -edge+100 || sy< -edge+100 || sx+viewW>edge-100 || sy+viewH>edge-100){
   cx.save();
-  rect(-edge-240,-edge-240,240,2*(edge+240),'#050a0d');
-  rect(edge,-edge-240,240,2*(edge+240),'#050a0d');
-  rect(-edge,-edge-240,edge*2,240,'#050a0d');
-  rect(-edge,edge,edge*2,240,'#050a0d');
-  cx.lineWidth=20;cx.strokeStyle='#293c47';cx.strokeRect(-edge,-edge,2*edge,2*edge);
-  cx.lineWidth=7;cx.strokeStyle='#c28d45';cx.strokeRect(-edge+15,-edge+15,2*edge-30,2*edge-30);
-  cx.lineWidth=3;cx.strokeStyle='#edf0ce';cx.setLineDash([25,26]);
-  cx.strokeRect(-edge+26,-edge+26,2*edge-52,2*edge-52);cx.setLineDash([]);
-  cx.fillStyle='#efcb8c';cx.font='bold 16px monospace';cx.textAlign='center';
-  for(let k=-1500;k<=1500;k+=450){
-   cx.fillText('⚠  СЕКТОР ЗАКРЫТ',k,-edge+66);
-   cx.fillText('⚠  СЕКТОР ЗАКРЫТ',k,edge-46);
+  cx.fillStyle='#03101adc';
+  cx.fillRect(-edge-220,-edge-220,220,2*(edge+220));
+  cx.fillRect(edge,-edge-220,220,2*(edge+220));
+  cx.fillRect(-edge,-edge-220,2*edge,220);
+  cx.fillRect(-edge,edge,2*edge,220);
+  cx.strokeStyle='#1c8f9e';cx.lineWidth=14;cx.strokeRect(-edge,-edge,edge*2,edge*2);
+  cx.strokeStyle='#8ef9ec';cx.lineWidth=3;cx.strokeRect(-edge+3,-edge+3,edge*2-6,edge*2-6);
+  cx.strokeStyle='#ffcc78';cx.lineWidth=2;cx.setLineDash([18,20]);cx.strokeRect(-edge+25,-edge+25,edge*2-50,edge*2-50);cx.setLineDash([]);
+  cx.fillStyle='#ffe2a0';cx.font='bold 15px Trebuchet MS';cx.textAlign='center';
+  for(let k=-1600;k<=1600;k+=400){
+   cx.fillText('⚠ ГРАНИЦА СЕКТОРА',k,-edge+56);
+   cx.fillText('⚠ ГРАНИЦА СЕКТОРА',k,edge-42);
+   cx.save();cx.translate(-edge+53,k);cx.rotate(-Math.PI/2);cx.fillText('⚠ ГРАНИЦА СЕКТОРА',0,0);cx.restore();
+   cx.save();cx.translate(edge-53,k);cx.rotate(Math.PI/2);cx.fillText('⚠ ГРАНИЦА СЕКТОРА',0,0);cx.restore();
   }
   cx.restore();
- }
- if(trainingMode){
-  ring(0,0,150,'#65858c',2);ring(0,0,300,'#466575',2);
-  cx.font='bold 13px monospace';cx.fillStyle='#b9a775';cx.textAlign='center';
-  cx.fillText('TEST BAY / REACTOR 07',0,-310);
- }
- cx.restore();
-}
-// Industrial loot language: chips = XP; cassettes = shards; reactor = synthesis.
+  }if(trainingMode){cx.save();for(const r of [150,300,450]){ring(0,0,r,'#355f66',1.5)}for(let q=-4;q<=4;q++){line(q*80,-420,q*80,420,'#244f5633',1);line(-420,q*80,420,q*80,'#244f5633',1)}cx.font='bold 14px Trebuchet MS';cx.fillStyle='#74cfc4aa';cx.textAlign='center';cx.fillText('ИСПЫТАТЕЛЬНЫЙ СЕКТОР // 08',0,-315);cx.restore()}cx.restore()}
 function drawPickup(o){
- const t=ambient+o.x*.13+o.y*.19;
- const colors={xp:'#79c9d2',shard:'#e7ba6b',heal:'#9de5b9',magnet:'#9dcbef',rage:'#f0a96a',invuln:'#c9b6ee',core:'#f6d178'};
- const col=colors[o.type]||'#89bcc9',bob=Math.sin(t*2)*2;
- cx.save();cx.translate(o.x,o.y+bob);
- if(o.type==='xp'){
-  cx.rotate(Math.PI/4);
-  rect(-4.5,-4.5,9,9,'#234657');
-  cx.strokeStyle='#8ccad6';cx.lineWidth=1.3;cx.strokeRect(-4.5,-4.5,9,9);
-  rect(-2,-2,4,4,'#dcf2db');
- }else if(o.type==='shard'){
-  cx.rotate(Math.sin(t*.4)*.2);
-  poly([[-8,-10],[5,-12],[11,-4],[7,11],[-6,11],[-11,1]],'#795e35','#f2c982',1.8);
-  rect(-4,-4,8,7,'#e4bd76');
-  line(-9,-7,-4,-12,'#f5df9e',1.5);
- }else if(o.type==='core'){
-  glow(0,0,52,col,.32);
-  cx.rotate(t*.5);
-  for(let n=0;n<4;n++){
-   cx.save();cx.rotate(n*TAU/4);
-   poly([[-7,-25],[7,-25],[11,-13],[-11,-13]],'#48525b','#f2c46d',2);
-   cx.restore();
-  }
-  poly([[0,-18],[16,0],[0,18],[-16,0]],'#b16c2c','#f5dea1',2);
-  poly([[0,-9],[9,0],[0,9],[-9,0]],'#fff2bc');
- }else{
-  glow(0,0,30,col,.2);
-  poly([[-13,-11],[8,-11],[14,-5],[14,11],[-8,11],[-14,5]],'#1e333e',col,2);
-  cx.fillStyle=col;cx.font='bold 19px monospace';cx.textAlign='center';cx.textBaseline='middle';
-  cx.fillText({heal:'+',magnet:'◎',rage:'ϟ',invuln:'⬡'}[o.type]||'+',0,0);
-  rect(-12,-14,8,3,'#647e89');
+ const t=ambient+.25*o.x+o.y,colors={xp:TEAL,shard:AMBER,heal:'#84ffaa',magnet:'#78e9ff',rage:'#ff9e54',invuln:'#d5a6ff',core:'#ffe38e'},col=colors[o.type]||TEAL;
+ cx.save();cx.translate(o.x,o.y+Math.sin(t*2)*2.4);glow(0,0,o.type==='xp'?22:o.type==='core'?56:38,col,.38);cx.rotate(t*.75);
+ if(o.type==='xp'){poly([[0,-8],[7,0],[0,8],[-7,0]],'#55f2d0','#c5fff7',1.4);poly([[0,-4],[3,0],[0,4],[-3,0]],'#dffffd');}
+ else if(o.type==='shard'){poly([[0,-13],[9,-3],[6,10],[-6,10],[-9,-3]],'#e59542','#ffe4a6',1.7);line(-3,0,4,5,'#ffefc8',2);}
+ else{ring(0,0,14,col,3);circ(0,0,10,'#152c3b',col,2);cx.rotate(-t*.75);cx.fillStyle=col;cx.textAlign='center';cx.textBaseline='middle';cx.font='bold 19px Trebuchet MS';cx.fillText({heal:'✚',magnet:'◎',rage:'ϟ',invuln:'⬡',core:'◈'}[o.type]||'✚',0,0);}
+ cx.restore();}
+function drawRobot(p,menu=false){const skin=equippedSkin();cx.save();cx.translate(p.x,p.y);let a=Math.atan2(p.dy??-1,p.dx??0)+Math.PI/2;cx.rotate(a);const t=ambient,inv=p.inv>0;if(inv&&Math.floor(t*22)%2===0){cx.globalAlpha=.55}glow(0,0,62,S.rageTimer>0?AMBER:skin.core,.24);if(S.invulnTimer>0){ring(0,0,40+Math.sin(ambient*9)*3,'#ddc1ff',4);glow(0,0,68,'#c0b2ff',.27);}else if(S.rageTimer>0)ring(0,0,35,'#ffae51',3);cx.save();cx.scale(1,.52);ring(0,13,30,skin.core+'58',3);cx.restore();
+
+ // Cosmetic silhouette modules; purely visual, never change collision radius.
+ if(skin.variant==='ghost'){
+  for(const side of [-1,1]){poly([[side*17,-4],[side*42,-27],[side*34,8],[side*26,16]],skin.back,skin.edge,2);line(side*27,-11,side*38,-22,skin.core,3)}
+ }else if(skin.variant==='ember'){
+  for(const side of [-1,1]){poly([[side*13,-18],[side*25,-39],[side*23,-6]],skin.back,skin.trim,2);glow(side*24,-30,13,skin.core,.29)}
+ }else if(skin.variant==='void'){
+  for(const side of [-1,1]){poly([[side*19,-16],[side*36,-31],[side*32,9],[side*26,18]],skin.shell,skin.edge,1.6);poly([[side*16,15],[side*30,35],[side*26,6]],skin.back,skin.trim,1.4)}
  }
- cx.restore();
-}
-// Reactor Refit player: compact, armored drone with readable nose direction.
-function drawRobot(p,menu=false){
- const skin=equippedSkin(),t=ambient;
- cx.save();cx.translate(p.x,p.y);
- cx.rotate(Math.atan2(p.dy??-1,p.dx??0)+Math.PI/2);
- if(p.inv>0&&Math.floor(t*18)%3===0)cx.globalAlpha=.6;
- if(S.invulnTimer>0){
-  ring(0,0,38+Math.sin(t*8)*2,'#b8bdff',3);
-  glow(0,0,56,'#acb8ff',.18);
- }else if(S.rageTimer>0)ring(0,0,34,'#e9a24f',3);
- // Dark contact shadow makes the drone read as hovering above a physical deck.
- cx.save();cx.scale(1,.49);circ(0,15,32,'#020609ae');cx.restore();
- // Rear thrusters and armored wings. No gameplay collision change.
- for(const side of [-1,1]){
-  cx.save();cx.translate(side*21,13);
-  poly([[-8,-10],[9,-11],[12,11],[1,16],[-8,10]],'#283a45','#6c8291',1.8);
-  poly([[-3,-6],[6,-6],[6,4],[-3,5]],'#4c626f');
-  const flick=3+Math.sin(t*17+side)*2;
-  poly([[-5,12],[6,12],[3,19+flick],[-2,19+flick]],'#60a9bf');
-  cx.restore();
-  poly([[side*18,-14],[side*32,-21],[side*32,-4],[side*19,12]],skin.back,'#8198a5',1.7);
-  poly([[side*22,-12],[side*28,-14],[side*26,-5],[side*20,-1]],skin.plate);
-  line(side*30,3,side*24,12,skin.core,1.5);
- }
- // Distinct plate and four segmented corner armour modules.
- poly([[0,-29],[18,-18],[22,8],[10,24],[-10,24],[-22,8],[-18,-18]],
-  '#1a2834','#b5c5cb',2.8);
- for(const side of [-1,1]){
-  poly([[side*6,-23],[side*18,-15],[side*18,-1],[side*9,-5]],skin.plate,'#97adba',1.4);
-  poly([[side*12,5],[side*19,10],[side*9,19],[side*5,13]],'#455765',skin.trim,1.2);
-  circ(side*14,-12,2.4,'#c9d6d8');
- }
- poly([[0,-24],[9,-12],[7,14],[0,20],[-7,14],[-9,-12]],skin.shell,skin.edge,1.5);
- // Rear mechanical docking hinge and directional sensor array.
- rect(-8,19,16,4,'#637582');
- poly([[0,-33],[-8,-20],[8,-20]],'#d7e0e0','#f9d19b',1.6);
- rect(-5,-24,10,3,'#e4ba6e');
- // Core is light surrounded by steel, never a giant glowing polygon.
- circ(0,1,13,'#0b1720','#9fb6bd',2.5);
- circ(0,1,8,skin.coreDark,skin.light,1.4);
- circ(0,1,5,skin.core);
- circ(-1,-1,1.8,'#f5fcff');
- for(const side of [-1,1])line(side*11,-1,side*18,-3,skin.core,2);
- cx.restore();
-}
+ // Mechanical foot thrusters
+ for(let s of [-1,1]){cx.save();cx.translate(s*19,14);cx.rotate(s*.06+Math.sin(t*10+s)*.11);poly([[-9,-9],[6,-11],[11,12],[-6,15]],'#182b40','#2e556b',2);poly([[-6,-4],[5,-6],[7,7],[-3,9]],skin.plate);glow(0,13,12,BLUE,.37);circ(0,12,3,skin.light);cx.restore()}
+ for(let s of [-1,1]){cx.save();cx.translate(s*23,-6);poly([[-6,-14],[6,-12],[9,7],[0,15],[-8,9]],skin.back,'#1f263a',2);poly([[-3,-9],[4,-7],[6,4],[-1,9]],s===1?skin.plate:skin.plate);rect(-3,0,5,3,skin.core);cx.restore()}
+ poly([[0,-27],[17,-19],[24,0],[18,22],[0,28],[-18,22],[-24,0],[-17,-19]],skin.body,skin.edge,2.6);poly([[0,-24],[12,-17],[16,-5],[0,-11],[-16,-5],[-12,-17]],skin.plate);poly([[0,25],[15,16],[10,9],[-10,9],[-15,16]],skin.plate,'#29475b',1);poly([[-21,-2],[-11,-16],[0,-8],[11,-16],[21,-2],[12,10],[0,15],[-12,10]],skin.shell,skin.edge,1.6);
+ for(let s of [-1,1]){poly([[s*18,0],[s*13,4],[s*13,15],[s*20,9]],skin.trim);line(s*17,-11,s*17,0,skin.trim,2)}glow(0,1,34,skin.core,.33);poly([[0,-13],[13,-2],[8,12],[-8,12],[-13,-2]],skin.coreDark,skin.light,2);poly([[0,-9],[9,-1],[6,8],[-6,8],[-9,-1]],skin.core);circ(0,-1,3,'#ffffff');poly([[-15,-16],[0,-21],[15,-16],[8,-9],[-8,-9]],skin.plate,skin.edge,1);rect(-10,-17,20,3,skin.core);cx.restore()}
 function drawHybridLinks(){}
 function drawDrone(pos,d,i){const color=DRONES[d.id].color;cx.save();cx.translate(pos.x,pos.y);let e=chooseCombatTarget(pos.x,pos.y,550,d.id);
   const lockedAim=d.aimUntil>=S.t&&Number.isFinite(d.aimX)&&Number.isFinite(d.aimY);
@@ -2773,163 +2523,24 @@ function drawLiteEnemy(e){
  if(e.hp<e.maxHp*.55){cx.fillStyle='#09141d';cx.fillRect(-r,-r-9,r*2,3);cx.fillStyle=col;cx.fillRect(-r,-r-9,r*2*clamp(e.hp/e.maxHp,0,1),3)}
  cx.restore();
 }
-// Reactor Refit: each type is a recognizable machine, even without glow.
-// All coordinates below are visual only; hitboxes, speeds, AI and drops stay intact.
-function drawMachineEnemy(e){
- const col=ENEMY[e.id].col,r=e.r||18,s=(e.t||0),anim=Math.sin(s*8+(e.seed||0));
- const sideColor=e.hit>0?'#78414a':'#465762',edge=e.hit>0?'#ff9f9b':'#8da1a8';
- cx.save();cx.translate(e.x,e.y);
- cx.rotate(Math.atan2(S.player.y-e.y,S.player.x-e.x)+Math.PI/2);
- if(e.elite)cx.scale(1.15,1.15);
- if(e.champion){ring(0,0,r+10,'#e5b668',2);glow(0,0,r*2,'#d5a05b',.18)}
- if(e.hunterWind>0||e.bruteWind>0)ring(0,0,r+11,'#ec8b5b',3);
- if(e.shock>0)ring(0,0,r+6,'#cdd8ff',2);
- if(e.frost>0||e.chill>25)ring(0,0,r+5,'#a3deea',1.8);
- if(e.burn>0)ring(0,0,r+5,'#d47b44',2);
- if(e.marked>0){ring(0,0,r+12,'#e6c078',1.6);line(-9,-r-16,9,-r-16,'#e6c078',2)}
- // Contact shadow. Kept subtle even during full particle-heavy gameplay.
- cx.save();cx.scale(1,.49);circ(0,10,r,'#010508a4');cx.restore();
- const accent=e.frost>0?'#a2e9ed':e.shock>0?'#c4caff':col;
- if(e.id==='scarab'){
-  // Six-legged salvage crawler, broad shoulders and protected center.
-  for(const side of [-1,1]){
-   for(let i=0;i<3;i++){
-    const y=-11+i*10,kick=anim*(i%2?2:-2);
-    line(side*9,y,side*(r-2),y+kick,'#6e7f84',2.5);
-    line(side*(r-2),y+kick,side*(r+6),y+5+kick,'#adad95',1.8);
-   }
-  }
-  poly([[0,-r-4],[r*.67,-r*.56],[r*.72,r*.37],[0,r*.85],[-r*.72,r*.37],[-r*.67,-r*.56]],
-   '#283943',edge,1.7);
-  poly([[-9,-8],[0,-14],[9,-8],[7,9],[0,12],[-7,9]],'#526e70','#9db1a8',1);
-  rect(-4,-7,8,12,'#122b32');rect(-2,-4,4,7,accent);
-  for(const side of [-1,1])line(side*6,-r*.68,side*9,-r,'#d8cba8',1.6);
- }else if(e.id==='hunter'){
-  // Interceptor with swept blades: silhouette distinguishes it at a glance.
-  for(const side of [-1,1]){
-   poly([[side*5,-14],[side*(r+12),-r],[side*(r+16),9],[side*16,4]],'#45525b','#b58c62',2);
-   poly([[side*16,-10],[side*(r+9),-r+1],[side*(r+7),-4]],'#9a733e');
-  }
-  poly([[0,-r-9],[11,-6],[10,r*.8],[0,r+2],[-10,r*.8],[-11,-6]],'#343e46','#d6ad69',2);
-  poly([[0,-r-5],[5,-8],[-5,-8]],'#ebd8a8');
-  rect(-4,2,8,7,'#252f37');rect(-2,4,4,4,accent);
- }else if(e.id==='sentry'){
-  // Twin-barrel walking gun platform.
-  for(const side of [-1,1]){
-   poly([[side*8,-7],[side*(r+2),-12],[side*(r+6),9],[side*9,13]],'#344d59','#82a1af',1.7);
-   rect(side*13-4,11,7,6,'#627d86');
-  }
-  poly([[-12,-14],[12,-14],[r*.85,9],[0,18],[-r*.85,9]],'#334550','#a9c3cc',2);
-  rect(-5,-r-9,10,25,'#1d2d37');
-  rect(-4,-r-9,8,18,'#6b8796');
-  rect(-2,-r-14,4,9,'#c8d6dc');
-  circ(0,4,6,'#152832','#c3d2cc',1.5);circ(0,4,2.5,accent);
- }else if(e.id==='brute'){
-  // Armored tank, two tracks and heavy triangular ram plate.
-  for(const side of [-1,1]){
-   rect(side*r*.64-5,-r*.7,11,r*1.45,'#1e2b34');
-   for(let k=-2;k<=2;k++)rect(side*r*.64-4,k*8,9,4,'#506572');
-  }
-  poly([[0,-r-7],[r*.75,-r*.51],[r*.85,r*.6],[0,r],[-r*.85,r*.6],[-r*.75,-r*.51]],
-   '#43505c','#b5aaa1',2.4);
-  poly([[0,-r-6],[r*.48,-r*.28],[r*.42,r*.48],[0,r*.64],[-r*.42,r*.48],[-r*.48,-r*.28]],'#74716b','#a1a7a3',1.4);
-  line(-r*.4,-r*.3,r*.4,-r*.3,'#252f36',3);
-  rect(-5,1,10,9,'#1d2a31');rect(-3,3,6,4,accent);
- }else if(e.id==='hive'){
-  // Deployable carrier: four visible cargo capsules on a central chassis.
-  for(const side of [-1,1]){
-   for(const yy of [-13,12]){
-    poly([[side*9,yy-8],[side*(r+8),yy-8],[side*(r+11),yy+9],[side*9,yy+9]],
-      '#3a4250','#a198ae',1.5);
-    circ(side*(r+1),yy,3.3,side<0?'#d6ae75':'#83c0ae');
-   }
-  }
-  poly([[-13,-r],[13,-r],[r*.78,r*.4],[0,r],[-r*.78,r*.4]],'#403d4f','#b3a3c5',2);
-  poly([[0,-r+4],[10,-7],[7,14],[-7,14],[-10,-7]],'#777087','#c0b0ce',1);
-  rect(-5,-5,10,13,'#1c2638');rect(-3,-3,6,8,accent);
- }else if(e.id==='phantom'){
-  // Phase enemy: visibly split mechanical shell; no 'magic circle' silhouette.
-  cx.save();cx.globalAlpha=.84+.11*Math.sin(s*13);
-  for(const side of [-1,1]){
-   poly([[side*3,-r],[side*(r+10),-8],[side*(r+4),r],[side*10,9]],'#2a4b57','#85b8c4',2);
-   line(side*(r+7),2,side*(r+17),10+anim*2,'#6ab3b8',2);
-  }
-  poly([[0,-r-7],[8,-4],[0,r+5],[-8,-4]],'#304b5b','#a6d1d6',1.5);
-  poly([[0,-12],[5,-3],[0,10],[-5,-3]],accent);
-  cx.restore();
- }
- if(e.elite)ring(0,0,r+4,'#edb876',1.5);
- // Rotate back for a world-aligned, readable damage bar.
- if(e.elite||e.hp<e.maxHp*.56){
-  cx.rotate(-(Math.atan2(S.player.y-e.y,S.player.x-e.x)+Math.PI/2));
-  const w=e.elite?r*1.8:r*1.5;
-  rect(-w/2,-r-19,w,4,'#050a0d');
-  rect(-w/2,-r-19,w*clamp(e.hp/e.maxHp,0,1),4,e.elite?'#e9ba78':'#86b9a0');
- }
- cx.restore();
-}
-function drawReactorBoss(e){
- const R=e.r||55,col=ENEMY[e.id].col,t=e.t||0;
- cx.save();cx.translate(e.x,e.y);
- cx.rotate(Math.atan2(S.player.y-e.y,S.player.x-e.x)+Math.PI/2);
- cx.scale(R/54,R/54);
- cx.save();cx.scale(1,.48);circ(0,11,59,'#020408bb');cx.restore();
- // Radial plating has broad silhouettes and industrial teeth.
- for(let i=0;i<8;i++){
-  cx.save();cx.rotate(i*TAU/8);
-  const isSynth=e.id.startsWith('synth');
-  poly([[-9,-49],[-16,-69],[0,-77],[16,-69],[9,-49]],
-   isSynth?'#6b5842':'#3d4650',isSynth?'#dec38f':'#a6adb4',1.7);
-  rect(-4,-66,8,11,i%2?col:'#b9b9ae');
-  cx.restore();
- }
- ring(0,0,49,'#77868a',3);
- ring(0,0,43,'#273a47',8);
- poly([[0,-44],[34,-29],[43,7],[28,37],[0,46],[-28,37],[-43,7],[-34,-29]],
-  '#263842','#a1b0b0',3);
- for(let i=0;i<4;i++){
-  cx.save();cx.rotate(i*Math.PI/2);
-  poly([[-17,-39],[17,-39],[20,-22],[0,-15],[-20,-22]],
-   i%2?'#45515c':'#59636b','#9ba6a8',1.3);
-  line(-10,-31,10,-31,col,2);
-  cx.restore();
- }
- // The boss can now be identified as a reactor carrier, not a neon star.
- circ(0,0,20,'#101f28','#d4c09a',3);
- ring(0,0,14,col,3);
- poly([[0,-11],[11,0],[0,11],[-11,0]],'#7d6a54','#e6d1a4',2);
- circ(0,0,5,col);
- if(e.id==='omega'){
-  ring(0,0,59,'#f2c47a',5);
-  for(let i=0;i<4;i++){
-   const a=i*TAU/4+t*.5;
-   circ(Math.cos(a)*54,Math.sin(a)*54,4,'#f6e6ba');
-  }
- }else if(e.id==='boss2'||e.id==='boss3'){
-  for(let i=0;i<3;i++){
-   cx.save();cx.rotate(t*.18+i*TAU/3);
-   rect(-8,-62,16,7,'#bd91c7');cx.restore();
-  }
- }
- if(e.shield>0)ring(0,0,60,'#aedcea',3);
- if(e.phase)ring(0,0,66,'#f3d38d',2);
- if(e.hit>0){cx.globalAlpha=.32;circ(0,0,48,'#f78f85')}
- cx.restore();
-}
-function drawEnemy(e){
- if(renderSimplifyEnemies()&&!e.elite&&!e.champion&&!e.trainingDummy){drawLiteEnemy(e);return;}
- if(e.trainingDummy){
-  cx.save();cx.translate(e.x,e.y);
-  poly([[0,-e.r],[e.r,0],[0,e.r],[-e.r,0]],'#263d48','#c1c2a0',3);
-  circ(0,0,e.r*.5,'#101c25','#82c3c0',3);
-  line(-e.r,0,e.r,0,'#a9c7c2',2);line(0,-e.r,0,e.r,'#a9c7c2',2);
-  cx.restore();return;
- }
- if(e.id.startsWith('boss')||e.id.startsWith('synth')||e.id==='omega'){
-  drawReactorBoss(e);return;
- }
- drawMachineEnemy(e);
-}
+function drawEnemy(e){if(renderSimplifyEnemies()&&!e.elite&&!e.champion&&!e.trainingDummy){drawLiteEnemy(e);return;}if(e.trainingDummy){cx.save();cx.translate(e.x,e.y);glow(0,0,63,'#60e2df',.23);ring(0,0,e.r+8,'#499aab',3);circ(0,0,e.r,'#132b38','#65dfd9',3);ring(0,0,e.r*.58,'#8df6f1',2);ring(0,0,e.r*.25,'#e6c67d',2);line(-e.r*1.4,0,e.r*1.4,0,'#b5f8f2',1.2);line(0,-e.r*1.4,0,e.r*1.4,'#b5f8f2',1.2);cx.font='bold 10px Trebuchet MS';cx.textAlign='center';cx.fillStyle='#b5f8f2';cx.fillText('ЦЕЛЬ',0,e.r+24);cx.restore();return;}const info=ENEMY[e.id],big=e.elite,motion=Math.sin(e.t*9+e.seed)*2;cx.save();cx.translate(e.x,e.y);cx.rotate(Math.atan2(S.player.y-e.y,S.player.x-e.x)+Math.PI/2);cx.scale(big?1.15:1, big?1.15:1);if(e.hunterWind>0||e.bruteWind>0){ring(0,0,e.r+10+Math.sin(e.t*15)*3,'#ffb480',3)}if(e.boosted>0){ring(0,0,e.r+5,'#b5a3ff',2)}if(e.champion){glow(0,0,e.r*2.6,'#ffb257',.25);ring(0,0,e.r+7,'#ffc16d',2.2)}if(e.hit>0)glow(0,0,e.r*2,RED,.43);if(e.shock>0){glow(0,0,e.r*2.4,'#b8faff',.45);ring(0,0,e.r+6,'#a8ebff',1.8)}
+ if(e.burn>0){glow(0,0,e.r*1.9,'#ff792e',.32);for(let f=0;f<3;f++){let aa=ambient*3+f*TAU/3;circ(Math.cos(aa)*e.r*.6,Math.sin(aa)*e.r*.7,3+Math.sin(ambient*9+f)*1.7,f%2?'#ffb84f':'#f45a32')}}
+ if(e.frost>0||e.chill>25){glow(0,0,e.r*1.8,'#8defff',.26);ring(0,0,e.r*.9,'#91eaff',1.3);}if(e.marked>0){ring(0,0,e.r+11,AMBER,2);line(-9,-e.r-17,9,-e.r-17,AMBER,2);}cx.save();cx.scale(1,.54);circ(0,8,e.r*1.05,'#020b12a8');cx.restore();const c=info.col;
+ if(e.id==='scarab'||e.id==='hunter'){for(let s of [-1,1])for(let k=0;k<3;k++){let y=-10+k*11,ext=e.r+(e.id==='hunter'?12:8),knee=motion*(k%2===0?1:-1);line(s*9,y,s*(ext*.8),y+7+knee,'#354957',3.5);line(s*(ext*.8),y+7+knee,s*ext,y+13+knee,'#72909b',2.4)}poly([[-13,-12],[0,-21],[13,-12],[16,8],[0,20],[-16,8]],'#213545',c,2);poly([[-10,-8],[0,-16],[10,-8],[8,8],[0,13],[-8,8]],e.id==='hunter'?'#664d37':'#3b6570','#94cdd3',1);circ(0,0,5,c);for(let s of [-1,1]){circ(s*8,-9,2.5,AMBER);line(s*5,-16,s*8,-24,c,2)}}
+ else if(e.id==='brute'||e.id.startsWith('boss')||e.id.startsWith('synth')){let R=e.r;for(let s of [-1,1]){poly([[s*11,-R*.5],[s*(R*.92),-R*.7],[s*(R*1.2),R*.05],[s*(R*.94),R*.55],[s*18,R*.32]],'#2b3548',c,2);poly([[s*13,R*.3],[s*(R*.7),R*.72],[s*(R*.45),R]],'#36495b','#7b93a1',1.5)}poly([[0,-R*.95],[R*.55,-R*.64],[R*.85,.1*R],[R*.42,R*.82],[0,R],[-R*.42,R*.82],[-R*.85,.1*R],[-R*.55,-R*.64]],'#273746',c,2.7);poly([[0,-R*.68],[R*.36,-R*.36],[R*.43,R*.27],[0,R*.58],[-R*.43,R*.27],[-R*.36,-R*.36]],'#667889','#a0a2a1',1.1);for(let s of [-1,1]){poly([[s*R*.31,-R*.5],[s*R*.65,-R*.9],[s*R*.45,-R*.25]],c,'#ffe1bd',.8);circ(s*R*.25,-R*.15,3.8,'#ffe9e0')}glow(0,0,R,c,.18);circ(0,0,R*.2,c);circ(0,0,R*.09,'#fff');if(big){ring(0,0,R*.9,c,3);
+ if(e.id.startsWith('synth')){for(let k=0;k<8;k++){const a=k*TAU/8+e.t*.5;poly([[Math.cos(a)*R*.92,Math.sin(a)*R*.92],[Math.cos(a-.16)*R*1.5,Math.sin(a-.16)*R*1.5],[Math.cos(a+.16)*R*1.5,Math.sin(a+.16)*R*1.5]],e.id==='synth1'?'#f8a65a':e.id==='synth2'?'#34bcdd':'#fa91bf','#fff8c5',2)}ring(0,0,R*1.06,'#fcf7d2',5);circ(0,0,R*.3,e.id==='synth1'?'#ffb83e':'#b1fcff','#ffffff',3);}
+ else if(e.id==='boss1'){for(let k=0;k<5;k++){let a=k*TAU/5;line(Math.cos(a)*R*.7,Math.sin(a)*R*.7,Math.cos(a)*R*1.35,Math.sin(a)*R*1.35,c,5)}
+ poly([[-R*.65,-R*.25],[0,-R*1.45],[R*.65,-R*.25],[0,-R*.4]],'#782c2e','#ffc0ac',2)}
+ else if(e.id==='boss2'){for(let k=0;k<6;k++){let a=k*TAU/6+e.t*.4;circ(Math.cos(a)*R*1.22,Math.sin(a)*R*1.22,6,'#c7acff');line(0,0,Math.cos(a)*R*1.22,Math.sin(a)*R*1.22,c,1.2)}}
+ else if(e.id==='boss3'){for(let k=0;k<6;k++){const a=k*TAU/6-e.t*.2;poly([[Math.cos(a)*R*.83,Math.sin(a)*R*.83],[Math.cos(a-.12)*R*1.15,Math.sin(a-.12)*R*1.15],[Math.cos(a+.12)*R*1.15,Math.sin(a+.12)*R*1.15]],'#5e273e','#ff9dae',2)}}
+  else if(e.id==='omega'){for(let k=0;k<8;k++){let a=k*TAU/8-e.t*.5;poly([[Math.cos(a)*R,Math.sin(a)*R],[Math.cos(a-.14)*R*1.32,Math.sin(a-.14)*R*1.32],[Math.cos(a+.14)*R*1.32,Math.sin(a+.14)*R*1.32]],'#94622c','#ffdf9e',1)}}
+ if(e.phase){ring(0,0,R*1.28,'#fffbcb',3+Math.sin(e.t*10)*1.5);glow(0,0,R*2,c,.2)}
+ if(e.shield>0){ring(0,0,R*1.15,'#baf9ff',5);glow(0,0,R*1.4,BLUE,.2)}
+ }}
+ else if(e.id==='sentry'){for(let s of [-1,1]){poly([[s*8,-6],[s*21,-12],[s*22,8],[s*10,14]],'#263d4f','#628e9c',2);line(s*18,0,s*18,16,c,2)}poly([[-15,-9],[0,-21],[15,-9],[14,11],[0,20],[-14,11]],'#264155',c,2);poly([[-6,-23],[6,-23],[5,-6],[-5,-6]],'#9baeb7',c,1.5);circ(0,0,7,c);rect(-5,-24,10,3,'#d0efff')}
+ else if(e.id==='hive'){for(let k=0;k<8;k++){let a=k*TAU/8+motion*.018;line(Math.cos(a)*9,Math.sin(a)*9,Math.cos(a)*(e.r+12),Math.sin(a)*(e.r+12),c,3)}poly([[0,-29],[19,-18],[23,5],[12,20],[-12,20],[-23,5],[-19,-18]],'#4d3762',c,2.5);poly([[0,-20],[12,-9],[9,13],[-9,13],[-12,-9]],'#a17bc2');for(let s of [-1,1])circ(s*9,-8,4,TEAL)}
+ else if(e.id==='phantom'){glow(0,0,39,TEAL,.24);for(let s of [-1,1]){poly([[s*7,-15],[s*23,-4],[s*18,11],[s*11,2]],'#31596a',c,2);line(s*16,5,s*23,19,c,2)}poly([[0,-23],[16,-11],[12,15],[0,24],[-12,15],[-16,-11]],'#204252',c,2);poly([[0,-13],[7,-3],[0,10],[-7,-3]],c);circ(0,-3,3,'#fff')}
+ if(e.elite||e.hp<e.maxHp*.55){cx.rotate(-(Math.atan2(S.player.y-e.y,S.player.x-e.x)+Math.PI/2));let rr=e.elite?50:21;rect(-rr,-e.r-23,rr*2,5,'#070e17');rect(-rr,-e.r-23,rr*2*clamp(e.hp/e.maxHp,0,1),5,c)}cx.restore()}
 function drawLightning(fx){
  const from=fx.a,to=fx.b,dx=to.x-from.x,dy=to.y-from.y,length=Math.hypot(dx,dy)||1;
  const nx=-dy/length,ny=dx/length,segments=Math.min(14,Math.max(5,Math.floor(length/22))),fade=clamp(fx.life/fx.max,0,1);
@@ -2956,30 +2567,7 @@ function drawBullets(){
  for(const e of S.effects){if(!visible(e.x,e.y,e.r))continue;const k=Math.max(0,e.life/3);if(!lite)glow(e.x,e.y,e.r*1.25,e.fire?'#ff853f':BLUE,e.fire?.10:.12+Math.sin(ambient*6)*.05);cx.save();cx.globalAlpha=clamp(e.life/2,0,e.fire?.22:.6);circ(e.x,e.y,e.r,e.fire?'#ef621538':'#2c80ad1c',e.fire?'#ffad52':BLUE,e.fire?3:2);if(e.fire){for(let f=0;f<5;f++){let q=ambient*1.8+f*TAU/5;circ(e.x+Math.cos(q)*e.r*.65,e.y+Math.sin(q)*e.r*.65,4+Math.sin(ambient*10+f)*2,'#ff9a37')}}for(let k=0;k<6;k++){let a=TAU*k/6+ambient*.5;let x=e.x+Math.cos(a)*e.r,y=e.y+Math.sin(a)*e.r;circ(x,y,3,e.fire?'#ffb453':BLUE)}cx.restore()}
  for(const b of S.bullets){if(!visible(b.x,b.y,40))continue;if(!lite)glow(b.x,b.y,b.type==='rocket'?26:17,b.col,.3);cx.save();cx.translate(b.x,b.y);cx.rotate(Math.atan2(b.vy,b.vx)+Math.PI/2);if(b.type==='gravitySeed'){glow(0,0,28,'#b79aff',.4);ring(0,0,9,'#a88cff',2);circ(0,0,5,'#080514','#dbc7ff',2)}else if(b.type==='boomer'){cx.rotate(ambient*12);for(let k=0;k<5;k++){const a=k*TAU/5;poly([[Math.cos(a)*8,Math.sin(a)*8],[Math.cos(a-.19)*17,Math.sin(a-.19)*17],[Math.cos(a+.19)*17,Math.sin(a+.19)*17]],b.fireDisc?'#7b3f32':'#426f58',b.fireDisc?'#ffb46d':'#8affb2',1)}circ(0,0,7,b.fireDisc?'#fff0be':'#e8fff0',b.col,2)}else if(b.type==='rocket'){poly([[0,-11],[7,-2],[5,9],[-5,9],[-7,-2]],'#bcb3ac','#ffad92',2);glow(0,11,19,AMBER,.4);poly([[0,6],[5,14],[0,18],[-5,14]],AMBER)}else{line(0,8,0,-13,'#adfff8',4);circ(0,-4,3,b.col)}cx.restore()}
  for(const b of S.enemyBullets){if(!visible(b.x,b.y,24))continue;if(!lite)glow(b.x,b.y,19,RED,.25);circ(b.x,b.y,b.r,b.col||RED,'#ffd5d2',1.5)}
- for(const fx of S.fx){const pt=fx.a||fx;if(!visible(pt.x,pt.y,Math.max(fx.length||0,fx.r||60,90))&&!(fx.b&&visible(fx.b.x,fx.b.y,80)))continue;cx.save();cx.globalAlpha=clamp(fx.life/fx.max,0,1);if(fx.type==='fabrication'){
-    // Two parts lock together over a boss core. Purely cosmetic, time-bound VFX.
-    const progress=clamp(1-fx.life/fx.max,0,1),radius=32+progress*82;
-    cx.save();cx.translate(fx.x,fx.y);cx.rotate(progress*TAU*.64);
-    cx.strokeStyle='#c6b993';cx.lineWidth=3;cx.setLineDash([11,8]);
-    cx.beginPath();cx.arc(0,0,radius,0,TAU);cx.stroke();cx.setLineDash([]);
-    ring(0,0,24+progress*24,'#e8c67e',3);
-    for(let i=0;i<6;i++){
-     const a=i*TAU/6;
-     cx.save();cx.rotate(a);
-     poly([[-7,-radius+2],[7,-radius+2],[10,-radius+19],[-10,-radius+19]],'#58646a','#e8c588',2);
-     cx.restore();
-    }
-    cx.restore();
-    const slide=Math.max(0,1-progress*2)*80;
-    for(const side of [-1,1]){
-     cx.save();cx.translate(fx.x+side*(12+slide),fx.y);
-     cx.rotate(side*progress*1.4);
-     poly([[-15,-12],[12,-12],[20,0],[12,12],[-15,12],[-22,0]],'#394b55','#e3bd7d',2.5);
-     rect(-7,-5,14,10,fx.col);
-     cx.restore();
-    }
-    glow(fx.x,fx.y,70,fx.col,.27);
-   }else if(fx.type==='rail'){cx.lineCap='round';line(fx.a.x,fx.a.y,fx.b.x,fx.b.y,'#8b5e2b',fx.width*3);line(fx.a.x,fx.a.y,fx.b.x,fx.b.y,'#ffe39b',fx.width);line(fx.a.x,fx.a.y,fx.b.x,fx.b.y,'#ffffff',Math.max(2,fx.width*.3));glow(fx.a.x,fx.a.y,55,'#ffdb86',.6)}else if(fx.type==='cryo'||fx.type==='flame'){
+ for(const fx of S.fx){const pt=fx.a||fx;if(!visible(pt.x,pt.y,Math.max(fx.length||0,fx.r||60,90))&&!(fx.b&&visible(fx.b.x,fx.b.y,80)))continue;cx.save();cx.globalAlpha=clamp(fx.life/fx.max,0,1);if(fx.type==='rail'){cx.lineCap='round';line(fx.a.x,fx.a.y,fx.b.x,fx.b.y,'#8b5e2b',fx.width*3);line(fx.a.x,fx.a.y,fx.b.x,fx.b.y,'#ffe39b',fx.width);line(fx.a.x,fx.a.y,fx.b.x,fx.b.y,'#ffffff',Math.max(2,fx.width*.3));glow(fx.a.x,fx.a.y,55,'#ffdb86',.6)}else if(fx.type==='cryo'||fx.type==='flame'){
    const ice=fx.type==='cryo',life=clamp(fx.life/fx.max,0,1),v=Math.max(6,Math.round((ice?27:35)*renderEffectDensity()));
    // No opaque triangle: visible jet consists of fast, layered, uneven particles and tapered streaks.
    cx.save();cx.lineCap='round';
@@ -3006,28 +2594,8 @@ function drawBullets(){
   for(const p of S.parts){if(!visible(p.x,p.y,8))continue;cx.save();cx.globalAlpha=clamp(p.life/p.max,0,1);cx.translate(p.x,p.y);cx.rotate(p.vx*.01);rect(-p.size/2,-p.size/2,p.size,p.size*1.7,p.col);cx.restore()}
  }
  for(const p of S.floaters){if(!visible(p.x,p.y,28))continue;cx.save();cx.globalAlpha=clamp(p.t/.7,0,1);cx.textAlign='center';cx.font='bold 15px Trebuchet MS';cx.shadowBlur=lite?0:8;cx.shadowColor=p.col;cx.fillStyle=p.col;cx.fillText(p.val,p.x,p.y);cx.restore()}}
-// Atmospheric edge tint for a mechanical indoor arena.
-function drawScreenTint(){
- const g=cx.createRadialGradient(W*.5,H*.4,Math.min(W,H)*.23,W*.5,H*.5,Math.max(W,H)*.9);
- g.addColorStop(0,'#050b1000');g.addColorStop(.8,'#0104093b');g.addColorStop(1,'#000307b8');
- cx.fillStyle=g;cx.fillRect(0,0,W,H);
-}
-// Menu hangar: an inactive assembly reactor behind the foreground controls.
-function drawMenuVisual(){
- drawBackground(ambient*1.5,ambient*.7);
- cx.save();cx.translate(W*.5,H*.51);
- cx.rotate(-.23);
- drawReactorSeal(0,0,155,7);
- for(const side of [-1,1]){
-  rect(side*205-12,-210,24,420,'#101b22');
-  rect(side*205-4,-206,8,412,'#53616a');
-  for(let i=-3;i<=3;i++){
-   rect(side*205-17,i*53-12,34,8,'#775934');
-  }
- }
- cx.restore();
- drawScreenTint();
-}
+function drawScreenTint(){let g=cx.createRadialGradient(W*.5,H*.45,Math.min(W,H)*.17,W*.5,H*.55,Math.max(W,H)*.83);g.addColorStop(0,'#06151b00');g.addColorStop(.75,'#02050b35');g.addColorStop(1,'#010208be');cx.fillStyle=g;cx.fillRect(0,0,W,H)}
+function drawMenuVisual(){drawBackground(ambient*8,ambient*4);cx.save();cx.translate(W*.5,H*.5);cx.rotate(ambient*.042);for(let i=0;i<3;i++){cx.strokeStyle=['#22425e','#164b50','#20384c'][i];cx.lineWidth=2;cx.setLineDash([8,13]);cx.beginPath();cx.arc(0,0,120+i*95,0,TAU);cx.stroke();cx.setLineDash([])}cx.restore();glow(W*.5,H*.48,Math.min(350,W*.42),TEAL,.12);cx.save();cx.translate(W*.5,H*.5);cx.rotate(ambient*.2);for(let i=0;i<6;i++){let a=i*TAU/6;cx.save();cx.translate(Math.cos(a)*150,Math.sin(a)*150);poly([[0,-10],[8,-3],[9,8],[0,14],[-9,8],[-8,-3]],'#25435a','#4fd1c5',2);circ(0,0,3,i%2?AMBER:TEAL);cx.restore()}cx.restore();drawScreenTint()}
 function arenaZoom(){if(!touching)return 1;if(W<=390)return .52;if(W<=430)return .56;if(W<=650)return .62;return .82;}
 function draw(){cx.setTransform(scale,0,0,scale,0,0);if(!S||mode==='menu' || (mode==='paused'&&!S)){drawMenuVisual();return}const zoom=arenaZoom();rect(0,0,W,H,'#08111d');cx.save();cx.translate(W/2,H/2);cx.scale(zoom,zoom);cx.translate(-W/2,-H/2);drawBackground(S.cam.x,S.cam.y,zoom);cx.save();let sx=shake?rand(-shake,shake):0,sy=shake?rand(-shake,shake):0;cx.translate(W/2-S.cam.x+sx,H/2-S.cam.y+sy);
  drawHazards();for(let o of S.pickups)drawPickup(o);for(let e of S.enemy){if(Math.abs(e.x-S.cam.x)<W/(2*zoom)+140&&Math.abs(e.y-S.cam.y)<H/(2*zoom)+140)drawEnemy(e)}drawRobot(S.player);drawHybridLinks();S.drones.forEach((d,i)=>{if(['saw','fusion_thermal','fusion_tesla','fusion_frostblade','fusion_magnetblade'].includes(d.id))sawPositions(d,i).forEach((sp,k)=>drawDrone(sp,d,i+k));else drawDrone(getDronePos(d,i),d,i)});drawBullets();cx.restore();cx.restore();drawScreenTint();if(S.player.hit>0){cx.save();cx.globalAlpha=S.player.hit*.35;rect(0,0,W,H,RED);cx.restore()}if(S.player.dashCd<=0&&mode==='playing'&&touching){$('dashBtn').style.borderColor=TEAL}}
