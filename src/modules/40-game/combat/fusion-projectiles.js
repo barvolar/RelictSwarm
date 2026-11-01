@@ -1,5 +1,5 @@
 function fusionLine(pos,target,width,damage,length,opts={}){
- const a=aimGeometry(pos,target),origin=weaponMuzzle(pos,target,0,25),end={x:origin.x+a.dx*length,y:origin.y+a.dy*length};
+ const a=aimGeometry(pos,target),origin=weaponMuzzle(pos,target,opts.offset||0,25),end={x:origin.x+a.dx*length,y:origin.y+a.dy*length};
  let hits=[];
  for(const e of S.enemy)if(e.hp>0&&pointSegmentDist(e.x,e.y,origin.x,origin.y,end.x,end.y)<e.r+width/2){hurtEnemy(e,damage,opts);hits.push(e)}
  S.fx.push({type:'rail',a:origin,b:end,life:.38,max:.38,col:opts.color||'#bde8ff',width});
