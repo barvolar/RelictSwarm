@@ -21,15 +21,16 @@ function runtime(stored='normal',touch=false){
 function readings(from,count,fps,enemies){
  return Array.from({length:count},(_,i)=>({elapsedGameSec:from+i,fps,enemies}));
 }
-test('eco reduces desktop backing resolution with native DPR=1',()=>{
+test('legacy ECO migrates to LOW, preserving detailed enemies and reducing resolution',()=>{
  const q=runtime('eco');
- assert.equal(q.run('renderQuality'),'eco');
- assert.equal(q.run('effectiveRenderDpr()'),.8);
- assert.equal(q.ctx.C.width,1536);
- assert.equal(q.ctx.C.height,735);
+ assert.equal(q.run('renderQuality'),'low');
+ assert.equal(q.run('effectiveRenderDpr()'),.9);
+ assert.equal(q.ctx.C.width,1728);
+ assert.equal(q.ctx.C.height,827);
  assert.equal(q.ctx.C.style.width,'1920px');
  assert.equal(q.ctx.C.style.height,'919px');
  assert.equal(q.run('renderIsLite()'),true);
+ assert.equal(q.run('renderSimplifyEnemies()'),false);
  const standard=runtime('normal');
  assert.equal(standard.run('effectiveRenderDpr()'),1);
  assert.equal(standard.ctx.C.width,1920);
@@ -43,6 +44,7 @@ test('adaptive resolution reacts only to sustained high-load low FPS',()=>{
  assert.equal(r.run('adaptiveRenderScale'),.65);
  assert.equal(r.ctx.C.width,1248);
  assert.equal(r.run('renderIsLite()'),true);
+ assert.equal(r.run('renderSimplifyEnemies()'),false,'automatic scaling must never simplify enemies');
  const previousCalls=r.calls.length;
  r.ctx.samples=readings(11,5,70,10);
  r.run('adjustRenderFidelity(samples)');
@@ -58,13 +60,13 @@ test('low FPS alone does not degrade quality without gameplay pressure',()=>{
  r.ctx.samples=readings(1,6,17,8);
  r.run('adjustRenderFidelity(samples)');
  assert.equal(r.run('adaptiveRenderScale'),1);
- r.run('setRenderQuality("eco")');
+ r.run('setRenderQuality("low")');
  assert.equal(r.run('renderIsLite()'),true);
  r.run('setRenderQuality("normal")');
  assert.equal(r.run('renderIsLite()'),false);
 });
 test('simplified enemy renderer does not change enemy gameplay state',()=>{
- const q=runtime('eco');
+ const q=runtime('minimal');
  const calls=[];
  q.ctx.cx=new Proxy({}, {get:(target,key)=>target[key]||((...args)=>calls.push([key,...args]))});
  q.ctx.ENEMY={scarab:{col:'#65dbbc'}};
@@ -86,4 +88,45 @@ test('rendering changes are isolated from spawn and balance mechanics',()=>{
  assert.ok(html.includes('function updateEnemies'));
  assert.ok(html.includes("function hurtEnemy"));
  assert.ok(!html.includes('perfOverlay'));
+});
+
+test('four graphics presets have distinct budgets and manual-only enemy simplification',()=>{
+ for(const [id,dpr,simplify,lite,glow] of [
+  ['high',1,false,false,1],
+  ['normal',1,false,false,.85],
+  ['low',.9,false,true,.4],
+  ['minimal',.72,true,true,0]
+ ]){
+  const r=runtime(id);
+  assert.equal(r.run('renderQuality'),id);
+  assert.equal(r.run('effectiveRenderDpr()'),dpr);
+  assert.equal(r.run('renderSimplifyEnemies()'),simplify);
+  assert.equal(r.run('renderIsLite()'),lite);
+  assert.equal(r.run('renderGlowFactor()'),glow);
+ }
+ const r=runtime('high');
+ r.run('setRenderQuality("minimal")');
+ assert.equal(r.run('renderSimplifyEnemies()'),true);
+ r.run('setRenderQuality("high")');
+ assert.equal(r.run('renderSimplifyEnemies()'),false);
+ r.run('setRenderQuality("invalid")');
+ assert.equal(r.run('renderQuality'),'high');
+});
+test('graphics picker is accessible in settings and pause',()=>{
+ const s=read('src/modules/60-analytics/performance/settings.js');
+ const p=read('src/modules/40-game/lifecycle/pause-and-notices.js');
+ assert.ok(s.includes("data-graphics-preset"));
+ assert.ok(s.includes("aria-pressed"));
+ assert.ok(p.includes("renderQualityControls()"));
+ assert.ok(!s.includes('qualityToggle'));
+});
+test('automatic scaling never engages simplified enemy silhouettes',()=>{
+ const source=read('src/modules/70-render/layers/enemies.js');
+ assert.ok(source.includes('if(renderSimplifyEnemies()'));
+ assert.ok(!source.includes('if(renderIsLite()&&!e.elite'));
+ const r=runtime('high');
+ r.ctx.samples=readings(15,5,12,150);
+ r.run('adjustRenderFidelity(samples)');
+ assert.equal(r.run('adaptiveRenderScale'),.65);
+ assert.equal(r.run('renderSimplifyEnemies()'),false);
 });
