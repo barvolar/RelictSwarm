@@ -32,6 +32,10 @@ const base=template.replace('%%RELICT_STYLE%%',styles)
 const html=base.replace('%%RELICT_SDK_LOADER%%','');
 const yandexHtml=base.replace('%%RELICT_SDK_LOADER%%',
   '<script>window.RELICT_PLATFORM="yandex"</script>\n<script src="/sdk.js"></script>');
+const crazygamesHtml=base.replace('%%RELICT_SDK_LOADER%%',
+  '<script>window.RELICT_PLATFORM="crazygames"</script>\n<script src="https://sdk.crazygames.com/crazygames-sdk-v3.js"></script>')
+  .replace('[ 10.15: ONLINE TEST ]','[ РЕЛИКТОВЫЙ РОЙ ]')
+  .replace(' · Без внешних загрузок','');
 
 const dist=path.join(root,'dist'); fs.mkdirSync(dist,{recursive:true});
 fs.writeFileSync(path.join(dist,'index.html'),html);
@@ -39,6 +43,10 @@ fs.writeFileSync(path.join(dist,'index.html'),html);
 const yandexDir=path.join(dist,'yandex');fs.mkdirSync(yandexDir,{recursive:true});
 fs.writeFileSync(path.join(yandexDir,'index.html'),yandexHtml);
 for(const p of ['telemetry-config.js','telemetry-client.js'])fs.copyFileSync(path.join(root,p),path.join(yandexDir,p));
+// CrazyGames standalone package (no Yandex SDK dependency).
+const crazyDir=path.join(dist,'crazygames');fs.mkdirSync(crazyDir,{recursive:true});
+fs.writeFileSync(path.join(crazyDir,'index.html'),crazygamesHtml);
+for(const p of ['telemetry-config.js','telemetry-client.js'])fs.copyFileSync(path.join(root,p),path.join(crazyDir,p));
 const check=path.join(dist,'game-check.js'); fs.writeFileSync(check,js);
 try {execFileSync(process.execPath,['--check',check],{stdio:'pipe'});} finally {fs.rmSync(check,{force:true});}
 for (const p of ['telemetry-config.js','telemetry-client.js','.nojekyll']) fs.copyFileSync(path.join(root,p),path.join(dist,p));
