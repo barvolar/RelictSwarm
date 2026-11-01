@@ -26,6 +26,8 @@ function fusionHarness(){
   hurtEnemy:(e,dmg)=>{e.hp-=dmg;hits.push({y:e.y,damage:dmg})},
   closest:()=>null,
   launchBullet:()=>{},
+  damageArea:()=>{},
+  applyChill:()=>{},
   burst:()=>{},
   Math,console
  });
