@@ -2438,55 +2438,48 @@ function rect(x,y,w,h,col){cx.fillStyle=col;cx.fillRect(x,y,w,h)}
 function ring(x,y,r,col,w=2){cx.beginPath();cx.arc(x,y,r,0,TAU);cx.strokeStyle=col;cx.lineWidth=w;cx.stroke()}
 function seed(x,y){let n=Math.sin(x*127.1+y*311.7)*43758.5453;return n-Math.floor(n)}
 function drawBackground(camX,camY,zoom=1){rect(0,0,W,H,'#08111d');const viewW=W/zoom,viewH=H/zoom,sx=camX-viewW/2,sy=camY-viewH/2;cx.save();cx.translate(W/2-camX,H/2-camY);
- // Large graphite armor hexes. Anchored in world space so the floor never swims with the camera.
- const tileRadius=84, tileStepX=tileRadius*1.5, tileStepY=tileRadius*Math.sqrt(3);
- const firstColumn=Math.floor((sx-tileRadius*2)/tileStepX);
- const lastColumn=Math.ceil((sx+viewW+tileRadius*2)/tileStepX);
- for(let column=firstColumn;column<=lastColumn;column++){
-  const tileX=column*tileStepX;
-  const stagger=((column%2+2)%2)*tileStepY*.5;
-  const firstRow=Math.floor((sy-tileStepY-stagger)/tileStepY);
-  const lastRow=Math.ceil((sy+viewH+tileStepY-stagger)/tileStepY);
-  for(let row=firstRow;row<=lastRow;row++){
-   const tileY=row*tileStepY;
-   const cy=tileY+stagger,variation=seed(column,row),detail=seed(column+37,row-19);
-   // Flat-top honeycomb: tiles meet without gaps or hard rectangular seams.
-   cx.beginPath();
-   for(let corner=0;corner<6;corner++){
-    const angle=corner*Math.PI/3;
-    const x=tileX+tileRadius*Math.cos(angle),y=cy+tileRadius*Math.sin(angle);
-    if(corner===0)cx.moveTo(x,y);else cx.lineTo(x,y);
-   }
-   cx.closePath();
-   cx.fillStyle=variation<.24?'#0b1824':variation<.75?'#0d1c29':'#10212f';
-   cx.fill();
-   cx.lineWidth=2;
-   cx.strokeStyle='#28616c';
-   cx.stroke();
-   // Recessed inner bevel: armored plates, not a bright neon wireframe.
-   cx.beginPath();
-   for(let corner=0;corner<6;corner++){
-    const angle=corner*Math.PI/3;
-    const x=tileX+(tileRadius-9)*Math.cos(angle),y=cy+(tileRadius-9)*Math.sin(angle);
-    if(corner===0)cx.moveTo(x,y);else cx.lineTo(x,y);
-   }
-   cx.closePath();
-   cx.lineWidth=1;
-   cx.strokeStyle='#193440';
-   cx.stroke();
-   // Rare service vents and cyan-lit seams for detail without overwhelming projectiles.
-   if(detail>.91){
-    cx.lineWidth=1.5;cx.strokeStyle='#2d6471';
-    for(let slit=-1;slit<=1;slit++){
-     cx.beginPath();cx.moveTo(tileX-14,cy+slit*7);
-     cx.lineTo(tileX+14,cy+slit*7);cx.stroke();
-    }
-   }else if(detail<.09){
-    cx.beginPath();
-    cx.moveTo(tileX+tileRadius*.63,cy-tileRadius*.60);
-    cx.lineTo(tileX+tileRadius*.85,cy-tileRadius*.21);
-    cx.lineWidth=2.5;cx.strokeStyle='#48a5ad';cx.stroke();
-   }
+ // Minimal tactical deck: smooth navy graphite, sparse fixed-world targeting marks.
+ // Render the visible floor in world coordinates so camera motion never shifts the pattern.
+ cx.fillStyle='#0a1723';
+ cx.fillRect(sx-3,sy-3,viewW+6,viewH+6);
+ const sectorSize=680;
+ const firstX=Math.floor((sx-220)/sectorSize),lastX=Math.ceil((sx+viewW+220)/sectorSize);
+ const firstY=Math.floor((sy-220)/sectorSize),lastY=Math.ceil((sy+viewH+220)/sectorSize);
+ for(let ix=firstX;ix<=lastX;ix++)for(let iy=firstY;iy<=lastY;iy++){
+  const marker=seed(ix+31,iy-19);
+  if(marker<.30)continue;
+  const mx=ix*sectorSize+340+(seed(ix+7,iy+13)-.5)*110;
+  const my=iy*sectorSize+340+(seed(ix-17,iy+23)-.5)*110;
+  const radius=132+seed(ix+51,iy-11)*38;
+  cx.save();
+  cx.globalAlpha=.72;
+  cx.lineWidth=1.25;
+  cx.strokeStyle='#1e4451';
+  cx.beginPath();cx.arc(mx,my,radius,0,TAU);cx.stroke();
+  // Two interrupted telemetry arcs, not a grid or a distracting neon halo.
+  cx.strokeStyle='#2a6670';
+  cx.lineWidth=1.8;
+  cx.beginPath();cx.arc(mx,my,radius+7,.16,1.18);cx.stroke();
+  cx.beginPath();cx.arc(mx,my,radius+7,3.30,3.94);cx.stroke();
+  cx.strokeStyle='#234a55';
+  cx.lineWidth=1;
+  cx.beginPath();cx.arc(mx,my,radius*.56,0,TAU);cx.stroke();
+  cx.strokeStyle='#356b73';
+  cx.beginPath();cx.moveTo(mx-11,my);cx.lineTo(mx-4,my);
+  cx.moveTo(mx+4,my);cx.lineTo(mx+11,my);
+  cx.moveTo(mx,my-11);cx.lineTo(mx,my-4);
+  cx.moveTo(mx,my+4);cx.lineTo(mx,my+11);cx.stroke();
+  cx.restore();
+ }
+ // Low-contrast locator dashes provide direction without covering shots or enemies.
+ const guideSize=370;
+ for(let ix=Math.floor(sx/guideSize);ix<=Math.ceil((sx+viewW)/guideSize);ix++){
+  for(let iy=Math.floor(sy/guideSize);iy<=Math.ceil((sy+viewH)/guideSize);iy++){
+   if(seed(ix+109,iy-57)<.78)continue;
+   const mx=ix*guideSize+guideSize*.5,my=iy*guideSize+guideSize*.5;
+   cx.strokeStyle='#1c3e4a';cx.lineWidth=1;
+   cx.beginPath();cx.moveTo(mx-12,my);cx.lineTo(mx-5,my);
+   cx.moveTo(mx+5,my);cx.lineTo(mx+12,my);cx.stroke();
   }
  }
  // Arena perimeter: contrast stripes, unmistakable boundary, and a muted outer danger zone.
