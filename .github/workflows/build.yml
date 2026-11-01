@@ -33,3 +33,14 @@ jobs:
           name: RelictSwarm-Yandex-test
           path: RelictSwarm-Yandex-test.zip
           if-no-files-found: error
+
+      - name: Pack CrazyGames Basic Launch ZIP
+        run: |
+          cd dist/crazygames
+          zip -q -r ../../RelictSwarm-CrazyGames-test.zip .
+      - name: Upload CrazyGames test package
+        uses: actions/upload-artifact@v4
+        with:
+          name: RelictSwarm-CrazyGames-test
+          path: RelictSwarm-CrazyGames-test.zip
+          if-no-files-found: error
