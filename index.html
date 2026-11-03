@@ -1733,6 +1733,7 @@ function menu(){
  $('mainSettings').onclick=showSettings;
 }
 function showPlayMenu(){
+ if(selectedChallengeId&&save.challenges[selectedChallengeId])selectedChallengeId='';
  setMode('menu');
  $('modalContent').innerHTML=`<div class="label">[ ПОДГОТОВКА К ЗАБЕГУ ]</div><div class="panel-title">Протокол выживания</div><p class="panel-desc">Продержись 15 минут, отражай атаки роя и собирай оружие. Облик: <b style="color:${equippedSkin().core}">${equippedSkin().name}</b>.</p><div class="threat-select"><label for="threatMode">УРОВЕНЬ УГРОЗЫ</label><select id="threatMode">${THREAT_MODES.map((x,i)=>`<option value="${i+1}" ${i+1>save.threatUnlocked?'disabled':''} ${i+1===selectedThreat?'selected':''}>${x.name}${i+1>save.threatUnlocked?' 🔒':''}</option>`).join('')}</select><small id="threatHint"></small></div>${challengeChoiceHtml()}<div class="button-row"><button id="startBtn" class="btn primary">▶ НАЧАТЬ ЗАБЕГ</button><button id="backHome" class="btn ghost">◂ НАЗАД</button></div><p class="tiny" style="margin-top:15px">Телефон: виртуальный джойстик и кнопка рывка. Автоатака включена.</p>`;
  const hint=()=>{$('threatHint').textContent=THREAT_MODES[selectedThreat-1].hint+' · Награда ×'+THREAT_MODES[selectedThreat-1].reward;};
@@ -2062,6 +2063,7 @@ function finish(won=false,giveup=false){
  const modifier=THREAT_MODES[(S.threat||1)-1],rankedScore=Math.round(S.score*modifier.score*(1+metaBonus('score'))),earned=Math.round((S.shards+Math.floor(S.score/260)+(won?95:0))*modifier.reward*(1+metaBonus('shards')));
  save.shards+=earned;save.runs++;if(won){save.wins++;save.threatUnlocked=Math.min(5,Math.max(save.threatUnlocked,(S.threat||1)+1));}
  const rewards=evaluateRunRewards(S,won,giveup);
+ if(rewards.challenge)selectedChallengeId='';
  save.best=Math.max(save.best,rankedScore);
  const record={score:rankedScore,baseScore:S.score,seconds:Math.round(S.t),kills:S.kills,level:S.lvl,threat:S.threat||1,win:!!won,challenge:S.challengeId||null,fusions:S.hybrids.map(h=>h.id),weapons:S.drones.map(d=>d.id),timestamp:Date.now()};
  save.records=[...(save.records||[]),record].sort((a,b)=>b.score-a.score||b.seconds-a.seconds).slice(0,20);
