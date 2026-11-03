@@ -16,9 +16,9 @@ function weaponMuzzle(pos,target,lateral=0,forward=24){
  return {x:pos.x+a.dx*forward+a.rx*lateral,y:pos.y+a.dy*forward+a.ry*lateral};
 }
 function launchBullet(x,y,e,d,id,pierce=0){const m=hypot(e.x-x,e.y-y);S.bullets.push({x,y,vx:(e.x-x)/m*590,vy:(e.y-y)/m*590,r:4.5,life:1.2,dmg:d,col:DRONES[id]?.color||TEAL,type:id,hits:0,pierce,hitIds:new Set()})}
-function scheduleChain(from,target,jumps,damage,radius=220,color=PURPLE,stun=.16){
+function scheduleChain(from,target,jumps,damage,radius=220,color=PURPLE,stun=.16,falloff=.82){
  if(!target||S.chains.length>(touching?15:28))return;
- S.chains.push({from:{x:from.x,y:from.y},target,remaining:jumps,damage,radius,color,stun,visited:new Set(),delay:0});
+ S.chains.push({from:{x:from.x,y:from.y},target,remaining:jumps,damage,radius,color,stun,falloff,visited:new Set(),delay:0});
 }
 function updateChains(dt){
  // Each jump arrives on a different frame. Never inspect an unrelated FX object for its endpoint.
@@ -36,7 +36,7 @@ function updateChains(dt){
   S.fx.push({type:'lightning',a:{...c.from},b:end,life:.32,max:.32,col:c.color,width:3.5,seed:rand(0,1000)});
   e.shock=.19;sfx('arc',c.visited.size>1?.42:.8);hurtEnemy(e,c.damage,{stun:c.stun});
   burst(end.x,end.y,c.color,5,65);
-  c.from=end;c.remaining--;c.damage*=.82;c.delay=.095;
+  c.from=end;c.remaining--;c.damage*=c.falloff??.82;c.delay=.095;
   if(c.remaining<=0)S.chains.splice(i,1);
  }
 }
