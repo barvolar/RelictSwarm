@@ -1,9 +1,9 @@
 function renderQualityControls(){
- return `<section class="graphics-settings"><div class="graphics-heading"><strong>КАЧЕСТВО ГРАФИКИ</strong><span>4 ПРЕСЕТА</span></div>
-  <div class="graphics-presets" role="group" aria-label="Качество графики">
+ return `<section class="graphics-settings"><div class="graphics-heading"><strong>GRAPHICS QUALITY</strong><span>4 PRESETS</span></div>
+  <div class="graphics-presets" role="group" aria-label="Graphics quality">
    ${RENDER_PRESETS.map(p=>`<button type="button" data-graphics-preset="${p.id}" aria-pressed="${renderQuality===p.id}" class="graphics-preset ${renderQuality===p.id?'selected':''}"><b>${p.name}</b><small>${p.desc}</small></button>`).join('')}
   </div>
-  <p class="graphics-hint">Враги упрощаются <b>только на «Минимальном»</b>. При падении FPS разрешение может снижаться автоматически, но обычные модели врагов сохраняются. Настройки не меняют урон и сложность.</p>
+  <p class="graphics-hint">Enemies use simplified silhouettes <b>only on Minimum</b>. Render resolution may drop automatically when FPS falls, but normal enemy models remain unchanged. Graphics settings do not affect damage or difficulty.</p>
  </section>`;
 }
 document.addEventListener('click',e=>{

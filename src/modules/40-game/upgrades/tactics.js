@@ -14,7 +14,7 @@ const TACTICS=[
  {id:'chain',name:'ЦЕПНАЯ РЕАКЦИЯ',en:'CHAIN REACTION',glyph:'Ϟ',one:'Оглушение врага передаёт разряд одному соседнему врагу. Откат 2 секунды.',enOne:'Stunning an enemy arcs electricity to a neighbor. 2-second cooldown.',two:'Разряд может дополнительно перейти на ещё одного врага.',enTwo:'The discharge can jump to one additional enemy.'}
 ];
 function tacticLv(id){return S?.tactics?.[id]||0;}
-function tacticLanguage(en,ru){return typeof locale==='string'&&locale==='en'?en:ru;}
+function tacticLanguage(en,ru){return en;}
 function tacticOptions(){
  const pool=TACTICS.filter(a=>tacticLv(a.id)<2),upgrades=pool.filter(a=>tacticLv(a.id)===1),picked=[];
  if(upgrades.length)picked.push(upgrades[Math.floor(Math.random()*upgrades.length)]);

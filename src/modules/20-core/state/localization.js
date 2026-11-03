@@ -2323,17 +2323,535 @@ const I18N_PAIRS=[
  [
   "+25% к урону горения в течение 4 секунд",
   "+25% burn damage over 4 seconds"
+ ],
+ [
+  "НУЛЕВОЙ ПРОТОКОЛ",
+  "ZERO PROTOCOL"
+ ],
+ [
+  "ПЯТНАДЦАТЬ МИНУТ",
+  "FIFTEEN MINUTES"
+ ],
+ [
+  "ПРОТОКОЛ",
+  "PROTOCOL"
+ ],
+ [
+  "Игровое поле Реликтовый рой",
+  "Relict Swarm game arena"
+ ],
+ [
+  "Звук вкл/выкл",
+  "Toggle audio"
+ ],
+ [
+  "Пауза",
+  "Pause"
+ ],
+ [
+  "Оружие и синтез",
+  "Weapons and fusions"
+ ],
+ [
+  "Текущее вооружение",
+  "Current weapon loadout"
+ ],
+ [
+  "Все пять слотов оружия",
+  "All five weapon slots"
+ ],
+ [
+  "Лаборатория синтеза",
+  "Fusion Lab"
+ ],
+ [
+  "Полигон оружия",
+  "Weapon training range"
+ ],
+ [
+  "ЖНЕЦ",
+  "REAPER"
+ ],
+ [
+  "ВООРУЖЕНИЕ",
+  "ARMAMENT"
+ ],
+ [
+  "СИСТЕМЫ",
+  "SYSTEMS"
+ ],
+ [
+  "ИССЛЕДОВАНИЯ",
+  "RESEARCH"
+ ],
+ [
+  "ФАНТОМ",
+  "PHANTOM"
+ ],
+ [
+  "Изучено ",
+  "Researched "
+ ],
+ [
+  " из ",
+  " of "
+ ],
+ [
+  " готов к синтезу",
+  " ready for fusion"
+ ],
+ [
+  "не получен",
+  "not acquired"
+ ],
+ [
+  "+22% к урону",
+  "+22% damage"
+ ],
+ [
+  "Свободный слот",
+  "Empty slot"
+ ],
+ [
+  "ТЕСТОВАЯ ПАНЕЛЬ: ОРУЖИЕ И ВРАГИ",
+  "QA PANEL: WEAPONS AND ENEMIES"
+ ],
+ [
+  "Меняй арсенал и создавай врагов прямо во время паузы. Текущий опубликованный билд не затрагивается.",
+  "Modify weapons and spawn enemies while paused. Normal saved progress is unaffected."
+ ],
+ [
+  "Оружия нет",
+  "No weapons"
+ ],
+ [
+  "Оружие",
+  "Weapon"
+ ],
+ [
+  "Слот",
+  "Slot"
+ ],
+ [
+  "Уровень",
+  "Level"
+ ],
+ [
+  "ДОБАВИТЬ / ЗАМЕНИТЬ",
+  "ADD / REPLACE"
+ ],
+ [
+  "+5 УЛУЧШЕНИЙ",
+  "+5 UPGRADES"
+ ],
+ [
+  "УБРАТЬ СЛОТ",
+  "REMOVE SLOT"
+ ],
+ [
+  "ОЧИСТИТЬ АРСЕНАЛ",
+  "CLEAR LOADOUT"
+ ],
+ [
+  "Тип врага",
+  "Enemy type"
+ ],
+ [
+  "Количество",
+  "Count"
+ ],
+ [
+  "СОЗДАТЬ ВРАГОВ",
+  "SPAWN ENEMIES"
+ ],
+ [
+  "УБРАТЬ ВРАГОВ",
+  "CLEAR ENEMIES"
+ ],
+ [
+  "+1 ЯДРО",
+  "+1 CORE"
+ ],
+ [
+  "ОСТАНОВКА ВРЕМЕНИ",
+  "TIME STOP"
+ ],
+ [
+  "2-Я ФАЗА",
+  "PHASE TWO"
+ ],
+ [
+  "СЛЕДУЮЩАЯ АТАКА",
+  "NEXT ATTACK"
+ ],
+ [
+  "УБРАТЬ УГРОЗЫ",
+  "CLEAR HAZARDS"
+ ],
+ [
+  "ВЫБЕРИ СЛОТ ДЛЯ ЗАМЕНЫ",
+  "SELECT A SLOT TO REPLACE"
+ ],
+ [
+  "СНАЧАЛА СОЗДАЙ БОССА",
+  "SPAWN A BOSS FIRST"
+ ],
+ [
+  "СЛЕДУЮЩИЙ ПАТТЕРН АТАКИ ПОСЛЕ ПАУЗЫ",
+  "NEXT BOSS ATTACK AFTER PAUSE"
+ ],
+ [
+  "ВТОРАЯ ФАЗА",
+  "SECOND PHASE"
+ ],
+ [
+  "Боссы создаются по одному; обычные враги ограничены лимитом игры. После настройки нажми «Продолжить».",
+  "Bosses spawn one at a time; regular enemies obey game limits. Press Resume when ready."
+ ],
+ [
+  "с между атаками",
+  "s between attacks"
+ ],
+ [
+  "Перескоков:",
+  "Jumps:"
+ ],
+ [
+  "Радиус между целями:",
+  "Jump distance:"
+ ],
+ [
+  "Дальность:",
+  "Range:"
+ ],
+ [
+  "Ракет в залпе:",
+  "Rockets per salvo:"
+ ],
+ [
+  "Длина струи:",
+  "Stream length:"
+ ],
+ [
+  "Угол веера: 60° (фиксирован)",
+  "Fan angle: 60° (fixed)"
+ ],
+ [
+  "Охлаждение за попадание:",
+  "Chill per hit:"
+ ],
+ [
+  "Поджог:",
+  "Ignition:"
+ ],
+ [
+  "урона/сек",
+  "damage/s"
+ ],
+ [
+  "сек",
+  "s"
+ ],
+ [
+  "Длительность:",
+  "Duration:"
+ ],
+ [
+  "Снаряд летит от турели к цели",
+  "Projectile flies from turret to target"
+ ],
+ [
+  "Дисков:",
+  "Discs:"
+ ],
+ [
+  "Дальность броска:",
+  "Throw range:"
+ ],
+ [
+  "ФАКТИЧЕСКИЕ ПОКАЗАТЕЛИ",
+  "ACTUAL STATS"
+ ],
+ [
+  "Число активных объектов может ограничиваться производительностью; избыток улучшений усиливает урон.",
+  "Active objects may be limited for performance. Excess upgrades increase damage."
+ ],
+ [
+  "ИСПЫТАТЕЛЬНЫЙ ПОЛИГОН",
+  "TRAINING RANGE"
+ ],
+ [
+  "Свернуть панель",
+  "Collapse panel"
+ ],
+ [
+  "В главное меню",
+  "Main menu"
+ ],
+ [
+  "ЦЕЛИ ОБНОВЛЕНЫ",
+  "TARGETS REFRESHED"
+ ],
+ [
+  "ДОСТИГНУТО 5 СЛОТОВ — УДАЛИ ОРУЖИЕ",
+  "ALL FIVE SLOTS FILLED — REMOVE A WEAPON"
+ ],
+ [
+  "ИСПЫТАНИЯ",
+  "TRIALS"
+ ],
+ [
+  "ИСПЫТАТЕЛЬНЫЙ СЕКТОР",
+  "TRAINING SECTOR"
+ ],
+ [
+  "Испытание приостановлено",
+  "Training paused"
+ ],
+ [
+  "Изменения оружия здесь не сохраняются в обычный забег.",
+  "Training modifications do not carry into normal runs."
+ ],
+ [
+  "1 за забег",
+  "1 per run"
+ ],
+ [
+  "за забег",
+  "per run"
+ ],
+ [
+  "уровень",
+  "level"
+ ],
+ [
+  "ур.",
+  "lv."
+ ],
+ [
+  "ЭХО РЫВКА",
+  "DASH ECHO"
+ ],
+ [
+  "ГРАВИТАЦИОННЫЙ СЛЕД",
+  "GRAVITY TRAIL"
+ ],
+ [
+  "ФАЗОВЫЙ ПЕРЕХВАТ",
+  "PHASE INTERCEPT"
+ ],
+ [
+  "РЕЗОНАНС ОРУЖИЯ",
+  "WEAPON RESONANCE"
+ ],
+ [
+  "ОСКОЛОЧНЫЙ КАСКАД",
+  "SHRAPNEL CASCADE"
+ ],
+ [
+  "ПРОТОКОЛ ОХОТНИКА",
+  "HUNTER PROTOCOL"
+ ],
+ [
+  "МЕТКА РАЗРУШЕНИЯ",
+  "FRACTURE MARK"
+ ],
+ [
+  "АВАРИЙНЫЙ БАРЬЕР",
+  "EMERGENCY BARRIER"
+ ],
+ [
+  "БОЕВЫЕ НАНИТЫ",
+  "COMBAT NANITES"
+ ],
+ [
+  "КОНТУР ВОЗМЕЗДИЯ",
+  "RETALIATION CIRCUIT"
+ ],
+ [
+  "КРИОИМПУЛЬС",
+  "CRYO PULSE"
+ ],
+ [
+  "ЦЕПНАЯ РЕАКЦИЯ",
+  "CHAIN REACTION"
+ ],
+ [
+  "Выбери один тактический модуль. Он действует до конца забега и не занимает слот оружия.",
+  "Choose one tactical module for this run. It uses no weapon slot."
+ ],
+ [
+  "ТАКТИЧЕСКАЯ НАГРАДА",
+  "TACTICAL REWARD"
+ ],
+ [
+  "НОВЫЙ МОДУЛЬ",
+  "NEW MODULE"
+ ],
+ [
+  "ЭВОЛЮЦИЯ",
+  "EVOLUTION"
+ ],
+ [
+  "МОДУЛЬ АКТИВИРОВАН:",
+  "MODULE ACTIVATED:"
+ ],
+ [
+  "ВЕСЬ ОПЫТ НА КАРТЕ!",
+  "COLLECT ALL XP!"
+ ],
+ [
+  "УРОН ×2.1 И +45% СКОРОСТИ АТАК НА 13 СЕКУНД",
+  "DAMAGE ×2.1 AND +45% ATTACK SPEED FOR 13 SECONDS"
+ ],
+ [
+  "ВРАГИ И ИХ СНАРЯДЫ ЗАМЕРЛИ",
+  "ENEMIES AND PROJECTILES FROZEN"
+ ],
+ [
+  "НЕУЯЗВИМОСТЬ: 8 СЕКУНД",
+  "INVULNERABILITY: 8 SECONDS"
+ ],
+ [
+  "РЕМОНТ КОРПУСА",
+  "HULL REPAIR"
+ ],
+ [
+  "ОСТАНОВКА ВРЕМЕНИ:",
+  "TIME STOP:"
+ ],
+ [
+  "ГРАНИЦА СЕКТОРА",
+  "SECTOR BOUNDARY"
+ ],
+ [
+  "ИСПЫТАТЕЛЬНЫЙ СЕКТОР // 08",
+  "TRAINING SECTOR // 08"
+ ],
+ [
+  "СБОЙ ИГРОВОГО ЦИКЛА",
+  "GAME LOOP ERROR"
+ ],
+ [
+  "Забег приостановлен",
+  "Run paused"
+ ],
+ [
+  "Произошла ошибка обновления игры. Время больше не зависнет молча. Можно продолжить или вернуться в ангар.",
+  "A game update error occurred. You can resume or return to the hangar."
+ ],
+ [
+  "РЕЖИМ РАЗРАБОТЧИКА · ТЕСТ ЗВУКА",
+  "DEVELOPER MODE · SOUND TEST"
+ ],
+ [
+  "МУЗЫКА МЕНЮ",
+  "MENU MUSIC"
+ ],
+ [
+  "МУЗЫКА БОЯ",
+  "COMBAT MUSIC"
+ ],
+ [
+  "ВЫСТРЕЛ + ВЗРЫВ",
+  "SHOT + EXPLOSION"
+ ],
+ [
+  "ПРОВЕРКА",
+  "TEST"
+ ],
+ [
+  "ТЕСТ ЗВУКОВ ОРУЖИЯ",
+  "WEAPON SOUND TEST"
+ ],
+ [
+  "ПРОТОКОЛ I",
+  "PROTOCOL I"
+ ],
+ [
+  "ПРОТОКОЛ II",
+  "PROTOCOL II"
+ ],
+ [
+  "ПРОТОКОЛ III",
+  "PROTOCOL III"
+ ],
+ [
+  "ПРОТОКОЛ IV",
+  "PROTOCOL IV"
+ ],
+ [
+  "ПРОТОКОЛ V",
+  "PROTOCOL V"
+ ],
+ [
+  "ДОБАВИТЬ ОРУЖИЕ (11 ТИПОВ)",
+  "ADD WEAPON (11 TYPES)"
+ ],
+ [
+  "+ ДОБАВИТЬ",
+  "+ ADD"
+ ],
+ [
+  "Арсенал пуст. Добавь оружие из списка.",
+  "Arsenal empty. Add a weapon from the list."
+ ],
+ [
+  "Арсенал пуст. Добавь оружие",
+  "Arsenal empty. Add a weapon"
+ ],
+ [
+  "УБРАТЬ",
+  "REMOVE"
+ ],
+ [
+  "УЛУЧШЕНИЕ ПАРАМЕТРОВ",
+  "STAT UPGRADES"
+ ],
+ [
+  "КАРТОЧКА УЛУЧШЕНИЯ (+1 УР. ОРУЖИЯ)",
+  "UPGRADE CARD (+1 WEAPON LEVEL)"
+ ],
+ [
+  "КАРТОЧКА УЛУЧШЕНИЯ (+1",
+  "UPGRADE CARD (+1"
+ ],
+ [
+  "БЕЗ КАМНЕЙ И УРОВНЕЙ",
+  "WITHOUT CORES OR LEVEL REQUIREMENTS"
+ ],
+ [
+  "ИСПЫТАТЬ",
+  "TRY"
+ ],
+ [
+  "Это уже синтезированное оружие",
+  "This is already a fused weapon"
+ ],
+ [
+  "НЕТ СВОБОДНОГО СЛОТА",
+  "NO FREE SLOT"
+ ],
+ [
+  "ПОЛИГОН ОРУЖИЯ",
+  "WEAPON RANGE"
+ ],
+ [
+  "В ГЛАВНОЕ МЕНЮ",
+  "BACK TO MAIN MENU"
+ ],
+ [
+  "ТАКТИЧЕСКИЕ МОДУЛИ",
+  "TACTICAL MODULES"
+ ],
+ [
+  "ЦЕЛЬ",
+  "TARGET"
  ]
 ];
 I18N_PAIRS.sort((a,b)=>b[0].length-a[0].length);
-const localeKey='relictswarm_ui_locale_v1';
-let locale='en';
-try{const stored=localStorage.getItem(localeKey);
- const systemLang=(typeof navigator!=='undefined'?navigator.language:'')||'';
- locale=stored==='en'||stored==='ru'?stored:
-  (typeof window!=='undefined'&&window.RelicPlatform?.provider==='crazygames')?'en':
-  /^ru(?:-|$)/i.test(systemLang)?'ru':'en';
-}catch{locale='en';}
+// English-only release: disregard old RU preferences and SDK language hints.
+const locale='en';
 const i18nTextCache=new WeakMap(),i18nAttrsCache=new WeakMap();
 function localizedText(raw){
  if(locale!=='en'||typeof raw!=='string'||!/[А-Яа-яЁё]/.test(raw))return raw;
@@ -2345,7 +2863,7 @@ function localizeTextNode(node){
  const v=node.nodeValue;
  let info=i18nTextCache.get(node);
  if(!info||(v!==info.ru&&v!==info.last))info={ru:v,last:v};
- const translated=locale==='ru'?info.ru:localizedText(info.ru);
+ const translated=localizedText(info.ru);
  if(v!==translated)node.nodeValue=translated;
  info.last=translated;i18nTextCache.set(node,info);
 }
@@ -2356,7 +2874,7 @@ function localizeAttrs(element){
   if(!element.hasAttribute?.(key))continue;
   const raw=element.getAttribute(key),old=originals[key];
   if(!old||old.ru!==raw&&old.last!==raw)originals[key]={ru:raw,last:raw};
-  const saved=originals[key],next=locale==='en'?localizedText(saved.ru):saved.ru;
+  const saved=originals[key],next=localizedText(saved.ru);
   if(raw!==next)element.setAttribute(key,next);
   saved.last=next;
  }
@@ -2369,26 +2887,11 @@ function localizeTree(root){
  const walker=document.createTreeWalker(root,NodeFilter.SHOW_ELEMENT|NodeFilter.SHOW_TEXT);
  while(walker.nextNode()){const n=walker.currentNode;if(n.nodeType===3)localizeTextNode(n);else localizeAttrs(n);}
 }
-if(typeof window!=='undefined')window.RelicOnPlatformLocale=function(value){
- let stored=null;try{stored=localStorage.getItem(localeKey);}catch{}
- if(stored==='ru'||stored==='en')return;
- const next=/^ru(?:-|$)/i.test(String(value||''))?'ru':'en';
- if(next===locale)return;
- locale=next;document.documentElement.lang=locale;localizeTree(document.body);
- if(typeof mode!=='undefined'&&mode==='menu')menu();
-};
-function changeLocale(next){
- if(next!=='en'&&next!=='ru')return;
- locale=next;
- try{localStorage.setItem(localeKey,locale);}catch{}
- document.documentElement.lang=locale;
- document.title=locale==='en'?'RELICT SWARM | HTML5 Roguelite':'РЕЛИКТОВЫЙ РОЙ | HTML5 Roguelite';
- localizeTree(document.body);
- if(mode==='menu')showSettings();
-}
+// SDK and obsolete RU settings cannot override English in this release.
+if(typeof window!=='undefined')window.RelicOnPlatformLocale=()=>{};
 if(typeof MutationObserver!=='undefined'&&typeof document!=='undefined'&&document.body){
  document.documentElement.lang=locale;
- document.title=locale==='en'?'RELICT SWARM | HTML5 Roguelite':'РЕЛИКТОВЫЙ РОЙ | HTML5 Roguelite';
+ document.title='RELICT SWARM | HTML5 Roguelite';
  localizeTree(document.body);
  const observer=new MutationObserver(records=>{
   for(const record of records){
