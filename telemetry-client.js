@@ -156,9 +156,9 @@
     if (consent) flush();
   }
   function consentHtml() {
-    if (!configured) return '<div class="rs-privacy"><b>Анонимная статистика</b><p>Онлайн-приём пока не настроен. Показатели собираются локально, не отображаясь в интерфейсе.</p></div>';
-    const label = consent === true ? 'Включена' : consent === false ? 'Отключена' : 'Не выбрано';
-    return `<div class="rs-privacy"><b>Анонимная статистика</b><p>Автоматическая отправка показателей производительности, сложности, оружия и результатов забегов. Без имён и постоянных идентификаторов. Статус: <b>${label}</b>.</p><div class="rs-privacy-buttons"><button type="button" class="btn" data-rs-consent="yes">Разрешить</button><button type="button" class="btn ghost" data-rs-consent="no">Отключить</button></div><small>Можно изменить выбор в настройках. Уже отправленные отчёты не удаляются этим переключателем.</small></div>`;
+    if (!configured) return '<div class="rs-privacy"><b>Anonymous analytics</b><p>Online collection is not configured. Metrics are processed locally without appearing in the game interface.</p></div>';
+    const label = consent === true ? 'Enabled' : consent === false ? 'Disabled' : 'Not selected';
+    return `<div class="rs-privacy"><b>Anonymous analytics</b><p>Optional anonymous performance, difficulty, weapon and run statistics. No names or permanent player IDs. Status: <b>${label}</b>.</p><div class="rs-privacy-buttons"><button type="button" class="btn" data-rs-consent="yes">Allow</button><button type="button" class="btn ghost" data-rs-consent="no">Disable</button></div><small>You can change this choice in Settings. Changing it does not delete previously submitted reports.</small></div>`;
   }
   function renderConsent() {
     const modal = document.getElementById('rs-consent-banner');
@@ -172,7 +172,7 @@
     style.textContent = `.rs-privacy{margin:12px 0;padding:12px;border:1px solid #49737e;border-radius:10px;background:#0b1b2b;color:#dcecf3;font:13px/1.5 system-ui,sans-serif}.rs-privacy p{margin:6px 0 10px}.rs-privacy small{display:block;color:#93adbb;margin-top:8px}.rs-privacy-buttons{display:flex;gap:8px;flex-wrap:wrap}#rs-consent-banner{position:fixed;z-index:10000;left:12px;right:12px;bottom:max(12px,env(safe-area-inset-bottom));max-width:520px;margin:auto;padding:16px;border:1px solid #59bfb4;border-radius:12px;background:#0c1e30f5;color:#e9ffff;box-shadow:0 8px 32px #0009;font:14px/1.4 system-ui,sans-serif}#rs-consent-banner[hidden]{display:none}#rs-consent-banner button{border:1px solid #5dcac0;border-radius:8px;background:#15354b;color:white;padding:10px 14px;font:inherit;cursor:pointer}#rs-consent-banner .rs-allow{background:#257c76}`;
     document.head.appendChild(style);
     const div = document.createElement('div'); div.id = 'rs-consent-banner'; div.hidden = true;
-    div.innerHTML = '<b>Поможешь улучшить «Реликтовый рой»?</b><p>Можно анонимно отправлять статистику забегов и FPS на наш сервер. Без личных данных. Выбор можно изменить в настройках.</p><button class="rs-allow" data-rs-consent="yes">Разрешить</button> <button data-rs-consent="no">Не отправлять</button>';
+    div.innerHTML = '<b>Help improve Relict Swarm?</b><p>May we send anonymous run and FPS statistics to our server? No personal information is submitted. Change your choice anytime in Settings.</p><button class="rs-allow" data-rs-consent="yes">Allow</button> <button data-rs-consent="no">Don't send</button>';
     document.body.appendChild(div); renderConsent();
     document.addEventListener('click', (e) => {
       const btn = e.target.closest?.('[data-rs-consent]');
