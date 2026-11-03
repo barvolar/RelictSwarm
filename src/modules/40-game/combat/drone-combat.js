@@ -36,6 +36,23 @@ function droneUpdate(dt){
        damage:34*baseDmg,col:'#abedff',ice:true,chill:16,frostBladeWake:true});
     }
    }}
+   // A fusion consumes two modules; orbital builds must not lose the
+   // ranged boss pressure supplied by their original cryo/plasma/gravity part.
+   // Distinct visual pulses preserve their primary orbit combat identity.
+   if(thermal||frost||magnet){
+    d.resonanceCd=(d.resonanceCd||0)-dt;
+    if(d.resonanceCd<=0){
+     const boss=S.bosses.find(e=>e.hp>0&&Math.hypot(e.x-pos.x,e.y-pos.y)<540);
+     if(boss){
+      const color=thermal?'#ff9959':frost?'#a5efff':'#c7a2ff';
+      const pulse=baseDmg*(thermal?140:frost?42:190);
+      hurtEnemy(boss,pulse,{burn:thermal?2.5:0,stun:frost?.22:0,slow:frost?1.5:0});
+      if(frost&&boss.hp>0)applyChill(boss,22);
+      S.fx.push({type:'beam',a:{x:pos.x,y:pos.y},b:{x:boss.x,y:boss.y},life:.30,max:.30,col:color,width:thermal?6:4});
+      d.resonanceCd=thermal?.85:frost?1.25:1.15;
+     }
+    }
+   }
    continue;
   }
   let target=chooseCombatTarget(pos.x,pos.y,d.id==='flame'?205+24*Math.sqrt(wm(d,'range'))+100:550,d.id);
