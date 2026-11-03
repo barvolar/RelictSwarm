@@ -3,13 +3,13 @@ import fs from 'node:fs';
 import vm from 'node:vm';
 import test from 'node:test';
 const read=name=>fs.readFileSync(new URL('../'+name,import.meta.url),'utf8');
-const skins=read('src/modules/20-core/state/skins.js');
+const skinsSource=read('src/modules/20-core/state/skins.js');
 const visual=read('src/modules/70-render/layers/skin-cosmetics.js');
 const robot=read('src/modules/70-render/layers/robot.js');
 const order=JSON.parse(read('src/module-order.json'));
 test('approved 32 catalog has exactly the rarity progression chosen in the Lab',()=>{
  const ctx=vm.createContext({});
- vm.runInContext(skins+';globalThis.data={catalog:SKIN_CATALOG,skins:SKINS};',ctx);
+ vm.runInContext(skinsSource+';globalThis.data={catalog:SKIN_CATALOG,skins:SKINS};',ctx);
  const {catalog,skins}=ctx.data;
  assert.equal(catalog.length,32);
  assert.equal(new Set(catalog.map(x=>x.id)).size,32);
