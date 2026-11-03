@@ -117,7 +117,8 @@ test('new runs each reset free reroll; keyboard and responsive button exist',()=
  const css=read('src/styles/sections/upgrade-cards.css');
  const order=JSON.parse(read('src/module-order.json'));
  const reroll=order.indexOf('src/modules/40-game/upgrades/reroll.js');
- assert.ok(start.includes('rerollsRemaining:1,rerollsUsed:0'));
+ assert.ok(start.includes('rerollsRemaining:1+challengeBonusRerolls()'));
+ assert.ok(start.includes('rerollStartCount:1+challengeBonusRerolls()'));
  assert.ok(keys.includes("e.code==='KeyR'"));
  assert.ok(css.includes('.upgrade-reroll-row'));
  assert.ok(reroll>order.indexOf('src/modules/40-game/upgrades/choices.js'));
