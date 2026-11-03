@@ -1,10 +1,10 @@
 // Four graphics presets. Gameplay and enemy simulation never depend on visual quality.
 const renderQualityKey='relictswarm_render_quality';
 const RENDER_PRESETS=[
- {id:'high',name:'ВЫСОКОЕ',desc:'Полная детализация, максимум эффектов и разрешения.'},
- {id:'normal',name:'ОБЫЧНОЕ',desc:'Детальные враги и сбалансированные эффекты.'},
- {id:'low',name:'НИЗКОЕ',desc:'Детальные враги, меньше свечений и частиц.'},
- {id:'minimal',name:'МИНИМАЛЬНОЕ',desc:'Облегчённые враги и минимальная графическая нагрузка.'}
+ {id:'high',name:'HIGH',desc:'Full detail, maximum effects and resolution.'},
+ {id:'normal',name:'NORMAL',desc:'Detailed enemies and balanced effects.'},
+ {id:'low',name:'LOW',desc:'Detailed enemies, fewer glows and particles.'},
+ {id:'minimal',name:'MINIMAL',desc:'Simplified enemy silhouettes and minimal rendering load.'}
 ];
 let renderQuality='normal';
 try{
