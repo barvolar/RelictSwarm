@@ -10,6 +10,6 @@ function forgeHybrid(id){if(mode!=='forge'||!eligibleHybrids().includes(id))retu
  const newWeapon=createFusionWeapon(id,a,b,weaponBranches('fusion_'+id));
  S.drones=S.drones.filter(d=>d!==a&&d!==b);
  S.drones.push(newWeapon);
- S.fusionCores--;S.hybrids.push({id});balFusion(id);save.recipes[id]=true;persist();
+ S.fusionCores--;S.hybrids.push({id});balFusion(id);if(!S.qaModified){save.recipes[id]=true;persist();}
  setMode('playing');last=performance.now();burst(S.player.x,S.player.y,h.color,100,340);S.fx.push({type:'ring',x:S.player.x,y:S.player.y,r:80,life:1.2,max:1.2,col:h.color});shake=15;banner('◈ НОВОЕ ОРУЖИЕ: '+h.name,5);sfx('fusion');updateHUD();
 }
