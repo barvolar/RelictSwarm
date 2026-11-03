@@ -1692,16 +1692,18 @@ function skinSvg(id){
 function menu(){
  setMode('menu');
  const skin=equippedSkin();
- $('modalContent').innerHTML=`<div class="main-home"><div class="home-unit">${skinSvg(save.skin)}<div><span class="label">АКТИВНАЯ ОБОЛОЧКА</span><strong>${skin.name}</strong><small>✧ ${save.shards} кристаллов · лучший счёт ${save.best.toLocaleString('ru')}</small></div></div><div class="home-actions"><button id="mainPlay" class="btn primary home-btn">▶ ИГРАТЬ</button><button id="mainUpgrade" class="btn home-btn">⬡ ПРОКАЧКА</button><button id="mainSettings" class="btn home-btn">⚙ НАСТРОЙКИ</button></div></div>`;
+ $('modalContent').innerHTML=`<div class="main-home"><div class="home-unit">${skinSvg(save.skin)}<div><span class="label">АКТИВНАЯ ОБОЛОЧКА</span><strong>${skin.name}</strong><small>✧ ${save.shards} кристаллов · лучший счёт ${save.best.toLocaleString('ru')}</small></div></div><div class="home-actions"><button id="mainPlay" class="btn primary home-btn">▶ ИГРАТЬ</button><button id="mainUpgrade" class="btn home-btn">⬡ ПРОКАЧКА</button><button id="mainAchievements" class="btn home-btn">★ ДОСТИЖЕНИЯ</button><button id="mainSettings" class="btn home-btn">⚙ НАСТРОЙКИ</button></div></div>`;
  $('mainPlay').onclick=showPlayMenu;
  $('mainUpgrade').onclick=()=>showProgression('upgrades');
+ $('mainAchievements').onclick=showAchievementJournal;
  $('mainSettings').onclick=showSettings;
 }
 function showPlayMenu(){
  setMode('menu');
- $('modalContent').innerHTML=`<div class="label">[ ПОДГОТОВКА К ЗАБЕГУ ]</div><div class="panel-title">Протокол выживания</div><p class="panel-desc">Продержись 15 минут, отражай атаки роя и собирай оружие. Облик: <b style="color:${equippedSkin().core}">${equippedSkin().name}</b>.</p><div class="threat-select"><label for="threatMode">УРОВЕНЬ УГРОЗЫ</label><select id="threatMode">${THREAT_MODES.map((x,i)=>`<option value="${i+1}" ${i+1>save.threatUnlocked?'disabled':''} ${i+1===selectedThreat?'selected':''}>${x.name}${i+1>save.threatUnlocked?' 🔒':''}</option>`).join('')}</select><small id="threatHint"></small></div><div class="button-row"><button id="startBtn" class="btn primary">▶ НАЧАТЬ ЗАБЕГ</button><button id="backHome" class="btn ghost">◂ НАЗАД</button></div><p class="tiny" style="margin-top:15px">Телефон: виртуальный джойстик и кнопка рывка. Автоатака включена.</p>`;
+ $('modalContent').innerHTML=`<div class="label">[ ПОДГОТОВКА К ЗАБЕГУ ]</div><div class="panel-title">Протокол выживания</div><p class="panel-desc">Продержись 15 минут, отражай атаки роя и собирай оружие. Облик: <b style="color:${equippedSkin().core}">${equippedSkin().name}</b>.</p><div class="threat-select"><label for="threatMode">УРОВЕНЬ УГРОЗЫ</label><select id="threatMode">${THREAT_MODES.map((x,i)=>`<option value="${i+1}" ${i+1>save.threatUnlocked?'disabled':''} ${i+1===selectedThreat?'selected':''}>${x.name}${i+1>save.threatUnlocked?' 🔒':''}</option>`).join('')}</select><small id="threatHint"></small></div>${challengeChoiceHtml()}<div class="button-row"><button id="startBtn" class="btn primary">▶ НАЧАТЬ ЗАБЕГ</button><button id="backHome" class="btn ghost">◂ НАЗАД</button></div><p class="tiny" style="margin-top:15px">Телефон: виртуальный джойстик и кнопка рывка. Автоатака включена.</p>`;
  const hint=()=>{$('threatHint').textContent=THREAT_MODES[selectedThreat-1].hint+' · Награда ×'+THREAT_MODES[selectedThreat-1].reward;};
  $('threatMode').onchange=()=>{selectedThreat=Number($('threatMode').value);hint()};hint();
+ $('challengeMode').onchange=()=>{selectedChallengeId=$('challengeMode').value;const c=CHALLENGES.find(x=>x.id===selectedChallengeId);$('challengeHint').textContent=c?c.desc+' · Награда: '+c.reward+' ✧':'Выбери одно испытание. Награда выдаётся только один раз.';};
  $('startBtn').onclick=start;$('backHome').onclick=menu;
 }
 function showProgression(tab='upgrades'){
@@ -1728,6 +1730,45 @@ function renderSkins(){
   }
   save.skin=id;persist();clickSound();$('wallet').textContent=save.shards;renderSkins();
  });
+}
+// Local achievement journal. All entries are completed by playing, not by buying.
+function challengeChoiceHtml(){
+ const chosen=CHALLENGES.find(c=>c.id===selectedChallengeId);
+ return '<div class="challenge-select"><label for="challengeMode">✥ ИСПЫТАНИЕ ЗАБЕГА</label>'+
+ '<select id="challengeMode"><option value="">Обычный забег · без испытания</option>'+
+ CHALLENGES.map(c=>'<option value="'+c.id+'"'+(c.id===selectedChallengeId?' selected':'')+
+ (save.challenges[c.id]?' disabled':'')+'>'+c.glyph+' '+c.name+(save.challenges[c.id]?' ✓':'')+'</option>').join('')+
+ '</select><small id="challengeHint">'+(chosen?chosen.desc+' · Награда: '+chosen.reward+' ✧':'Выбери одно испытание. Награда выдаётся только один раз.')+'</small></div>';
+}
+function pauseChallengeHtml(){
+ const c=CHALLENGES.find(x=>x.id===S?.challengeId);
+ if(!c)return '';
+ return '<div class="active-challenge"><b>'+c.glyph+' ИСПЫТАНИЕ: '+c.name+'</b><span>'+
+  challengeProgressLabel(c.id)+'</span></div>';
+}
+function showAchievementJournal(){
+ setMode('menu');
+ const unlocked=ACHIEVEMENTS.filter(a=>save.achievements[a.id]).length;
+ const complete=CHALLENGES.filter(c=>save.challenges[c.id]).length;
+ const completedAchievement=(a)=>!!save.achievements[a.id];
+ const rows=ACHIEVEMENTS.map(a=>'<div class="achievement-entry '+(completedAchievement(a)?'achieved':'')+'">'+
+ '<span class="ach-glyph">'+a.glyph+'</span><div class="ach-copy"><b>'+a.name+'</b><small>'+a.desc+
+ '</small></div><div class="ach-status">'+(completedAchievement(a)?'✓ ГОТОВО':'✧ '+a.reward)+'</div></div>').join('');
+ const contracts=CHALLENGES.map(c=>'<div class="achievement-entry '+(save.challenges[c.id]?'achieved':'')+'">'+
+ '<span class="ach-glyph">'+c.glyph+'</span><div class="ach-copy"><b>'+c.name+'</b><small>'+c.desc+
+ '</small></div><div class="ach-status">'+(save.challenges[c.id]?'✓ ГОТОВО':'✧ '+c.reward)+'</div></div>').join('');
+ $('modalContent').innerHTML='<div class="section-top"><div><div class="label">[ АРХИВ РОЯ ]</div>'+
+ '<div class="panel-title">Достижения и испытания</div></div>'+
+ '<button class="btn ghost small-back" type="button" id="backFromJournal">◂ НАЗАД</button></div>'+
+ '<p class="panel-desc">Выполняй задания в настоящих забегах и получай кристаллы и новые облики. Награды выдаются один раз и сохраняются на устройстве.</p>'+
+ '<div class="challenge-summary"><span>★ ДОСТИЖЕНИЯ <b>'+unlocked+'/'+ACHIEVEMENTS.length+'</b></span>'+
+ '<span>✥ ИСПЫТАНИЯ <b>'+complete+'/'+CHALLENGES.length+'</b></span></div>'+
+ '<div class="challenge-unlocks"><b>НАГРАДНЫЕ ОБЛИКИ</b><small>НОВА: '+Math.min(8,unlocked)+'/8 достижений '+(save.skins.includes('nova')?'✓':'')+
+ ' · СТРАЖ РОЯ: '+Math.min(4,complete)+'/4 испытаний '+(save.skins.includes('sentinel')?'✓':'')+'</small></div>'+
+ '<div class="label">★ ДОСТИЖЕНИЯ</div><div class="achievement-list">'+rows+'</div>'+
+ '<div class="label" style="margin-top:16px">✥ ИСПЫТАНИЯ (ВЫБИРАЮТСЯ ПЕРЕД ЗАБЕГОМ)</div>'+
+ '<div class="achievement-list">'+contracts+'</div>';
+ $('backFromJournal').onclick=menu;
 }
 function showSettings(){
  setMode('menu');
@@ -1978,7 +2019,7 @@ function qaWirePause(){
 function qaSyncFusions(){
  S.hybrids=S.drones.filter(d=>d.id.startsWith('fusion_')).map(d=>({id:d.id.slice(7)}));
 }
-function pause(){if(mode!=='playing')return;if(trainingMode){setMode('paused');$('modalContent').innerHTML=`<div class="label">[ ПОЛИГОН ]</div><div class="panel-title">Испытание приостановлено</div><p class="panel-desc">Изменения оружия здесь не сохраняются в обычный забег.</p><div class="button-row"><button class="btn primary" id="resumeBtn">▶ ПРОДОЛЖИТЬ</button><button class="btn ghost" id="quitBtn">◂ В ГЛАВНОЕ МЕНЮ</button></div>`;$('resumeBtn').onclick=resume;$('quitBtn').onclick=leaveTraining;return;}setMode('paused');$('modalContent').innerHTML=`<div class="label">[ ПАУЗА ]</div><div class="panel-title" style="margin-top:9px">Система ожидает</div><p class="panel-desc">На поле уже ${S.kills} обломков. Машины терпеливо дождутся твоего возвращения.</p>${weaponSummary()}${renderQualityControls()}${qaPauseHTML()}<div class="button-row"><button id="resumeBtn" class="btn primary">▶ ПРОДОЛЖИТЬ</button><button id="quitBtn" class="btn ghost">ЗАВЕРШИТЬ ЗАБЕГ</button></div>`;$('resumeBtn').onclick=resume;$('quitBtn').onclick=()=>finish(false,true);qaWirePause()}
+function pause(){if(mode!=='playing')return;if(trainingMode){setMode('paused');$('modalContent').innerHTML=`<div class="label">[ ПОЛИГОН ]</div><div class="panel-title">Испытание приостановлено</div><p class="panel-desc">Изменения оружия здесь не сохраняются в обычный забег.</p><div class="button-row"><button class="btn primary" id="resumeBtn">▶ ПРОДОЛЖИТЬ</button><button class="btn ghost" id="quitBtn">◂ В ГЛАВНОЕ МЕНЮ</button></div>`;$('resumeBtn').onclick=resume;$('quitBtn').onclick=leaveTraining;return;}setMode('paused');$('modalContent').innerHTML=`<div class="label">[ ПАУЗА ]</div><div class="panel-title" style="margin-top:9px">Система ожидает</div><p class="panel-desc">На поле уже ${S.kills} обломков. Машины терпеливо дождутся твоего возвращения.</p>${weaponSummary()}${pauseChallengeHtml()}${renderQualityControls()}${qaPauseHTML()}<div class="button-row"><button id="resumeBtn" class="btn primary">▶ ПРОДОЛЖИТЬ</button><button id="quitBtn" class="btn ghost">ЗАВЕРШИТЬ ЗАБЕГ</button></div>`;$('resumeBtn').onclick=resume;$('quitBtn').onclick=()=>finish(false,true);qaWirePause()}
 function resume(){if(mode!=='paused')return;setMode('playing');last=performance.now()}
 function toast(v,time=2.8){$('toast').textContent=v;$('toast').classList.remove('hidden');showToastUntil=(S?.t||0)+time}
 function banner(v,time=4.5){$('wavebanner').textContent=v;$('wavebanner').classList.remove('hidden');showBannerUntil=S.t+time;/* Баннер и toast показываются независимо: не дублируем одно событие. */if(/БОСС|УГРОЗ|ПРОРЫВ|ПЕРЕХВАТ|ОСАДА|ВТОРАЯ ФАЗА/.test(v))sfx('warning');else clickSound(360,.16,'triangle',.023)}
