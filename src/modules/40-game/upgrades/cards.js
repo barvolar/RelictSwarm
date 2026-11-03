@@ -18,7 +18,7 @@ function weaponBonusRows(id,key,drone){
  if(id==='cryo'&&key==='range')return [{label:'Дальность морозного веера',value:delta(n=>230+22*Math.sqrt(n))}];
  if(id==='flame'&&key==='range')return [{label:'Длина пламени',value:delta(n=>205+24*Math.sqrt(n))}];
  if(id==='gravity'&&key==='radius')return [{label:'Радиус захвата',value:delta(n=>90+20*Math.sqrt(n))}];
- if(id==='gravity'&&key==='duration')return [{label:'Время действия',value:delta(n=>2.8+.5*Math.sqrt(n),' с')}];
+ if(id==='gravity'&&key==='duration')return [{label:'Время действия',value:delta(n=>2.8+.5*Math.sqrt(n),' s')}];
  if(id==='arc'&&key==='range')return [{label:'Радиус цепной молнии',value:delta(n=>205+28*Math.sqrt(n))}];
  if(id==='rail'&&key==='width')return [{label:'Ширина луча',value:delta(n=>11+6*Math.sqrt(n))}];
  if(key==='count'&&entry?.[2].includes('устройство')){
