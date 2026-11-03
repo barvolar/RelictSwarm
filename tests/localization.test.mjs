@@ -9,9 +9,11 @@ test('English translations cover important gameplay screens and weapon labels',(
  for(const s of ['БОСС ПОВЕРЖЕН','СИНТЕЗ-АЛЬФА // ХРАНИТЕЛЬ ЯДРА','ПЕПЕЛЬНЫЙ ОХОТНИК','КРИОИЗЛУЧАТЕЛЬ','ВЫБЕРИ МОДИФИКАЦИЮ','КУЗНЕЦ: СПИРАЛЬ + ВЫЖЖЕННАЯ ЗОНА!'])
   assert.ok(!/[А-Яа-яЁё]/.test(translate(s)),s+' was not translated');
 });
-test('Russian locale preserves original text and dictionary is nonempty',()=>{
+test('English is forced even when an old RU preference remains',()=>{
  const translate=runtime('ru');
- assert.equal(translate('БОСС ПОВЕРЖЕН'),'БОСС ПОВЕРЖЕН');
- assert.match(source,/function changeLocale\(next\)/);
- assert.match(source,/I18N_PAIRS.sort/);
+ assert.equal(translate('БОСС ПОВЕРЖЕН'),'BOSS DEFEATED');
+ assert.equal(translate('НУЛЕВОЙ ПРОТОКОЛ'),'ZERO PROTOCOL');
+ assert.equal(translate('ПРОТОКОЛ I'),'PROTOCOL I');
+ assert.doesNotMatch(source,/function changeLocale\\(next\\)/);
+ assert.match(source,/const locale='en'/);
 });
