@@ -71,23 +71,51 @@ function bossAttack(e,dt,dx,dy,d){
   e.special=phase?3.3:4.65;
   banner('ХРАНИТЕЛЬ: РАЗРЕЗЫ И КОЛЬЦО!',1.6);
  }else if(e.id==='synth2'){
-  // Smith: a spiral volley leaves a two-shot gap in the player's direction.
-  const n=phase?16:12;
-  for(let j=0;j<n;j++){
-   if(j===0||j===n-1)continue;
-   const angle=aim+j*TAU/n+S.t*.12;
-   bossBullet(e,angle,240+phase*22,21+phase*6,'#88eaff',7,4);
+  // Chaos Smith: three different tactical checks, not one repetitive spiral.
+  // Prediction punishes running in a straight line, but every target is telegraphed.
+  const pattern=(turn-1)%3;
+  const moving=!!p.moving;
+  const runX=moving?(p.dx||0):0,runY=moving?(p.dy||0):0;
+  const sideX=-Math.sin(aim),sideY=Math.cos(aim);
+  const meteor=(x,y,delay,r=65)=>bossHazard({type:'forgeMeteor',owner:e,
+   x:clamp(x,-1720,1720),y:clamp(y,-1720,1720),r,
+   delay,col:'#ffad61',dmg:phase?33:25,linger:phase?1.65:1.35});
+  if(pattern===0){
+   // 1: intercept the player's predicted positions in a staggered sequence.
+   // Constant movement in one direction is no longer a universal safe strategy.
+   const count=phase?4:3;
+   for(let k=0;k<count;k++){
+    const t=1.04+k*.33;
+    const ahead=moving?225*t:0;
+    const sway=(k%2===0?-1:1)*(moving?16:48);
+    meteor(p.x+runX*ahead+sideX*sway,p.y+runY*ahead+sideY*sway,t,phase?71:65);
+   }
+   banner('КУЗНЕЦ: МЕТЕОРЫ НА ПЕРЕХВАТ! МЕНЯЙ НАПРАВЛЕНИЕ!',1.7);
+  }else if(pattern===1){
+   // 2: anvil press: two angled lanes converge where a fleeing player is headed.
+   const px=p.x+runX*(moving?190:0),py=p.y+runY*(moving?190:0);
+   const lineAim=Math.atan2(py-e.y,px-e.x);
+   for(const offset of [-.26,.26])
+    bossHazard({type:'slash',owner:e,x:e.x,y:e.y,ang:lineAim+offset,
+     len:Math.min(660,Math.max(350,Math.hypot(px-e.x,py-e.y)+110)),
+     r:phase?34:29,delay:1.06,col:'#ffd084',dmg:phase?36:29});
+   meteor(px,py,1.62,phase?79:71);
+   if(phase)meteor(p.x-runX*75+sideX*100,p.y-runY*75+sideY*100,1.94,62);
+   banner('КУЗНЕЦ: ПРЕСС + УДАР НАКОВАЛЬНИ! УХОДИ В СТОРОНУ!',1.7);
+  }else{
+   // 3: spiral with a genuine escape gap; the delayed burn forbids standing in it.
+   const n=phase?16:12;
+   for(let j=0;j<n;j++){
+    if(j===0||j===n-1)continue;
+    bossBullet(e,aim+j*TAU/n+S.t*.12,phase?264:245,phase?24:19,'#88eaff',7,4);
+   }
+   meteor(p.x+runX*(moving?255:0),p.y+runY*(moving?255:0),1.13,phase?76:68);
+   if(phase)bossHazard({type:'annulus',owner:e,x:e.x,y:e.y,
+    inner:99,r:228,delay:1.58,col:'#76e6fc',dmg:30});
+   banner('КУЗНЕЦ: СПИРАЛЬ + ВЫЖЖЕННАЯ ЗОНА!',1.65);
   }
-  for(let k=0;k<(phase?4:3);k++){
-   const lead=k*.34;
-   bossHazard({type:'circle',owner:e,
-    x:p.x+p.dx*100*lead+Math.cos(k*2.4)*58,
-    y:p.y+p.dy*100*lead+Math.sin(k*2.4)*58,
-    r:63,delay:1.0+k*.23,col:'#75f2e8',dmg:30+phase*8});
-  }
-  if(phase)bossReinforcements(e,'phantom',2,5);
-  e.special=phase?3.55:4.85;
-  banner('КУЗНЕЦ: ПРОХОД В СПИРАЛИ + МЕТЕОРЫ!',1.6);
+  if(phase&&turn%2===0)bossReinforcements(e,'phantom',2,5);
+  e.special=phase?2.95:3.65;
  }else if(e.id==='boss3'){
   // Punisher: broad parallel lanes switch axis every attack.
   const horizontal=turn%2===1,n=phase?4:3,gap=130;
