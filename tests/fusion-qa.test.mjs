@@ -112,3 +112,35 @@ test('displayed fusion names agree between the forge and equipped weapon HUD',()
  ';globalThis.mismatched=Object.entries(HYBRIDS).filter(([id,h])=>h.name!==DRONES["fusion_"+id].name).map(([id])=>id)',ctx);
  assert.deepEqual(Array.from(ctx.mismatched),[]);
 });
+
+
+test('shatter quota prevents overlapping AoE cascades in packed crowds',()=>{
+ const S={t:3,enemy:[]};let explosions=0;
+ const ctx=vm.createContext({S,Math,damageArea:()=>{explosions++;},burst:()=>{}});
+ vm.runInContext(fields,ctx);
+ const frozen=Array.from({length:12},()=>({hp:1000,frost:2,x:0,y:0}));
+ for(const e of frozen)ctx.shatterFrozen(e,30);
+ assert.equal(explosions,3,'at most three area shatters per quarter second');
+ S.t+=.26;
+ for(const e of frozen)ctx.shatterFrozen(e,30);
+ assert.equal(explosions,6,'quota refreshes, allowing a later shatter wave');
+});
+
+test('thermoshock does not scale as a quadratic number of area explosions',()=>{
+ const enemies=Array.from({length:25},(_,i)=>({x:70+i*2,y:0,r:12,hp:1000,frost:2,burn:0}));
+ const S={t:0,enemy:enemies,fx:[]};let waves=0,contacts=0;
+ const ctx=vm.createContext({S,Math,TAU:Math.PI*2,DRONES:{fusion_thermoshock:{color:'#ffbb77'}},
+  wm:()=>0,aimGeometry:()=>({dx:1,dy:0}),damageArea:()=>{waves++;},
+  hurtEnemy:()=>{contacts++;}});
+ vm.runInContext(specials,ctx);
+ assert.equal(ctx.fireFusionSpecial({id:'fusion_thermoshock',shockCycle:1,mods:{}},
+  {x:0,y:0},{x:100,y:0},1,8),true);
+ assert.equal(waves,3);
+ assert.equal(contacts,25,'all enemies in the cone still receive direct damage');
+});
+
+test('glacial blades emit bounded freezing wakes instead of recoloured saws',()=>{
+ assert.ok(drone.includes('frostBladeWake'));
+ assert.ok(drone.includes('frostBladeWake).length<18'));
+ assert.ok(drone.includes('ice:true,chill:16'));
+});
