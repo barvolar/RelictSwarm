@@ -56,6 +56,8 @@ const target=(x,y,hp,elite=false)=>({id:elite?'boss1':'scarab',x,y,hp,maxHp:hp,
  fire:999,charge:0,slow:0,stun:0,burn:0,chill:0,frost:0,freezeLock:0,
  seed:0,phase:0,shield:0,value:0});
 const scenarios=['boss_near','boss_far','horde_near','horde_far','clear_near','clear_far'];
+const tier=(process.argv.find(arg=>arg.startsWith('--tier='))||'--tier=invested').slice(7);
+if(!['starting','invested'].includes(tier))throw Error('Unknown balance tier: '+tier);
 function scene(mode){
  if(mode.startsWith('boss'))return{enemies:[target(mode.endsWith('near')?87:290,0,2e8,true)],duration:16};
  const center=mode.endsWith('near')?0:245,enemies=[];
@@ -73,7 +75,10 @@ function simulate(weapons,mode,seed=123){
   critChance:0,critMultiplier:1.5,haste:1,rageTimer:0,chains:[],
   bullets:[],enemyBullets:[],gravityWells:[],mines:[],effects:[],
   parts:[],fx:[],floaters:[],hazards:[],
-  drones:weapons.map((id,i)=>({id,lvl:8,mods:{power:2},cd:i*.1,hitCd:0})),
+  drones:weapons.map((id,i)=>({id,
+   lvl:tier==='starting'?1:(weapons.length===1&&id.startsWith('fusion_')?15:8),
+   mods:{power:tier==='starting'?0:(weapons.length===1&&id.startsWith('fusion_')?4:2)},
+   cd:i*.1,hitCd:0})),
   hybrids:[],cam:{x:0,y:0},threat:1};
  let controlTime=0,maxObjects=0,maxFX=0;
  const math=Object.create(Math);math.random=()=>rng();
@@ -150,15 +155,18 @@ for(const id of [...baseIds,...Object.keys(HYBRIDS).map(id=>'fusion_'+id)]){
 }
 if(failures.length)throw Error('Balance audit failed: '+JSON.stringify(failures.slice(0,5)));
 const metadata={source:'QA modular gameplay from dist/index.html',
- durationSeconds:16,stepHz:30,weaponLevel:8,powerModifiers:2,
+ durationSeconds:16,stepHz:30,tier,
+ weaponLevels:tier==='starting'?'1 + 1 to fused level 1':'8 + 8 to fused level 15',
+ powerModifiers:tier==='starting'?'0 + 0 to fused 0':'2 + 2 to fused 4',
  targetModes:'near/far boss, moving horde, moving clear wave',
  enemySpeed:58,rawBossDamage:true,realRenderer:false,
  note:'Controlled synthetic comparison; not browser FPS or live-player retention data'};
 const report={metadata,rows};
-fs.writeFileSync(path.join(root,'dist','balance-report.json'),JSON.stringify(report,null,2));
+fs.writeFileSync(path.join(root,'dist','balance-report-'+tier+'.json'),JSON.stringify(report,null,2));
+if(tier==='invested')fs.writeFileSync(path.join(root,'dist','balance-report.json'),JSON.stringify(report,null,2));
 const fmt=n=>Number(n).toFixed(2);
 let md='# Relict Swarm: headless weapon balance audit\n\n';
-md+='36 weapons; 25 synthesis recipes; 16 s/scene; level 8; power +2; 30 simulated ticks/s.\n\n';
+md+='36 weapons; 25 synthesis recipes; 16 s/scene; tier '+tier+'; 30 simulated ticks/s.\\n\\n';
 md+='**Caveat:** no graphics rendering or live enemy AI; CPU duration is a relative Node benchmark, not FPS. Boss damage caps disabled to expose underlying damage.\n\n';
 md+='| Synthesis | Boss near DPS | Boss far DPS | Horde DPS | Parent pair DPS | Ratio | Clear kills | Objects |\n|---|---:|---:|---:|---:|---:|---:|---:|\n';
 for(const r of rows.filter(x=>x.ingredients)){
@@ -169,6 +177,21 @@ for(const r of rows.filter(x=>x.ingredients)){
 }
 md+='\n## Important\n\n';
 md+='Ratios compare one fused weapon with its two consumed base weapons under identical, synthetic conditions. Low boss DPS may reflect short attack range rather than bad balance.\n';
-fs.writeFileSync(path.join(root,'dist','balance-report.md'),md);
+fs.writeFileSync(path.join(root,'dist','balance-report-'+tier+'.md'),md);
+if(tier==='invested')fs.writeFileSync(path.join(root,'dist','balance-report.md'),md);
+const violations=[];
+for(const row of rows.filter(r=>r.ingredients)){
+ for(const mode of scenarios){
+  const fusion=row[mode],original=row['parents_'+mode];
+  if(fusion.damage+1<original.damage ||
+    (mode.startsWith('clear')&&fusion.kills<original.kills)){
+   violations.push({id:row.id,mode,
+    fusedDamage:fusion.damage,parentsDamage:original.damage,
+    fusedKills:fusion.kills,parentsKills:original.kills});
+  }
+ }
+}
+if(violations.length)throw Error('Fusion parity regression '+tier+': '+JSON.stringify(violations.slice(0,10)));
+console.log('Fusion >= parent pair: '+rows.filter(r=>r.ingredients).length+' recipes × '+scenarios.length+' scenarios, tier '+tier+' PASS');
 console.log('Balance audit: '+rows.length+' weapons, '+scenarios.length+
  ' scenarios, '+failures.length+' failures; reports in dist/.');
