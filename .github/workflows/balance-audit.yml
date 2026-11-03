@@ -27,6 +27,6 @@ jobs:
         with:
           name: RelictSwarm-weapon-balance
           path: |
-            dist/balance-report.json
-            dist/balance-report.md
+            dist/balance-report*.json
+            dist/balance-report*.md
           if-no-files-found: error
