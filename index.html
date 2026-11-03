@@ -204,6 +204,40 @@ button.forge-card:hover{filter:brightness(1.25)}.forge-card.is-done{border-color
 .graphics-hint{font-size:10px;color:#a1b8c5;line-height:1.6;margin:0}
 .graphics-hint b{color:#d5f7f0}
 @media(max-width:480px){.graphics-settings{padding:10px}.graphics-presets{gap:6px}.graphics-preset{min-height:84px;padding:9px}.graphics-preset b{font-size:10px}.graphics-preset small{font-size:9px}}
+
+
+/* Permanent journal and one-off run contracts. */
+.challenge-select{display:grid;gap:7px;margin:14px 0;padding:12px;border:1px solid #376271;border-radius:9px;background:#0e2536}
+.challenge-select label{font-size:11px;font-weight:900;letter-spacing:1px;color:#a6f6dc}
+.challenge-select select{width:100%;min-height:42px;padding:8px;background:#071622;border:1px solid #538697;border-radius:6px;color:#e9fcff;font-size:12px}
+.challenge-select small{font-size:10px;line-height:1.5;color:#a9c4cd}
+.challenge-summary{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin:13px 0}
+.challenge-summary span{background:#122b3b;border:1px solid #395e70;padding:12px;border-radius:8px;display:flex;gap:8px;justify-content:space-between;font-size:10px;color:#96dcca}
+.challenge-summary b{color:#f3e6b2;font-size:14px}
+.challenge-unlocks{padding:12px;margin:10px 0 16px;background:#181f34;border:1px solid #72629d;border-radius:9px;display:grid;gap:7px}
+.challenge-unlocks b{color:#e6caff;font-size:11px;letter-spacing:.7px}
+.challenge-unlocks small{color:#b3cddd;font-size:10px;line-height:1.6}
+.achievement-list{display:grid;gap:7px;margin:9px 0}
+.achievement-entry{display:grid;grid-template-columns:34px minmax(0,1fr) auto;gap:10px;align-items:center;border:1px solid #2c5065;border-radius:8px;background:#0b1b2b;padding:10px;opacity:.76}
+.achievement-entry.achieved{opacity:1;border-color:#477d6e;background:#123338}
+.ach-glyph{font-size:21px;text-align:center;color:#e0b9f1}
+.achievement-entry.achieved .ach-glyph{color:#80e5b9}
+.ach-copy{min-width:0;display:grid;gap:4px}
+.ach-copy b{font-size:11px;color:#edf9ff;line-height:1.35}
+.ach-copy small{font-size:10px;color:#9fb9c4;line-height:1.4}
+.ach-status{white-space:nowrap;font-size:10px;font-weight:800;color:#efcd83}
+.achievement-entry.achieved .ach-status{color:#7ae6b3}
+.active-challenge{margin:12px 0;padding:10px 12px;border:1px solid #9472aa;background:#22172f;border-radius:8px;display:grid;gap:5px}
+.active-challenge b{color:#e8caff;font-size:11px}
+.active-challenge span{color:#d0b9dc;font-size:10px}
+.run-achievement-rewards{margin:12px 0;border:1px solid #538f79;background:#15332d;border-radius:8px;padding:12px;display:grid;gap:7px}
+.run-achievement-rewards b{font-size:12px;color:#b3ffdb}
+.run-achievement-rewards small{font-size:10px;line-height:1.6;color:#e2f7f1}
+@media(max-width:480px){
+ .achievement-entry{grid-template-columns:25px minmax(0,1fr) auto;gap:6px;padding:8px}
+ .ach-glyph{font-size:17px}.ach-status{font-size:9px}.challenge-summary{gap:6px}
+ .challenge-summary span{padding:8px 6px;font-size:9px}.challenge-summary b{font-size:11px}
+}
 /* v0.10.8: one cohesive compact mobile HUD; the loadout is a REAL grid,
    not two independently positioned overlapping fixed elements. */
 .hud-dock,.hud-loadout{display:contents}
