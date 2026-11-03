@@ -5,9 +5,26 @@ function updateHazards(dt){
   if(h.owner&&h.owner.hp<=0){h.hit=true;h.life=-1;continue;}
   // The telegraphed sweep visibly rotates before the actual strike.
   if(h.type==='sweep'&&h.delay>0)h.ang+=(h.turnSpeed||0)*dt;
+  if(h.type==='forgeScorch'){
+   // Residual hot ground is hazardous briefly, then disappears.
+   h.scorchTick=(h.scorchTick??.4)-dt;
+   if(h.life>0&&h.scorchTick<=0){
+    h.scorchTick=.45;
+    if(Math.hypot(S.player.x-h.x,S.player.y-h.y)<h.r+S.player.rad)
+     hitPlayer(Math.max(7,h.dmg*.33),h.x,h.y);
+   }
+   continue;
+  }
   if(h.delay>0||h.hit)continue;
   h.hit=true;
-  if(h.type==='slash'||h.type==='dash'||h.type==='sweep'){
+  if(h.type==='forgeScorch'){
+   const alpha=clamp(h.life/(h.linger||1.35),0,1);
+   cx.save();cx.globalAlpha=.22+.32*alpha;
+   cx.fillStyle='#ed7837';cx.beginPath();cx.arc(h.x,h.y,h.r,0,TAU);cx.fill();
+   cx.strokeStyle='#ffa45a';cx.lineWidth=3;cx.stroke();
+   ring(h.x,h.y,h.r*.63,'#ffd193',2);
+   cx.restore();
+  }else if(h.type==='slash'||h.type==='dash'||h.type==='sweep'){
    const x1=h.x+Math.cos(h.ang)*h.len,y1=h.y+Math.sin(h.ang)*h.len;
    if(pointSegmentDist(S.player.x,S.player.y,h.x,h.y,x1,y1)<h.r+S.player.rad)hitPlayer(h.dmg,h.x,h.y);
    S.fx.push({type:'beam',a:{x:h.x,y:h.y},b:{x:x1,y:y1},life:.26,max:.26,col:h.col,width:h.type==='dash'?15:12});
@@ -24,6 +41,12 @@ function updateHazards(dt){
    if(d+S.player.rad>=h.inner&&d-S.player.rad<=h.r)hitPlayer(h.dmg,h.x,h.y);
    S.fx.push({type:'ring',x:h.x,y:h.y,r:h.r,life:.38,max:.38,col:h.col});
    burst(h.x,h.y,h.col,10,100);
+  }else if(h.type==='forgeMeteor'){
+   // The blast changes into a visible short-lived burn zone.
+   if(Math.hypot(S.player.x-h.x,S.player.y-h.y)<h.r+S.player.rad)hitPlayer(h.dmg,h.x,h.y);
+   S.fx.push({type:'ring',x:h.x,y:h.y,r:h.r,life:.40,max:.40,col:h.col});
+   burst(h.x,h.y,'#ffb55a',14,130);
+   h.type='forgeScorch';h.life=h.linger||1.35;h.hit=false;h.delay=0;h.scorchTick=.4;
   }else{
    if(Math.hypot(S.player.x-h.x,S.player.y-h.y)<h.r+S.player.rad)hitPlayer(h.dmg,h.x,h.y);
    S.fx.push({type:'ring',x:h.x,y:h.y,r:h.r,life:.4,max:.4,col:h.col});
@@ -57,7 +80,7 @@ function drawHazards(){
    cx.strokeStyle=imminent?'#fff5d9':'#ffccd0';cx.lineWidth=2.8;
    cx.beginPath();cx.arc(h.x,h.y,Math.max(h.inner+2,h.r*(1-k)),0,TAU);cx.stroke();
   }else{
-   cx.fillStyle=imminent?'#ff495436':'#ff364324';
+   cx.fillStyle=h.type==='forgeMeteor'?(imminent?'#ff9a523f':'#ff94402e'):(imminent?'#ff495436':'#ff364324');
    cx.strokeStyle=imminent?'#ffe1b1':'#ff6779';
    cx.lineWidth=imminent?5:3.5;
    cx.beginPath();cx.arc(h.x,h.y,h.r,0,TAU);cx.fill();cx.stroke();
