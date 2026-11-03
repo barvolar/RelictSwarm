@@ -17,7 +17,7 @@ test('journal contains fourteen unique achievements and eight selectable contrac
  const {run}=fixture();
  const achievements=run('ACHIEVEMENTS.map(x=>x.id)'),challenges=run('CHALLENGES.map(x=>x.id)');
  assert.equal(achievements.length,14);assert.equal(challenges.length,8);
- assert.equal(new Set(achievements).size,14);assert.equal(new Set(challenges).size,7);
+ assert.equal(new Set(achievements).size,14);assert.equal(new Set(challenges).size,8);
  assert.ok(run('ACHIEVEMENTS.every(a=>a.reward>0)&&CHALLENGES.every(c=>c.reward>0)'));
 });
 test('run awards achievements and selected contract once, not on every subsequent run',()=>{
