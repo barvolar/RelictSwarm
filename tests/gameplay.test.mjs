@@ -138,9 +138,9 @@ test('fusion replaces inputs, consumes one core and transfers levels', () => {
   g.ctx.mode = 'forge';
   g.run('forgeHybrid("spear")');
   assert.deepEqual(g.S.drones.map(d=>d.id), ['saw','fusion_spear']);
-  assert.equal(g.S.drones[1].lvl, 5);
-  assert.equal(g.S.drones[1].mods.power, 3);
-  assert.equal(g.S.drones[1].mods.rate, 1);
+  assert.equal(g.S.drones[1].lvl, 9);
+  assert.equal(g.S.drones[1].mods.power, 5);
+  assert.equal(g.S.drones[1].mods.rate, 3);
   assert.equal(g.S.fusionCores, 0);
   assert.equal(g.ctx.save.recipes.spear, true);
   assert.deepEqual(g.calls.fusions, ['spear']);
@@ -306,11 +306,11 @@ test('cooldown keeps base pace and compensates extremely high firing speed', () 
  assert.ok(extreme.attackOverflow>1);
 });
 
-test('fusion output transfers only matching branches without mutating inputs', () => {
+test('fusion preserves all invested levels and redistributes unmatched branches without mutating inputs', () => {
  const a={id:'pulse',lvl:7,mods:{power:5,rate:3,pierce:9}};
  const b={id:'rail',lvl:10,mods:{power:4,rate:6,width:20}};
  const output=createFusionWeapon('spear',a,b,[['power'],['rate'],['beams']]);
- assert.deepEqual(output,{id:'fusion_spear',lvl:8,mods:{power:5,rate:5,beams:0},cd:.2,hitCd:0});
+ assert.deepEqual(output,{id:'fusion_spear',lvl:16,mods:{power:29,rate:13,beams:0},cd:.2,hitCd:0});
  assert.deepEqual(a.mods,{power:5,rate:3,pierce:9});
  assert.deepEqual(b.mods,{power:4,rate:6,width:20});
  const minimum=createFusionWeapon('polar',{lvl:1,mods:{}},{lvl:1,mods:{}},[['freeze']]);
