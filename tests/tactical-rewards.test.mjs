@@ -10,7 +10,7 @@ function context(initial={}){
  const S={t:190,player:{x:0,y:0,hp:60,maxHp:100,inv:0,speed:225},enemy:[],fx:[],bullets:[],tactics:{},tacticFields:[],tacticChoices:[],playerDmg:1,pendingUp:0,...initial};
  const modal={innerHTML:'',querySelectorAll:()=>[]};
  const env={S,mode:'playing',trainingMode:false,last:0,performance:{now:()=>1000},$:(id)=>modal,Math,TEAL:'#fff',BLUE:'#def',
-  setMode(x){env.mode=x},updateHUD(){},showUpgrades(){},sfx(){},burst(){},
+  setMode(x){env.mode=x},toast(){},updateHUD(){},showUpgrades(){},sfx(){},burst(){},
   heal(n){S.player.hp=Math.min(S.player.maxHp,S.player.hp+n)},
   applyChill(e,n){e.chill=(e.chill||0)+n},
   hurtEnemy(e,n){e.hp-=n},launchBullet(x,y,target,damage){S.bullets.push({target,damage,x,y})},
