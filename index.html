@@ -1979,7 +1979,7 @@ function hurtEnemy(e,n,opts={}){if(e.hp<=0||!Number.isFinite(n))return;
  if(trainingMode){trainingRecord.damage+=n;trainingRecord.hits.push({t:S.t,d:n});if(trainingRecord.hits.length>3200)trainingRecord.hits.splice(0,1000)}
  const before=e.hp;balDamage(e,before,n);e.hp-=n;
  if(n>0&&!opts.burn&&!opts.silentHit&&Math.random()<.16)sfx('hit',.7);
- if(e.elite&&before/e.maxHp>.52&&e.hp/e.maxHp<=.52){e.phase=1;e.shield=2.0;burst(e.x,e.y,ENEMY[e.id].col,45,220);banner('⚠ ВТОРАЯ ФАЗА: '+ENEMY[e.id].name,3.5);sfx('bossPhase');shake=14;}
+ if(e.elite&&e.hp>0&&before/e.maxHp>.52&&e.hp/e.maxHp<=.52){e.phase=1;e.shield=2.0;e.special=Math.max(e.special||0,1.5);e.bossDashWind=0;S.hazards=S.hazards.filter(h=>h.owner!==e);burst(e.x,e.y,ENEMY[e.id].col,45,220);banner('⚠ ВТОРАЯ ФАЗА: '+ENEMY[e.id].name,3.5);sfx('bossPhase');shake=14;}
  e.hit=.11;if(opts.slow)e.slow=Math.max(e.slow,opts.slow);if(opts.stun)e.stun=Math.max(e.stun,opts.stun);if(opts.burn){e.burn=Math.max(e.burn,opts.burn);e.burnStrength=Math.max(e.burnStrength||0,opts.burnPower||16*S.playerDmg*(1+S.t/500));e.burnClock??=0;}if(opts.knock){let m=hypot(e.x-S.player.x,e.y-S.player.y);e.x+=(e.x-S.player.x)/m*opts.knock;e.y+=(e.y-S.player.y)/m*opts.knock}if(e.trainingDummy){
   e.displayDamage=(e.displayDamage||0)+n;
   if(S.t-(e.lastDamageDisplay||-1)>=.22){floatNum(e.x+rand(-5,5),e.y-25,e.displayDamage,'#ffebae');e.lastDamageDisplay=S.t;e.displayDamage=0;}
@@ -2812,7 +2812,7 @@ function drawHazards(){
 }
 function updateEnemies(dt){let p=S.player,grid=new Map(),cell=50;for(const e of S.enemy){if(e.hp<=0)continue;let gx=Math.floor(e.x/cell),gy=Math.floor(e.y/cell),key=gx+','+gy;if(!grid.has(key))grid.set(key,[]);grid.get(key).push(e)}
  for(const e of S.enemy){if(e.hp<=0)continue;e.t+=dt;e.hit=Math.max(0,e.hit-dt);e.shock=Math.max(0,(e.shock||0)-dt);e.marked=Math.max(0,(e.marked||0)-dt);e.attack-=dt;e.fire-=dt;e.stun=Math.max(0,e.stun-dt);e.slow=Math.max(0,e.slow-dt);e.charge=Math.max(0,e.charge-dt);if(e.elite)e.shield=Math.max(0,(e.shield||0)-dt);
- e.freezeLock=Math.max(0,(e.freezeLock||0)-dt);const wasHunterWinding=(e.hunterWind||0)>0,wasBruteWinding=(e.bruteWind||0)>0;e.hunterWind=Math.max(0,(e.hunterWind||0)-dt);e.hunterDash=Math.max(0,(e.hunterDash||0)-dt);e.bruteWind=Math.max(0,(e.bruteWind||0)-dt);e.bruteDash=Math.max(0,(e.bruteDash||0)-dt);if(wasHunterWinding&&e.hunterWind<=0)e.hunterDash=.43;if(wasBruteWinding&&e.bruteWind<=0)e.bruteDash=.55;e.supportCd=(e.supportCd||0)-dt;e.boosted=Math.max(0,(e.boosted||0)-dt);e.frost=Math.max(0,(e.frost||0)-dt);
+ e.freezeLock=Math.max(0,(e.freezeLock||0)-dt);const wasHunterWinding=(e.hunterWind||0)>0,wasBruteWinding=(e.bruteWind||0)>0;e.hunterWind=Math.max(0,(e.hunterWind||0)-dt);e.hunterDash=Math.max(0,(e.hunterDash||0)-dt);e.bruteWind=Math.max(0,(e.bruteWind||0)-dt);e.bruteDash=Math.max(0,(e.bruteDash||0)-dt);if(wasHunterWinding&&e.hunterWind<=0)e.hunterDash=.43;if(wasBruteWinding&&e.bruteWind<=0)e.bruteDash=.55;e.bossDashWind=Math.max(0,(e.bossDashWind||0)-dt);e.supportCd=(e.supportCd||0)-dt;e.boosted=Math.max(0,(e.boosted||0)-dt);e.frost=Math.max(0,(e.frost||0)-dt);
  e.chill=Math.max(0,(e.chill||0)-dt*7);
  if(e.burn>0){
   e.burn=Math.max(0,e.burn-dt);e.burnClock=(e.burnClock||0)+dt;
@@ -2845,7 +2845,7 @@ function updateEnemies(dt){let p=S.player,grid=new Map(),cell=50;for(const e of 
    let count=0;for(const mate of S.enemy){if(mate===e||mate.hp<=0||mate.elite||count>=10)continue;if((mate.x-e.x)**2+(mate.y-e.y)**2<175*175){mate.hp=Math.min(mate.maxHp,mate.hp+mate.maxHp*.065);mate.boosted=2.1;count++;}}
    if(count>0)S.fx.push({type:'ring',x:e.x,y:e.y,r:145,life:.5,max:.5,col:'#cba4ff'});
   }
-  if(e.id==='phantom'&&e.charge<=0&&e.fire<=0&&d<400){e.charge=.43;e.fire=4.5;S.fx.push({type:'beam',a:{x:e.x,y:e.y},b:{x:p.x,y:p.y},life:.35,max:.35,col:RED,width:1})}let spd=e.spd*(e.slow>0?.59:1)*(e.charge>0?2.7:1)*(e.hunterDash>0?2.85:1)*(e.bruteDash>0?3.1:1)*(e.boosted>0?1.20:1);if(e.stun>0){vx=0;vy=0}let pushX=0,pushY=0,gx=Math.floor(e.x/cell),gy=Math.floor(e.y/cell);
+  if(e.id==='phantom'&&e.charge<=0&&e.fire<=0&&d<400){e.charge=.43;e.fire=4.5;S.fx.push({type:'beam',a:{x:e.x,y:e.y},b:{x:p.x,y:p.y},life:.35,max:.35,col:RED,width:1})}let spd=e.spd*(e.slow>0?.59:1)*(e.charge>0?2.7:1)*(e.hunterDash>0?2.85:1)*(e.bruteDash>0?3.1:1)*(e.boosted>0?1.20:1);if(e.stun>0||e.bossDashWind>0){vx=0;vy=0}let pushX=0,pushY=0,gx=Math.floor(e.x/cell),gy=Math.floor(e.y/cell);
  for(let ox=-1;ox<=1;ox++)for(let oy=-1;oy<=1;oy++){const ar=grid.get((gx+ox)+','+(gy+oy));if(!ar)continue;for(const other of ar){if(e===other||other.hp<=0)continue;let ex=e.x-other.x,ey=e.y-other.y,ed=Math.hypot(ex,ey),min=(e.r+other.r)*.84;if(ed<min){let rep=(min-ed)/Math.max(ed,.001);pushX+=ex*rep*.42;pushY+=ey*rep*.42}}}
  if(e.trainingDummy){e.hp=Math.min(e.maxHp,e.hp+e.maxHp*.08*dt);continue;}
  e.x=clamp(e.x+(vx*spd+pushX*20)*dt,-1800,1800);e.y=clamp(e.y+(vy*spd+pushY*20)*dt,-1800,1800);
@@ -2890,7 +2890,7 @@ function executeRaid(evt){
  }
  banner('⚠ '+evt.name+' // ПРИОРИТЕТ ЦЕЛЕЙ!',3.4);sfx('warning',.6);
 }
-function update(dt){if(!S)return;if(trainingMode){updateTraining(dt);return;}S.t+=dt;S.spawn-=dt;S.rageTimer=Math.max(0,S.rageTimer-dt);S.invulnTimer=Math.max(0,S.invulnTimer-dt);S.magnetTimer=Math.max(0,S.magnetTimer-dt);S.powerupClock-=dt;if(S.powerupClock<=0){spawnPowerup();S.powerupClock=rand(22,34)}S.player.inv=Math.max(0,S.player.inv-dt);S.player.hit=Math.max(0,S.player.hit-dt);S.player.dashCd=Math.max(0,S.player.dashCd-dt);S.player.dashTime=Math.max(0,S.player.dashTime-dt);let p=S.player,inp=getInput(),mag=hypot(inp.x,inp.y);if(Math.abs(inp.x)+Math.abs(inp.y)>.12){p.dx=inp.x/mag;p.dy=inp.y/mag}if(p.dashTime>0){p.x+=p.dx*900*dt;p.y+=p.dy*900*dt;if(Math.random()<dt*90)burst(p.x,p.y,TEAL,1,40)}else{p.x+=inp.x*p.speed*dt;p.y+=inp.y*p.speed*dt}p.x=clamp(p.x,-1740,1740);p.y=clamp(p.y,-1740,1740);
+function update(dt){if(!S)return;if(trainingMode){updateTraining(dt);return;}S.t+=dt;S.spawn-=dt;S.rageTimer=Math.max(0,S.rageTimer-dt);S.invulnTimer=Math.max(0,S.invulnTimer-dt);S.magnetTimer=Math.max(0,S.magnetTimer-dt);S.powerupClock-=dt;if(S.powerupClock<=0){spawnPowerup();S.powerupClock=rand(22,34)}S.player.inv=Math.max(0,S.player.inv-dt);S.player.hit=Math.max(0,S.player.hit-dt);S.player.dashCd=Math.max(0,S.player.dashCd-dt);S.player.dashTime=Math.max(0,S.player.dashTime-dt);let p=S.player,inp=getInput(),mag=hypot(inp.x,inp.y);p.moving=Math.abs(inp.x)+Math.abs(inp.y)>.12;if(p.moving){p.dx=inp.x/mag;p.dy=inp.y/mag}if(p.dashTime>0){p.x+=p.dx*900*dt;p.y+=p.dy*900*dt;if(Math.random()<dt*90)burst(p.x,p.y,TEAL,1,40)}else{p.x+=inp.x*p.speed*dt;p.y+=inp.y*p.speed*dt}p.x=clamp(p.x,-1740,1740);p.y=clamp(p.y,-1740,1740);
  if(S.player.regen){S.player.hp=Math.min(S.player.maxHp,S.player.hp+S.player.regen*dt)}
  S.cam.x=lerp(S.cam.x,p.x,Math.min(1,dt*5));S.cam.y=lerp(S.cam.y,p.y,Math.min(1,dt*5));
   const phase=Math.min(4,Math.floor(S.t/180));
