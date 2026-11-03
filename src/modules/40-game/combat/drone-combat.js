@@ -87,7 +87,7 @@ function droneUpdate(dt){
    for(let j=0;j<n;j++){
     const off=(j-(n-1)/2)*16,source=weaponMuzzle(pos,target,off,30);
     launchBullet(source.x,source.y,target,42*baseDmg,'fusion_ion',2+Math.floor(rank/8));
-    S.fx.push({type:'beam',a:source,b:{x:target.x,y:target.y},life:.28,max:.28,col:'#cc9bff',width:3.4});
+    const ionMuzzle=aimGeometry(source,target);S.fx.push({type:'beam',a:source,b:{x:source.x+ionMuzzle.dx*32,y:source.y+ionMuzzle.dy*32},life:.12,max:.12,col:'#cc9bff',width:3.4});
    }
    target.marked=Math.max(target.marked||0,3.5);scheduleChain(weaponMuzzle(pos,target,0,30),target,5+Math.min(10,wm(d,'jumps')),35*baseDmg,250,'#d5afff',.18,1.08);burst(target.x,target.y,'#b6dfff',16,135);continue;
   }
@@ -112,7 +112,7 @@ function droneUpdate(dt){
    for(let j=0;j<total;j++){
     const offset=(j-(total-1)/2)*13,source=weaponMuzzle(pos,target,offset,24);
     launchBullet(source.x,source.y,target,(17+Math.sqrt(rank)*8)*baseDmg*(1+.14*Math.max(0,wm(d,'beams')-6))/(1+.18*(total-1)),'pulse',pierce);
-    S.fx.push({type:'beam',a:source,b:{x:target.x,y:target.y},life:.18,max:.18,col:TEAL,width:rank>=8?3.3:1.8});
+    const muzzleDir=aimGeometry(source,target);S.fx.push({type:'beam',a:source,b:{x:source.x+muzzleDir.dx*27,y:source.y+muzzleDir.dy*27},life:.10,max:.10,col:TEAL,width:rank>=8?3.3:1.8});
    }
   }
   if(d.id==='arc'){
