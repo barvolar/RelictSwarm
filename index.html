@@ -1996,7 +1996,7 @@ function formatTime(t){let s=Math.max(0,Math.ceil(t)),m=Math.floor(s/60);return 
 function dash(){if(!S||mode!=='playing'||S.player.dashCd>0)return;let p=S.player,dir=getInput();let m=hypot(dir.x,dir.y);if(Math.abs(dir.x)+Math.abs(dir.y)<.15){dir.x=p.dx;dir.y=p.dy;m=hypot(dir.x,dir.y)}p.dx=dir.x/m;p.dy=dir.y/m;p.dashCd=S.dashCooldown||3.6;p.dashTime=.2;p.inv=Math.max(p.inv,.32);burst(p.x,p.y,equippedSkin().core,22,180);S.fx.push({type:'ring',x:p.x,y:p.y,r:28,life:.34,max:.34,col:equippedSkin().core});sfx('dash')}
 function getInput(){let x=(input('KeyD')||input('ArrowRight')?1:0)-(input('KeyA')||input('ArrowLeft')?1:0)+joy.x,y=(input('KeyS')||input('ArrowDown')?1:0)-(input('KeyW')||input('ArrowUp')?1:0)+joy.y,m=Math.max(1,Math.hypot(x,y));return {x:x/m,y:y/m}}
 function getDronePos(d,i){if(['saw','fusion_thermal','fusion_tesla','fusion_frostblade','fusion_magnetblade'].includes(d.id))return sawPositions(d,i)[0];const a=S.t*.6+i*TAU/S.drones.length-Math.PI/2,r=57+(i%2)*15;return {x:S.player.x+Math.cos(a)*r,y:S.player.y+Math.sin(a)*r,a}}
-function spawnEnemy(id,a=null,dis=null){if(S.enemy.length>170&&!id.startsWith('boss')&&!id.startsWith('synth')&&id!=='omega'){if(bal&&!trainingMode)bal.totals.spawnBlocked++;return;}let p=S.player,ang=a??rand(0,TAU),d=dis??Math.max(360,Math.min(670,Math.max(W,H)*.55+90)),sp=ENEMY[id],factor=1+S.t/150+Math.max(0,S.lvl-18)*.012,elite=id.startsWith('boss')||id.startsWith('synth')||id==='omega';let x=clamp(p.x+Math.cos(ang)*d,-1760,1760),y=clamp(p.y+Math.sin(ang)*d,-1760,1760);const threat=THREAT_MODES[(S.threat||1)-1];let hp=sp.hp*(elite?(1+Math.max(0,S.t-180)/390):factor)*threat.hp;const obj={id,x,y,vx:0,vy:0,hp,maxHp:hp,r:sp.rad,spd:sp.spd*(1+Math.min(.3,S.t/1600))*threat.speed,dmg:sp.dmg*(elite?1:1+S.t/580)*threat.damage,t:rand(0,4),hit:0,shock:0,marked:0,attack:rand(.5,1.6),fire:rand(1,3),charge:0,slow:0,stun:0,burn:0,phase:0,special:elite?rand(1.6,3.5):0,summoned:false,seed:rand(0,500),elite,value:sp.value};if(!elite&&S.t>135&&Math.random()<Math.min(.21,.035+S.t/4800+(S.threat-1)*.023)){
+function spawnEnemy(id,a=null,dis=null){if(S.enemy.length>170&&!id.startsWith('boss')&&!id.startsWith('synth')&&id!=='omega'){if(bal&&!trainingMode)bal.totals.spawnBlocked++;return;}let p=S.player,ang=a??rand(0,TAU),d=dis??Math.max(360,Math.min(670,Math.max(W,H)*.55+90)),sp=ENEMY[id],factor=1+S.t/150+Math.max(0,S.lvl-18)*.012,elite=id.startsWith('boss')||id.startsWith('synth')||id==='omega';let x=clamp(p.x+Math.cos(ang)*d,-1760,1760),y=clamp(p.y+Math.sin(ang)*d,-1760,1760);const threat=THREAT_MODES[(S.threat||1)-1];let hp=sp.hp*(elite?(1+Math.max(0,S.t-180)/390):factor*1.14)*threat.hp;const obj={id,x,y,vx:0,vy:0,hp,maxHp:hp,r:sp.rad,spd:sp.spd*(1+Math.min(.3,S.t/1600))*threat.speed,dmg:sp.dmg*(elite?1:1+S.t/580)*threat.damage,t:rand(0,4),hit:0,shock:0,marked:0,attack:rand(.5,1.6),fire:rand(1,3),charge:0,slow:0,stun:0,burn:0,phase:0,special:elite?rand(1.6,3.5):0,summoned:false,seed:rand(0,500),elite,value:sp.value};if(!elite&&S.t>135&&Math.random()<Math.min(.21,.035+S.t/4800+(S.threat-1)*.023)){
  obj.champion=true;obj.hp*=3.2;obj.maxHp=obj.hp;obj.spd*=1.10;obj.dmg*=1.65;obj.r*=1.19;obj.value*=3;
  }S.enemy.push(obj);balSpawn(obj);if(elite){S.bosses.push(obj);banner('⚠ '+sp.name+' // ВЫСОКАЯ УГРОЗА',5);$('bossWrap').classList.remove('hidden')}return obj}
 function burst(x,y,col,n=11,power=100){if(!S)return;for(let i=0;i<n&&S.parts.length<650;i++){let a=rand(0,TAU),v=rand(power*.15,power),life=rand(.25,.75);S.parts.push({x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v,life,max:life,size:rand(1.5,4),col})}}
@@ -2007,11 +2007,11 @@ function spawnPowerup(x=null,y=null,type=null){if(!S)return;const types=['magnet
  S.pickups.push({x:clamp(px,-1750,1750),y:clamp(py,-1750,1750),xp:38,r:14,life:28,type:choice});}
 function applyPowerup(o){
  switch(o.type){
- case 'core':S.fusionCores++;banner('◈ ЯДРО СИНТЕЗА ПОДОБРАНО!',4);break;
+ case 'core':S.fusionCores++;if(S.challengeStats)S.challengeStats.coresCollected++;banner('◈ ЯДРО СИНТЕЗА ПОДОБРАНО!',4);break;
  case 'magnet':S.magnetTimer=4.5*(S.buffDuration||1);toast('◎ МАГНИТ: ВЕСЬ ОПЫТ НА КАРТЕ!',3);break;
  case 'rage':S.rageTimer=13*(S.buffDuration||1);toast('ϟ ЯРОСТЬ: УРОН ×2.1 НА 13 СЕКУНД',3);break;
  case 'invuln':S.invulnTimer=8*(S.buffDuration||1);S.player.inv=Math.max(S.player.inv,S.invulnTimer);toast('⬡ НЕУЯЗВИМОСТЬ: 8 СЕКУНД',3);break;
- case 'heal':heal(38);toast('✚ РЕМОНТ КОРПУСА',2);break;
+ case 'heal':if(S.challengeStats)S.challengeStats.manualHeals++;heal(38);toast('✚ РЕМОНТ КОРПУСА',2);break;
  }
  sfx('pickup');burst(S.player.x,S.player.y,o.type==='rage'?AMBER:o.type==='invuln'?BLUE:TEAL,35,150);
 }
@@ -2051,7 +2051,7 @@ function hurtEnemy(e,n,opts={}){if(e.hp<=0||!Number.isFinite(n))return;
  }else if(n>8&&Math.random()<.38)floatNum(e.x+rand(-8,8),e.y-25,n,(critical||opts.crit)?AMBER:'#dbffff');if(e.hp<=0)killEnemy(e)}
 function killEnemy(e){if(e.hp>0)return;if(trainingMode){S.kills++;burst(e.x,e.y,ENEMY[e.id].col,12,100);return;}const z=ENEMY[e.id];S.kills++;balKill(e);if(!e.elite&&Math.random()<.13)sfx('kill',.65);S.score+=z.value;burst(e.x,e.y,z.col,e.elite?55:10,e.elite?260:110);S.fx.push({type:'ring',x:e.x,y:e.y,r:e.r,life:.4,max:.4,col:z.col});S.pickups.push({x:e.x+rand(-6,6),y:e.y+rand(-6,6),xp:z.xp,r:7,life:30,type:'xp'});if(Math.random()<(e.elite?1:e.champion?.35:.025)){S.pickups.push({x:e.x+rand(-10,10),y:e.y+rand(-10,10),xp:e.elite?28:1,r:9,life:30,type:'shard'})}if(Math.random()<.025){S.pickups.push({x:e.x,y:e.y+12,xp:32,r:8,life:40,type:'heal'})}if(e.champion&&Math.random()<.21)spawnPowerup(e.x,e.y);if(e.id==='hive'){for(let i=0;i<2;i++)spawnEnemyNear('scarab',e.x,e.y)}if(e.elite){sfx('heavyExplosion',1,true);sfx('bossDown');S.bosses=S.bosses.filter(z=>z!==e);S.lastBossDefeatAt=S.t;$('bossWrap').classList.toggle('hidden',S.bosses.length===0);if(e.id==='omega'){finish(true);return}if(e.id.startsWith('synth')){S.pickups.push({x:e.x,y:e.y,xp:1,r:17,life:120,type:'core'});burst(e.x,e.y,AMBER,65,290);banner('◈ БОСС ПАЛ! ПОДБЕРИ ЯДРО СИНТЕЗА!',5)}else banner('✦ БОСС ПОВЕРЖЕН!',2.8)}if(Math.random()<.10)clickSound(100+Math.random()*90,.07,'triangle',.012)}
 function spawnEnemyNear(id,x,y){const e=spawnEnemy(id,rand(0,TAU),280);if(e){e.x=x+rand(-22,22);e.y=y+rand(-22,22)}}
-function hitPlayer(dmg,x,y){if(trainingMode)return;const p=S.player;if(p.inv>0||S.dead)return;dmg*=1-(S.armor||0);balPlayerHit(Math.min(p.hp,dmg));p.hp-=dmg;p.inv=.62;p.hit=.32;shake=Math.max(shake,7);burst(p.x,p.y,RED,18,160);floatNum(p.x,p.y-35,dmg,RED);sfx('damage');if(p.hp<=0){p.hp=0;finish(false)}}
+function hitPlayer(dmg,x,y){if(trainingMode)return;const p=S.player;if(p.inv>0||S.dead)return;dmg*=1-(S.armor||0);if(S.challengeStats){S.challengeStats.damageTaken+=Math.min(p.hp,dmg);if(S.t<300)S.challengeStats.hitBeforeFive=true;}balPlayerHit(Math.min(p.hp,dmg));p.hp-=dmg;p.inv=.62;p.hit=.32;shake=Math.max(shake,7);burst(p.x,p.y,RED,18,160);floatNum(p.x,p.y-35,dmg,RED);sfx('damage');if(p.hp<=0){p.hp=0;finish(false)}}
 function gainXP(n){if(trainingMode)return;S.xp+=n*(1+(S.xpBonus||0));while(S.xp>=S.xpNeed){S.xp-=S.xpNeed;S.lvl++;S.xpNeed=Math.floor(17+S.lvl*11+Math.pow(S.lvl,1.26)*2.8);S.pendingUp++;heal(4)}if(S.pendingUp>0&&mode==='playing')showUpgrades()}
 function eligibleHybrids(){return eligibleFusionIds(S,HYBRIDS);}
 function rarityRoll(){
@@ -2946,7 +2946,7 @@ function executeRaid(evt){
  const nEnemy=S.enemy.filter(e=>e.hp>0).length;
  if(nEnemy>145){banner('⚠ '+evt.name+' // ПОДКРЕПЛЕНИЕ ПРИБЛИЖАЕТСЯ',3);return;}
  for(let block=0;block<evt.units.length;block++){
-  const [type,baseCount]=evt.units[block],count=Math.round(baseCount*mult);
+  const [type,baseCount]=evt.units[block],count=Math.round(baseCount*mult*1.12);
   const center=rand(0,TAU);
   for(let k=0;k<count;k++){
    const a=center+(k-(count-1)/2)*(.15/(1+(block*.1)))+rand(-.05,.05);
@@ -2969,7 +2969,7 @@ function update(dt){if(!S)return;if(trainingMode){updateTraining(dt);return;}S.t
    if(S.t>400)pool.push('phantom','brute','sentry','hive');
    if(S.t>650)pool.push('hunter','phantom','brute','sentry','hive');
    for(let i=0;i<n;i++)spawnEnemy(pool[Math.floor(Math.random()*pool.length)]);
-   S.spawn=diff*rand(.78,1.24);S.spawnCount++;
+   S.spawn=diff*.86*rand(.78,1.24);S.spawnCount++;
   }
   RAID_EVENTS.forEach((event,i)=>{if(S.t>=event.t&&!S.raidFlags[i]){S.raidFlags[i]=true;executeRaid(event);}});
    // Never stack scheduled bosses. Old encounters finish first, followed by a short respite.
