@@ -1831,7 +1831,8 @@ function qaPauseHTML(){
  '<div class="qa-row"><button id="qaRemove" type="button">УБРАТЬ СЛОТ</button><button id="qaEmpty" type="button">ОЧИСТИТЬ АРСЕНАЛ</button></div>'+
  '<label>Тип врага<select id="qaEnemy">'+opts(ENEMY,qaEnemy)+'</select></label>'+
  '<div class="qa-row"><label>Количество<input id="qaCount" type="number" min="1" max="40" value="'+qaCount+'"></label><button id="qaSpawn" type="button">СОЗДАТЬ ВРАГОВ</button></div>'+
- '<div class="qa-row"><button id="qaKill" type="button">УБРАТЬ ВРАГОВ</button><button id="qaCore" type="button">+1 ЯДРО</button></div>'+
+ '<div class="qa-row"><button id="qaKill" type="button">УБРАТЬ ВРАГОВ</button><button id="qaCore" type="button">+1 ЯДРО</button></div>'+ 
+ '<div class="qa-row"><button id="qaBossPhase" type="button">БОСС: 2-Я ФАЗА</button><button id="qaClearHazards" type="button">УБРАТЬ УГРОЗЫ</button></div>'+
  '<small>Боссы создаются по одному; обычные враги ограничены лимитом игры. После настройки нажми «Продолжить».</small></details>';
 }
 
@@ -1863,7 +1864,17 @@ function qaWirePause(){
   for(let i=0;i<n;i++)spawnEnemy(qaEnemy,TAU*(i+.5)/n,210+(i%4)*62);
   refresh();
  };
- el('qaKill').onclick=()=>{S.enemy=[];S.bosses=[];S.enemyBullets=[];S.hazards=[];S.chains=[];refresh();};
+ el('qaKill').onclick=()=>{S.enemy=[];S.bosses=[];S.enemyBullets=[];S.hazards=[];S.chains=[];S.bullets=[];S.effects=[];S.mines=[];S.gravityWells=[];refresh();};
+ el('qaClearHazards').onclick=()=>{S.enemyBullets=[];S.hazards=[];S.chains=[];refresh();};
+ el('qaBossPhase').onclick=()=>{
+  const boss=[...S.bosses].reverse().find(e=>e.hp>0);
+  if(!boss){toast('СНАЧАЛА СОЗДАЙ БОССА',2);return;}
+  boss.hp=Math.min(boss.hp,boss.maxHp*.49);
+  boss.phase=1;boss.shield=0;boss.special=0;boss.bossCycle=0;boss.bossDashWind=0;
+  S.hazards=S.hazards.filter(h=>h.owner!==boss);
+  banner('⚠ QA: ВТОРАЯ ФАЗА '+ENEMY[boss.id].name,2);
+  refresh();
+ };
  el('qaCore').onclick=()=>{S.fusionCores++;refresh();};
 }
 function qaSyncFusions(){
