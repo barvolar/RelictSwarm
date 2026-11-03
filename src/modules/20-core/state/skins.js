@@ -326,6 +326,75 @@ function skinMix(a,b,t){
  const x=rgb(a),y=rgb(b);
  return '#'+x.map((n,i)=>Math.round(n*(1-t)+y[i]*t).toString(16).padStart(2,'0')).join('');
 }
+// Preserve the six original production palettes from Skin Lab; only rarity adds attachments.
+const SKIN_ORIGINAL_PALETTES={
+ "ghost": {
+  "body": "#10274c",
+  "plate": "#79aaf0",
+  "edge": "#a1d9ff",
+  "shell": "#1e3d63",
+  "back": "#264775",
+  "trim": "#bddaff",
+  "core": "#5caaff",
+  "coreDark": "#3364c6",
+  "light": "#e8f7ff"
+ },
+ "ember": {
+  "body": "#432524",
+  "plate": "#c86d48",
+  "edge": "#ffae76",
+  "shell": "#512c28",
+  "back": "#67392d",
+  "trim": "#ffd187",
+  "core": "#ff773d",
+  "coreDark": "#bc4428",
+  "light": "#fff0c2"
+ },
+ "void": {
+  "body": "#1b172d",
+  "plate": "#72608e",
+  "edge": "#bda6ff",
+  "shell": "#2a2448",
+  "back": "#3f345b",
+  "trim": "#e1c6ff",
+  "core": "#bd7aff",
+  "coreDark": "#7640ae",
+  "light": "#f8eaff"
+ },
+ "nova": {
+  "body": "#172a42",
+  "plate": "#95dbec",
+  "edge": "#b0ffff",
+  "shell": "#285d70",
+  "back": "#184966",
+  "trim": "#f3e6ba",
+  "core": "#b6fff1",
+  "coreDark": "#54bdc2",
+  "light": "#ffffff"
+ },
+ "chronos": {
+  "body": "#20223b",
+  "plate": "#67b0d1",
+  "edge": "#c6fcff",
+  "shell": "#253c65",
+  "back": "#374a78",
+  "trim": "#c6a8ff",
+  "core": "#80e9ff",
+  "coreDark": "#657dce",
+  "light": "#f0ffff"
+ },
+ "sentinel": {
+  "body": "#252336",
+  "plate": "#a58a74",
+  "edge": "#ffe1a0",
+  "shell": "#453f56",
+  "back": "#554351",
+  "trim": "#ffdc93",
+  "core": "#ffca6c",
+  "coreDark": "#b7823b",
+  "light": "#fff3de"
+ }
+};
 const SKINS=Object.fromEntries(SKIN_CATALOG.map(item=>{
  const {id,name,rarity,core,metal,detail,cost,index}=item;
  const common={body:skinMix(metal,'#020918',.66),plate:skinMix(metal,'#dbf6ff',.49),
@@ -333,6 +402,7 @@ const SKINS=Object.fromEntries(SKIN_CATALOG.map(item=>{
   back:skinMix(metal,'#0a2337',.34),trim:rarity==='legendary'?'#ffe1a0':rarity==='epic'?'#edc7ff':'#c9e0ef',
   core,coreDark:skinMix(core,'#020717',.46),light:'#ecfeff',variant:'classic'};
  if(id==='relict')Object.assign(common,{body:'#12263a',plate:'#7a9fac',edge:'#5c94a3',shell:'#21394f',back:'#2f5366',trim:'#d59a54',core:'#50f2db',coreDark:'#1b9a9e',light:'#d8ffff'});
+ if(SKIN_ORIGINAL_PALETTES[id])Object.assign(common,SKIN_ORIGINAL_PALETTES[id]);
  return [id,{name,detail,cost,rarity,skinIndex:index,free:id==='relict'||id==='ghost',
  ...common}];
 }));
