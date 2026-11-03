@@ -13,10 +13,10 @@ function fixture(){
  const run=c=>vm.runInContext(c,ctx);
  return {ctx,run,save,S};
 }
-test('journal contains fourteen unique achievements and seven selectable contracts',()=>{
+test('journal contains fourteen unique achievements and eight selectable contracts',()=>{
  const {run}=fixture();
  const achievements=run('ACHIEVEMENTS.map(x=>x.id)'),challenges=run('CHALLENGES.map(x=>x.id)');
- assert.equal(achievements.length,14);assert.equal(challenges.length,7);
+ assert.equal(achievements.length,14);assert.equal(challenges.length,8);
  assert.equal(new Set(achievements).size,14);assert.equal(new Set(challenges).size,7);
  assert.ok(run('ACHIEVEMENTS.every(a=>a.reward>0)&&CHALLENGES.every(c=>c.reward>0)'));
 });
@@ -52,6 +52,14 @@ test('repairless victory forbids only chosen health refills, not natural XP rege
  ctx.evaluateRunRewards(S,true,false);
  assert.equal(save.challenges.no_repairs,true);
  assert.ok(save.shards>=230);
+});
+test('three-slot contract tracks the largest arsenal even after fusion frees slots',()=>{
+ const {ctx,S}=fixture();
+ S.challengeId='minimalist';S.challengeStats.maxWeapons=3;
+ assert.equal(ctx.challengeValue('minimalist',S,true),1);
+ S.challengeStats.maxWeapons=4;
+ assert.equal(ctx.challengeValue('minimalist',S,true),0);
+ assert.equal(ctx.challengeValue('minimalist',S,false),0);
 });
 test('damage-free challenge concerns first five minutes only',()=>{
  const {ctx,S}=fixture();S.t=310;
