@@ -17,14 +17,7 @@ function updateHazards(dt){
   }
   if(h.delay>0||h.hit)continue;
   h.hit=true;
-  if(h.type==='forgeScorch'){
-   const alpha=clamp(h.life/(h.linger||1.35),0,1);
-   cx.save();cx.globalAlpha=.22+.32*alpha;
-   cx.fillStyle='#ed7837';cx.beginPath();cx.arc(h.x,h.y,h.r,0,TAU);cx.fill();
-   cx.strokeStyle='#ffa45a';cx.lineWidth=3;cx.stroke();
-   ring(h.x,h.y,h.r*.63,'#ffd193',2);
-   cx.restore();
-  }else if(h.type==='slash'||h.type==='dash'||h.type==='sweep'){
+  if(h.type==='slash'||h.type==='dash'||h.type==='sweep'){
    const x1=h.x+Math.cos(h.ang)*h.len,y1=h.y+Math.sin(h.ang)*h.len;
    if(pointSegmentDist(S.player.x,S.player.y,h.x,h.y,x1,y1)<h.r+S.player.rad)hitPlayer(h.dmg,h.x,h.y);
    S.fx.push({type:'beam',a:{x:h.x,y:h.y},b:{x:x1,y:y1},life:.26,max:.26,col:h.col,width:h.type==='dash'?15:12});
@@ -61,7 +54,13 @@ function drawHazards(){
   // Red/amber indicates incoming enemy damage. Cyan in annuli marks safe centers.
   const k=clamp(1-h.delay/1.7,0,1),imminent=h.delay<.32;
   cx.save();cx.globalAlpha=.58+.35*k;
-  if(h.type==='slash'||h.type==='dash'||h.type==='sweep'){
+  if(h.type==='forgeScorch'){
+   const alpha=clamp(h.life/(h.linger||1.35),0,1);
+   cx.globalAlpha=.25+.45*alpha;
+   cx.fillStyle='#ef7737';cx.beginPath();cx.arc(h.x,h.y,h.r,0,TAU);cx.fill();
+   cx.strokeStyle='#ffb971';cx.lineWidth=3;cx.stroke();
+   ring(h.x,h.y,h.r*.65,'#ffd598',2);
+  }else if(h.type==='slash'||h.type==='dash'||h.type==='sweep'){
    const x1=h.x+Math.cos(h.ang)*h.len,y1=h.y+Math.sin(h.ang)*h.len;
    cx.strokeStyle=imminent?'#ffe4be':'#ff6475';
    cx.lineWidth=h.r*2;cx.lineCap='round';cx.setLineDash([12,12]);
