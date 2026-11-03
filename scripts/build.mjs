@@ -34,8 +34,8 @@ const yandexHtml=base.replace('%%RELICT_SDK_LOADER%%',
   '<script>window.RELICT_PLATFORM="yandex"</script>\n<script src="/sdk.js"></script>');
 const crazygamesHtml=base.replace('%%RELICT_SDK_LOADER%%',
   '<script>window.RELICT_PLATFORM="crazygames"</script>\n<script src="https://sdk.crazygames.com/crazygames-sdk-v3.js"></script>')
-  .replace('[ 10.15: ONLINE TEST ]','[ РЕЛИКТОВЫЙ РОЙ ]')
-  .replace(' · Без внешних загрузок','');
+  .replace('[ 10.15: ONLINE TEST ]','[ RELICT SWARM ]')
+  .replace(' · No external assets','');
 
 const dist=path.join(root,'dist'); fs.mkdirSync(dist,{recursive:true});
 fs.writeFileSync(path.join(dist,'index.html'),html);
