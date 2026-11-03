@@ -60,7 +60,7 @@ function drawSkinDecor(skin,phase){
  const rank=SKIN_RARITY_RANK[skin.rarity]||0;
  if(!rank)return; // common skins: original shell with recolouring, no additions.
  const i=skin.skinIndex||1,c=skin.core,t=ambient;
- cx.save();cx.scale(SKIN_COSMETIC_SCALE[skin.rarity]||1);
+ cx.save();const cosmeticScale=SKIN_COSMETIC_SCALE[skin.rarity]||1;cx.scale(cosmeticScale,cosmeticScale);
  if(phase===0){
   skinWing(skin,-1,rank);skinWing(skin,1,rank);
   if(rank>=4)glow(0,0,i===32?125:95,c,.11);
