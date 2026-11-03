@@ -1,7 +1,30 @@
 function skinSvg(id){
- const s=SKINS[id]||SKINS.relict;
- const fins=s.variant==='ghost'?'<path d="M28 60 5 41 10 81 31 88M92 60 115 41 110 81 89 88" fill="#285581" stroke="'+s.edge+'" stroke-width="3"/>':s.variant==='ember'?'<path d="M31 53 18 16 39 36M89 53 102 16 81 36" fill="'+s.back+'" stroke="'+s.trim+'" stroke-width="3"/>':s.variant==='void'?'<path d="M30 49 12 20 17 68 8 84 34 81M90 49 108 20 103 68 112 84 86 81" fill="'+s.back+'" stroke="'+s.edge+'" stroke-width="3"/>':'';
- return `<svg viewBox="0 0 120 150" class="skin-art" role="img" aria-label="Облик ${s.name}"><ellipse cx="60" cy="127" rx="42" ry="11" fill="${s.core}" opacity=".16"/><g stroke-linejoin="round">${fins}<path d="M32 80 21 90 23 118 39 119 45 91M88 80 99 90 97 118 81 119 75 91" fill="${s.back}" stroke="${s.edge}" stroke-width="2.5"/><path d="M26 63 16 51 17 81 32 94 42 77M94 63 104 51 103 81 88 94 78 77" fill="${s.back}" stroke="${s.plate}" stroke-width="3"/><path d="M60 13 88 26 96 66 82 104 60 116 38 104 24 66 32 26Z" fill="${s.body}" stroke="${s.edge}" stroke-width="3"/><path d="M60 20 78 30 80 46 60 39 40 46 42 30Z" fill="${s.plate}"/><path d="M31 66 48 50 60 59 72 50 89 66 77 85 60 92 43 85Z" fill="${s.shell}" stroke="${s.plate}" stroke-width="2"/><path d="M43 66 60 50 77 66 71 86 49 86Z" fill="${s.coreDark}" stroke="${s.light}" stroke-width="2.5"/><path d="M60 55 71 66 67 79 53 79 49 66Z" fill="${s.core}"/><path d="M37 78 29 88M83 78 91 88" stroke="${s.trim}" stroke-width="5"/><path d="M48 32 60 26 72 32" fill="none" stroke="${s.light}" stroke-width="3"/></g></svg>`;
+ const s=SKINS[id]||SKINS.relict,rank=SKIN_RARITY_RANK[s.rarity]||0;
+ const wing=rank?[-1,1].map(side=>{
+  const shift=side<0?0:120,transform=side<0?'':'translate(120 0) scale(-1 1)';
+  const reach=rank===1?14:rank===2?24:rank===3?28:37;
+  return '<g transform="'+transform+'"><path d="M36 64 L'+(36-reach)+' '+(rank>=3?20:33)+
+    ' L'+(27-reach)+' 47 L'+(36-reach*.7)+' 83 L41 89Z" fill="'+s.shell+
+    '" stroke="'+s.edge+'" stroke-width="2.5"/>'+
+    '<path d="M35 61 L'+(34-reach*.8)+' 45 L'+(31-reach*.75)+' 72 L44 83" fill="none" stroke="'+
+    (rank>=2?s.core:s.trim)+'" stroke-width="'+(rank>=2?2.3:1.5)+'"/>'+
+    (rank>=3?'<path d="M35 85 L'+(20-reach)+' 103 L'+(15-reach)+' 83 L38 73" fill="'+s.back+
+      '" stroke="'+s.core+'" stroke-width="2"/>':'')+'</g>';
+ }).join(''):'';
+ const halo=rank>=3?'<g class="skin-rotator" style="transform-origin:60px 70px" fill="none" stroke="'+s.trim+'">'+
+  '<circle cx="60" cy="70" r="'+(rank===4?49:39)+'" stroke-dasharray="'+(rank===4?'15 11':'22 16')+'" stroke-width="2.5"/>'+
+  (rank===4?'<circle cx="60" cy="70" r="35" stroke="'+s.core+'" stroke-dasharray="13 9" stroke-width="2"/>':'')+'</g>':'';
+ const glow=rank>=2?'<circle cx="60" cy="70" r="'+(rank===4?43:33)+'" fill="'+s.core+'" opacity=".12"/>':'';
+ return '<svg viewBox="0 0 120 150" class="skin-art" role="img" aria-label="Облик '+s.name+'">'+
+ '<ellipse cx="60" cy="128" rx="33" ry="10" fill="'+s.core+'" opacity=".12"/>'+
+ glow+wing+
+ '<g stroke-linejoin="round"><path d="M42 71 29 84 34 105 47 106 53 91 M78 71 91 84 86 105 73 106 67 91" fill="'+s.back+'" stroke="'+s.edge+'" stroke-width="2.5"/>'+
+ '<path d="M60 22 78 29 86 64 75 99 60 110 45 99 34 64 42 29Z" fill="'+s.body+'" stroke="'+s.edge+'" stroke-width="3"/>'+
+ '<path d="M60 30 74 36 75 53 60 49 45 53 46 36Z" fill="'+s.plate+'"/>'+
+ '<path d="M39 66 51 51 60 61 69 51 81 66 72 88 60 94 48 88Z" fill="'+s.shell+'" stroke="'+s.trim+'" stroke-width="2"/>'+
+ '<path d="M47 69 60 53 73 69 67 86 53 86Z" fill="'+s.coreDark+'" stroke="'+s.light+'" stroke-width="2.3"/>'+
+ '<path d="M60 60 68 70 64 80 56 80 52 70Z" fill="'+s.core+'"/><circle cx="60" cy="68" r="3" fill="'+s.light+'"/>'+
+ '</g>'+halo+'</svg>';
 }
 function menu(){
  setMode('menu');
