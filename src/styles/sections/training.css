@@ -12,3 +12,27 @@
 @media(max-height:600px){#trainingPanel{top:85px;max-height:calc(100vh - 105px)}}
 .tp-preview{margin:9px 0;padding:9px 10px;border:1px solid #315875;background:#0b2334;display:grid;gap:5px;font-size:10px;color:#b7d6e2}.tp-preview>b{font-size:9px;color:#7fe0cb;letter-spacing:1px}.tp-preview small{font-size:9px;color:#7497a8;line-height:1.35}
 
+
+
+/* Only bundled in the isolated QA build: pause-time gameplay inspection tools. */
+.qa-pause{margin:16px 0;padding:12px;border:1px solid #4c949a;background:#081e2af0;border-radius:7px;color:#cbeef0}
+.qa-pause summary{font-weight:900;color:#8ef4e4;cursor:pointer;font-size:12px;letter-spacing:.4px}
+.qa-pause p,.qa-pause small{color:#9fb8c4;font-size:11px;line-height:1.55}
+.qa-pause label{display:grid;gap:4px;min-width:0;font-size:11px;color:#99dacc;margin:8px 0}
+.qa-pause input,.qa-pause select,.qa-pause button{box-sizing:border-box;min-height:36px;font:700 12px inherit;background:#123246;color:#eefcff;border:1px solid #457080;border-radius:5px;padding:7px;max-width:100%}
+.qa-pause select{width:100%;font-family:inherit}
+.qa-pause input{width:100%;font-family:inherit}
+.qa-pause button{font-family:inherit;cursor:pointer;flex:1;min-width:0;white-space:normal}
+.qa-pause button:hover{background:#1a4656;border-color:#8ef4e4}
+.qa-row{display:flex;align-items:end;gap:8px;margin:8px 0}
+.qa-row label,.qa-row select{flex:1;min-width:0}
+.qa-row label{margin:0}
+.qa-inventory{display:flex;flex-wrap:wrap;gap:5px;margin:8px 0}
+.qa-inventory span{font-size:10px;padding:5px 7px;border:1px solid #2d5965;background:#112b3c}
+@media(max-width:480px){.qa-pause{padding:9px}.qa-row{gap:5px}.qa-pause button{font-size:10px}}
+
+/* Expand the tester's pause menu instead of wasting vertical space on the title. */
+#modal:has(#qaPause) .menu-head{display:none}
+#modal:has(#qaPause) .modal-panel{width:min(760px,100%);max-height:calc(100dvh - 26px);padding:16px 22px;overflow-y:auto}
+#modal:has(#qaPause) .qa-pause{margin:12px 0}
+@media(max-width:700px){#modal:has(#qaPause) .modal-panel{padding:10px!important;max-height:calc(100dvh - 16px)}}

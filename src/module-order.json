@@ -35,6 +35,7 @@
   "src/modules/60-analytics/balance/snapshots.js",
   "src/modules/60-analytics/balance/report.js",
   "src/modules/40-game/lifecycle/start.js",
+  "src/modules/40-game/training/pause-qa.js",
   "src/modules/40-game/lifecycle/pause-and-notices.js",
   "src/modules/40-game/lifecycle/finish.js",
   "src/modules/40-game/lifecycle/movement.js",
