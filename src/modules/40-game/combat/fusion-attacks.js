@@ -25,10 +25,10 @@ function fireFusionSpecial(d,pos,target,base,rank){
   return true;
  }
  if(type==='prism'){
-  const r=Math.min(210,100+radius*16);S.gravityWells.push({x:target.x,y:target.y,r,force:160,damage:damage*.12,life:2.0,clock:.05,col});
+  const r=Math.min(210,100+radius*16);S.gravityWells.push({x:target.x,y:target.y,r,force:160,damage:damage*.19,life:2.8,clock:.05,col});
   for(const e of S.enemy.filter(e=>e.hp>0).sort((a,b)=>(a.x-target.x)**2+(a.y-target.y)**2-(b.x-target.x)**2-(b.y-target.y)**2).slice(0,Math.min(7,3+wm(d,'beams')))){
    if(Math.hypot(e.x-target.x,e.y-target.y)<r*1.7){S.fx.push({type:'beam',a:{x:target.x,y:target.y},b:{x:e.x,y:e.y},life:.32,max:.32,col,width:3});hurtEnemy(e,damage*.9,{slow:.3});}
-  }burst(target.x,target.y,col,13,100);return true;
+  }fusionField(target.x,target.y,r*.65,damage*.18,2,col);burst(target.x,target.y,col,13,100);return true;
  }
  if(type==='siege'){
   const shot=fusionLine(pos,target,18,damage*2.0,Math.min(1300,750+wm(d,'pierce')*90),{color:col,knock:18});damageArea(target.x,target.y,85+wm(d,'blast')*13,damage*1.15,{color:col,knock:14});for(const e of shot.hits.slice(1,1+Math.min(5,wm(d,'pierce'))))if(e.hp>0)damageArea(e.x,e.y,35,damage*.26,{color:col});
@@ -48,9 +48,9 @@ function fireFusionSpecial(d,pos,target,base,rank){
  }
  if(type==='thermoshock'){
   const a=aimGeometry(pos,target),length=Math.min(500,205+wm(d,'range')*25),half=(39+wm(d,'angle')*8)*Math.PI/360;
-  const hot=(d.shockCycle=(d.shockCycle||0)+1)%2===0;
+  const hot=(d.shockCycle=(d.shockCycle||0)+1)%2===0;let triggered=0;
   for(const e of S.enemy){if(e.hp<=0)continue;const dx=e.x-pos.x,dy=e.y-pos.y,r=Math.hypot(dx,dy);if(r>length+e.r||Math.atan2(Math.abs(a.dx*dy-a.dy*dx),a.dx*dx+a.dy*dy)>half)continue;
-   if((hot&&e.frost>0)||(!hot&&e.burn>0))damageArea(e.x,e.y,45,damage*1.2,{color:col});
+   if(triggered<3&&((hot&&e.frost>0)||(!hot&&e.burn>0))){triggered++;damageArea(e.x,e.y,45,damage*1.2,{color:col});}
    hurtEnemy(e,damage*.56,hot?{burn:3}:{stun:.23,slow:2});if(!hot)e.frost=2.2;
   }
   S.fx.push({type:hot?'flame':'cryo',x:pos.x,y:pos.y,ang:Math.atan2(a.dy,a.dx),length,half,life:.38,max:.38});return true;
