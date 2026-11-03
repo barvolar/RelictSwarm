@@ -71,3 +71,43 @@ test('QA stand-alone build embeds optional telemetry rather than relying on sibl
  assert.ok(!html.includes('src="./telemetry-client.js"'));
  assert.ok(!html.includes('src="./telemetry-config.js"'));
 });
+
+
+test('ion fusion raises chain damage per jump and applies a real target marker',()=>{
+ const src=read('src/modules/40-game/combat/targeting-and-chains.js');
+ const first={x:30,y:0,hp:1000},second={x:80,y:0,hp:1000},third={x:130,y:0,hp:1000};
+ const hits=[];const S={enemy:[first,second,third],chains:[],fx:[]};
+ const ctx=vm.createContext({S,touching:false,Math,PURPLE:'#b59cff',
+  sfx(){},burst(){},rand(){return 0;},hurtEnemy(e,n){hits.push(n);}});
+ vm.runInContext(src,ctx);
+ ctx.scheduleChain({x:0,y:0},first,3,100,220,'#d5afff',.18,1.08);
+ for(let i=0;i<3;i++)ctx.updateChains(.1);
+ assert.equal(hits.length,3);
+ assert.ok(hits[1]>hits[0]&&hits[2]>hits[1],'ion chain grows on consecutive hops');
+ assert.ok(drone.includes('target.marked=Math.max(target.marked||0,3.5)'),'ion target is actually marked');
+});
+
+test('polar residue chills, rail plasma ignites, and base plasma burns',()=>{
+ const S={enemy:[],fx:[],effects:[],gravityWells:[],player:{x:0,y:0},t:0};
+ const ctx=vm.createContext({S,Math,TAU:Math.PI*2,
+  wm:(d,k)=>d.mods?.[k]||0,
+  DRONES:{fusion_polar:{color:'#adefff'},fusion_railplasma:{color:'#b5caff'}},
+  fusionLine:()=>({origin:{x:0,y:0},a:{dx:1,dy:0},hits:[{x:100,y:0,hp:1000}]}),
+  shatterFrozen(){},applyChill(){},burst(){}});
+ vm.runInContext(read('src/modules/40-game/combat/fusion-projectiles.js')+'\n'+specials,ctx);
+ ctx.fireFusionSpecial({id:'fusion_polar',mods:{}},{x:0,y:0},{x:200,y:0},1,3);
+ assert.equal(S.effects.length,4);
+ assert.ok(S.effects.every(e=>e.ice===true&&e.fire===false&&e.chill>0));
+ S.effects=[];S.fx=[];
+ ctx.fireFusionSpecial({id:'fusion_railplasma',mods:{}},{x:0,y:0},{x:200,y:0},1,3);
+ assert.equal(S.effects.length,1);
+ assert.equal(S.effects[0].fire,true);
+ assert.ok(drone.includes('col:BLUE,fire:true'),'base plasma fire effect is restored');
+});
+
+test('displayed fusion names agree between the forge and equipped weapon HUD',()=>{
+ const ctx=vm.createContext({});
+ vm.runInContext(fusions+'\n'+read('src/modules/10-data/weapons/catalog.js')+
+ ';globalThis.mismatched=Object.entries(HYBRIDS).filter(([id,h])=>h.name!==DRONES["fusion_"+id].name).map(([id])=>id)',ctx);
+ assert.deepEqual(Array.from(ctx.mismatched),[]);
+});
