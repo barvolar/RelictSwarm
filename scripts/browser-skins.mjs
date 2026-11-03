@@ -62,7 +62,27 @@ try{
  await evaluate("localStorage.setItem('relictSwarm_v01_save',JSON.stringify({shards:5000,skins:"+JSON.stringify(skinIds)+",skin:'relict',meta:{},threatUnlocked:1}))");
  await send('Page.reload',{ignoreCache:true});
  await waitFor("!!window.__test && !!document.getElementById('mainPlay')",'saved menu');
- await evaluate("document.getElementById('mainUpgrade').click();document.getElementById('tabSkins').click()");
+ const expectEnglish=async stage=>{
+  await sleep(100);
+  const res=await evaluate("(()=>{const s=document.body.innerText;return {ru:(s.match(/[А-Яа-яЁё]+/g)||[]).slice(0,20),title:document.title,htmlLang:document.documentElement.lang}})()");
+  assert.equal(res.htmlLang,'en',stage+' must use English document language');
+  assert.deepEqual(res.ru,[],stage+' contains Russian UI: '+res.ru.join(', '));
+ };
+ await expectEnglish('main menu');
+ await evaluate("document.getElementById('mainPlay').click()");
+ await expectEnglish('run setup');
+ const protocol=await evaluate("document.getElementById('threatMode')?.options[0]?.textContent");
+ assert.ok(protocol?.includes('PROTOCOL I'),'difficulty label must not be Russian: '+protocol);
+ await evaluate("document.getElementById('backHome').click()");
+ await evaluate("document.getElementById('mainSettings').click()");
+ await expectEnglish('settings');
+ assert.equal(await evaluate("document.getElementById('langBtn')"),null,'English-only build must not expose language switch');
+ await evaluate("document.getElementById('backHome').click()");
+ await evaluate("document.getElementById('mainUpgrade').click()");
+ await expectEnglish('upgrade hangar');
+ await evaluate("document.getElementById('tabSkins').click()");
+ await expectEnglish('skin showroom');
+
  const shop=await evaluate("({cards:document.querySelectorAll('.skin-card').length,previews:document.querySelectorAll('.skin-card img.skin-canvas-preview').length,unique:new Set([...document.querySelectorAll('.skin-card img.skin-canvas-preview')].map(x=>x.src)).size})");
  assert.equal(shop.cards,32,'expected every skin in shop');
  assert.equal(shop.previews,32,'all shop previews must be rendered using real robot Canvas');
