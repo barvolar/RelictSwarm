@@ -1374,10 +1374,10 @@ function rand(a,b){return a+Math.random()*(b-a)}function rint(a,b){return Math.f
 // Four graphics presets. Gameplay and enemy simulation never depend on visual quality.
 const renderQualityKey='relictswarm_render_quality';
 const RENDER_PRESETS=[
- {id:'high',name:'ВЫСОКОЕ',desc:'Полная детализация, максимум эффектов и разрешения.'},
- {id:'normal',name:'ОБЫЧНОЕ',desc:'Детальные враги и сбалансированные эффекты.'},
- {id:'low',name:'НИЗКОЕ',desc:'Детальные враги, меньше свечений и частиц.'},
- {id:'minimal',name:'МИНИМАЛЬНОЕ',desc:'Облегчённые враги и минимальная графическая нагрузка.'}
+ {id:'high',name:'HIGH',desc:'Full detail, maximum effects and resolution.'},
+ {id:'normal',name:'NORMAL',desc:'Detailed enemies and balanced effects.'},
+ {id:'low',name:'LOW',desc:'Detailed enemies, fewer glows and particles.'},
+ {id:'minimal',name:'MINIMAL',desc:'Simplified enemy silhouettes and minimal rendering load.'}
 ];
 let renderQuality='normal';
 try{
@@ -6615,11 +6615,11 @@ function perfSummary(){
   avgDrawMs:+perfAvg(samples.map(s=>s.cpuDrawMs)).toFixed(2)};
 }
 function renderQualityControls(){
- return `<section class="graphics-settings"><div class="graphics-heading"><strong>КАЧЕСТВО ГРАФИКИ</strong><span>4 ПРЕСЕТА</span></div>
-  <div class="graphics-presets" role="group" aria-label="Качество графики">
+ return `<section class="graphics-settings"><div class="graphics-heading"><strong>GRAPHICS QUALITY</strong><span>4 PRESETS</span></div>
+  <div class="graphics-presets" role="group" aria-label="Graphics quality">
    ${RENDER_PRESETS.map(p=>`<button type="button" data-graphics-preset="${p.id}" aria-pressed="${renderQuality===p.id}" class="graphics-preset ${renderQuality===p.id?'selected':''}"><b>${p.name}</b><small>${p.desc}</small></button>`).join('')}
   </div>
-  <p class="graphics-hint">Враги упрощаются <b>только на «Минимальном»</b>. При падении FPS разрешение может снижаться автоматически, но обычные модели врагов сохраняются. Настройки не меняют урон и сложность.</p>
+  <p class="graphics-hint">Enemies use simplified silhouettes <b>only on Minimum</b>. Render resolution may drop automatically when FPS falls, but normal enemy models remain unchanged. Graphics settings do not affect damage or difficulty.</p>
  </section>`;
 }
 document.addEventListener('click',e=>{
