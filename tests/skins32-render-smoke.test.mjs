@@ -36,3 +36,27 @@ test('all 32 skins produce valid distinct shop previews, including animated ring
  assert.ok(epic.includes('skin-rotator'));
  assert.ok(legend.includes('skin-rotator'));
 });
+
+test('all 32 hangar previews use the REAL robot renderer with valid Canvas transforms',()=>{
+ const {context}=makeContext();
+ const mainCtx=context.cx,seen=[];
+ context.document={createElement(type){
+  assert.equal(type,'canvas');
+  const previewCtx={
+   save(){},restore(){},translate(){},rotate(){},setTransform(...v){assert.equal(v.length,6);},
+   scale(...v){assert.equal(v.length,2,'every real preview scale must supply both axes');assert.ok(v.every(Number.isFinite));},
+   beginPath(){},arc(){},stroke(){},fill(){},moveTo(){},lineTo(){},closePath(){},fillRect(){},setLineDash(){},
+  };
+  return {width:0,height:0,getContext:(kind)=>{assert.equal(kind,'2d');seen.push(previewCtx);return previewCtx;},toDataURL:()=>('data:image/png;base64,AAAA')};
+ }};
+ for(const id of context.testSkinIds){
+  const result=vm.runInContext('skinSvg('+JSON.stringify(id)+')',context);
+  assert.ok(result.startsWith('<img'),id+' must use the real Canvas preview renderer');
+  assert.ok(result.includes('data:image/png'),id+' image not produced');
+  assert.equal(context.cx,mainCtx,'global gameplay Canvas must be restored after preview');
+ }
+ assert.equal(seen.length,32,'render each skin once and cache it');
+ const again=vm.runInContext("skinSvg('relict')",context);
+ assert.ok(again.includes('<img'));
+ assert.equal(seen.length,32,'cached previews must not rerender');
+});
