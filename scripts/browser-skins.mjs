@@ -24,9 +24,11 @@ const pending=new Map();
 try{
  server=spawn(process.execPath,['scripts/serve.mjs'],{stdio:['ignore','pipe','pipe'],env:{...process.env,PORT:'43173'}});
  chrome=spawn(chromePath,['--headless=new','--no-sandbox','--disable-dev-shm-usage','--no-first-run','--disable-background-networking','--remote-debugging-port=43174','--user-data-dir=/tmp/relict-browser-smoke-'+process.pid,'--window-size=1365,900','about:blank'],{stdio:['ignore','ignore','pipe']});
+ let chromeError='';chrome.stderr.on('data',chunk=>{chromeError+=chunk.toString().slice(0,1500);});chrome.on('error',error=>{chromeError+=' SPAWN '+String(error);});
+ console.log('Browser executable:',chromePath);
  const waitHttp=async url=>{
   for(let i=0;i<120;i++){try{const r=await fetch(url);if(r.ok)return await r.json();}catch{}await sleep(100);}
-  throw Error('Chrome debugging server not ready: '+url);
+  throw Error('Chrome debugging server not ready: '+url+'; process '+chrome?.exitCode+'; chrome log: '+chromeError.slice(-1800));
  };
  await waitHttp('http://127.0.0.1:43174/json/list');
  let target=(await waitHttp('http://127.0.0.1:43174/json/list')).find(t=>t.type==='page');
