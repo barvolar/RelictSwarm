@@ -97,7 +97,7 @@ test('spawns and warning hazards remain bounded under repeated boss casts',()=>{
  assert.ok(S.hazards.length<=48,'too many warning zones');
  assert.ok(S.enemyBullets.length<=120,'too many projectiles');
  assert.ok(S.enemy.length<=148,'too many summoned enemies');
- assert.ok(seen.summons<=9,'unbounded repeated reinforcements');
+ assert.ok(seen.summons<=18,'up to 8 sentries, 5 phantoms and 5 hunters');
 });
 
 test('boss death cancels unresolved owner-linked hazards',()=>{
