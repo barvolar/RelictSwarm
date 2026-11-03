@@ -3,7 +3,7 @@ function executeRaid(evt){
  const nEnemy=S.enemy.filter(e=>e.hp>0).length;
  if(nEnemy>145){banner('⚠ '+evt.name+' // ПОДКРЕПЛЕНИЕ ПРИБЛИЖАЕТСЯ',3);return;}
  for(let block=0;block<evt.units.length;block++){
-  const [type,baseCount]=evt.units[block],count=Math.round(baseCount*mult);
+  const [type,baseCount]=evt.units[block],count=Math.round(baseCount*mult*1.12);
   const center=rand(0,TAU);
   for(let k=0;k<count;k++){
    const a=center+(k-(count-1)/2)*(.15/(1+(block*.1)))+rand(-.05,.05);
