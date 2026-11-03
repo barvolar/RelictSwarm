@@ -64,3 +64,111 @@ function scene(mode){
  }
  return{enemies,duration:16};
 }
+function simulate(weapons,mode,seed=123){
+ const layout=scene(mode),initial=layout.enemies.reduce((sum,e)=>sum+e.hp,0);
+ const rng=randFactory(seed),dt=1/30,steps=Math.round(layout.duration/dt);
+ const S={t:0,enemy:layout.enemies,
+  bosses:mode.startsWith('boss')?[layout.enemies[0]]:[],
+  player:{x:0,y:0,rad:16,hp:100,maxHp:100},playerDmg:1,
+  critChance:0,critMultiplier:1.5,haste:1,rageTimer:0,chains:[],
+  bullets:[],enemyBullets:[],gravityWells:[],mines:[],effects:[],
+  parts:[],fx:[],floaters:[],hazards:[],
+  drones:weapons.map((id,i)=>({id,lvl:8,mods:{power:2},cd:i*.1,hitCd:0})),
+  hybrids:[],cam:{x:0,y:0},threat:1};
+ let controlTime=0,maxObjects=0,maxFX=0;
+ const math=Object.create(Math);math.random=()=>rng();
+ const ctx={Math:math,S,TAU:2*Math.PI,RED:'#ff667e',
+  TEAL:'#50f2db',AMBER:'#ffc174',PURPLE:'#b988ff',BLUE:'#6dbbff',
+  W:960,H:540,trainingMode:false,touching:false,bal:null,shake:0,
+  lastLaserImpact:-1000,performance:{now:()=>0},audioBuffers:{},
+  sfx:()=>{},sfxWeapon:()=>{},clickSound:()=>{},banner:()=>{},
+  toast:()=>{},balDamage:()=>{},balSpawn:()=>{},balFusion:()=>{},
+  killEnemy:()=>{},floatNum:()=>{},burst:()=>{},
+  rand:(a=0,b=1)=>a+(b-a)*rng(),
+  hypot:(x,y)=>Math.max(.0000001,Math.hypot(x,y)),
+  clamp:(n,lo,hi)=>Math.max(lo,Math.min(hi,n)),
+  lerp:(a,b,t)=>a+(b-a)*t,
+  // Raw potential damage is intentionally measured without boss damage caps.
+  calculateBossDamage:(e,n)=>({damage:n,damageSecondAt:0,damageSecond:0,
+   blockedByHitCap:0,blockedByShield:0,blockedByDpsCap:0,blockedTotal:0})};
+ const vmContext=vm.createContext(ctx);
+ vm.runInContext(program,vmContext);
+ const start=performance.now();
+ for(let frame=0;frame<steps;frame++){
+  S.t+=dt;
+  vmContext.droneUpdate(dt);
+  vmContext.updateAreaWeapons(dt);
+  vmContext.updateProjectiles(dt);
+  for(const e of S.enemy){
+   e.slow=Math.max(0,e.slow-dt);
+   e.stun=Math.max(0,e.stun-dt);
+   e.frost=Math.max(0,e.frost-dt);
+   e.freezeLock=Math.max(0,e.freezeLock-dt);
+   e.marked=Math.max(0,e.marked-dt);
+   e.chill=Math.max(0,e.chill-7*dt);
+   if(e.burn>0){
+    e.burn=Math.max(0,e.burn-dt);
+    e.burnClock=(e.burnClock||0)+dt;
+    if(e.burnClock>=1){
+     const ticks=Math.floor(e.burnClock);e.burnClock-=ticks;
+     vmContext.hurtEnemy(e,ticks*(e.burnStrength||16),{silentHit:true});
+    }
+   }else{e.burnClock=0;e.burnStrength=0;}
+   if(e.slow>0||e.stun>0||e.frost>0)controlTime+=dt;
+   if(!mode.startsWith('boss')&&e.hp>0&&e.stun<=0){
+    const dist=Math.hypot(e.x,e.y);
+    if(dist>8){
+     const speed=58*(e.slow>0?.59:1);
+     e.x-=e.x/dist*Math.min(dist-8,speed*dt);
+     e.y-=e.y/dist*Math.min(dist-8,speed*dt);
+    }
+   }
+  }
+  maxObjects=Math.max(maxObjects,S.bullets.length+S.effects.length+
+   S.mines.length+S.gravityWells.length+S.chains.length);
+  maxFX=Math.max(maxFX,S.fx.length);
+ }
+ const elapsedMs=performance.now()-start;
+ const damage=initial-S.enemy.reduce((sum,e)=>sum+Math.max(0,e.hp),0);
+ return {dps:Math.round(damage/layout.duration),damage:Math.round(damage),
+  kills:S.enemy.filter(e=>e.hp<=0).length,
+  averageControlledEnemies:Math.round(controlTime/layout.duration*100)/100,
+  maxObjects,maxFX,msPerTick:Math.round(elapsedMs/steps*10000)/10000};
+}
+const baseIds=Object.keys(DRONES).filter(id=>!id.startsWith('fusion_'));
+const rows=[],failures=[];
+for(const id of [...baseIds,...Object.keys(HYBRIDS).map(id=>'fusion_'+id)]){
+ const row={id,name:DRONES[id].name},recipe=id.startsWith('fusion_')?HYBRIDS[id.slice(7)]:null;
+ if(recipe)row.ingredients=[recipe.a,recipe.b];
+ for(const mode of scenarios){
+  try{row[mode]=simulate([id],mode);}
+  catch(error){failures.push({id,mode,error:String(error)});}
+  if(recipe)try{row['parents_'+mode]=simulate([recipe.a,recipe.b],mode);}
+  catch(error){failures.push({id,mode:'parents_'+mode,error:String(error)});}
+ }
+ rows.push(row);
+}
+if(failures.length)throw Error('Balance audit failed: '+JSON.stringify(failures.slice(0,5)));
+const metadata={source:'QA modular gameplay from dist/index.html',
+ durationSeconds:16,stepHz:30,weaponLevel:8,powerModifiers:2,
+ targetModes:'near/far boss, moving horde, moving clear wave',
+ enemySpeed:58,rawBossDamage:true,realRenderer:false,
+ note:'Controlled synthetic comparison; not browser FPS or live-player retention data'};
+const report={metadata,rows};
+fs.writeFileSync(path.join(root,'dist','balance-report.json'),JSON.stringify(report,null,2));
+const fmt=n=>Number(n).toFixed(2);
+let md='# Relict Swarm: headless weapon balance audit\n\n';
+md+='36 weapons; 25 synthesis recipes; 16 s/scene; level 8; power +2; 30 simulated ticks/s.\n\n';
+md+='**Caveat:** no graphics rendering or live enemy AI; CPU duration is a relative Node benchmark, not FPS. Boss damage caps disabled to expose underlying damage.\n\n';
+md+='| Synthesis | Boss near DPS | Boss far DPS | Horde DPS | Parent pair DPS | Ratio | Clear kills | Objects |\n|---|---:|---:|---:|---:|---:|---:|---:|\n';
+for(const r of rows.filter(x=>x.ingredients)){
+ const h=r.horde_near.dps,p=r.parents_horde_near.dps;
+ md+='| '+r.name+' | '+r.boss_near.dps+' | '+r.boss_far.dps+' | '+
+  h+' | '+p+' | '+fmt(h/Math.max(1,p))+'× | '+
+  r.clear_near.kills+'/40 | '+r.horde_near.maxObjects+' |\n';
+}
+md+='\n## Important\n\n';
+md+='Ratios compare one fused weapon with its two consumed base weapons under identical, synthetic conditions. Low boss DPS may reflect short attack range rather than bad balance.\n';
+fs.writeFileSync(path.join(root,'dist','balance-report.md'),md);
+console.log('Balance audit: '+rows.length+' weapons, '+scenarios.length+
+ ' scenarios, '+failures.length+' failures; reports in dist/.');
