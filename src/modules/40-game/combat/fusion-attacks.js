@@ -20,7 +20,7 @@ function fireFusionSpecial(d,pos,target,base,rank){
    const offset=(j-(count-1)/2)*30;
    const shot=fusionLine(pos,target,13,rayDamage*1.35,740,{color:col,slow:2.3,stun:.25+wm(d,'freeze')*.12,offset});
    for(const e of shot.hits){if(e.hp<=0)continue;shatterFrozen(e,rayDamage*.6,64);e.frost=2.4;applyChill(e,18+wm(d,'freeze')*6);}
-   for(let k=1;k<5;k++)fusionField(shot.origin.x+shot.a.dx*k*110,shot.origin.y+shot.a.dy*k*110,23,rayDamage*.11,1.2,'#b9efff');
+   for(let k=1;k<5;k++)fusionField(shot.origin.x+shot.a.dx*k*110,shot.origin.y+shot.a.dy*k*110,23,rayDamage*.11,1.2,'#b9efff',{ice:true,chill:12+wm(d,'freeze')*3});
   }
   return true;
  }
@@ -77,7 +77,7 @@ function fireFusionSpecial(d,pos,target,base,rank){
  }
  if(type==='railplasma'){
   const shot=fusionLine(pos,target,16+wm(d,'width')*4,damage*1.65,820,{color:col,knock:7});
-  for(const e of shot.hits.slice(0,Math.min(15,5+wm(d,'pierce'))))fusionField(e.x,e.y,50,damage*.2,2.3,col);return true;
+  for(const e of shot.hits.slice(0,Math.min(15,5+wm(d,'pierce'))))fusionField(e.x,e.y,50,damage*.2,2.3,col,{fire:true});return true;
  }
  return false;
 }
