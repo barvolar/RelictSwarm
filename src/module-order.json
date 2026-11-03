@@ -27,6 +27,7 @@
   "src/modules/50-ui/pages/main-menu.js",
   "src/modules/50-ui/pages/play-progression.js",
   "src/modules/50-ui/pages/skins.js",
+  "src/modules/50-ui/pages/achievements.js",
   "src/modules/50-ui/pages/settings.js",
   "src/modules/50-ui/pages/shop-and-lab.js",
   "src/modules/50-ui/pages/help.js",
