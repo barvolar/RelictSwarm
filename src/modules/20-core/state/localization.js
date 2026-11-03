@@ -2850,6 +2850,7 @@ const I18N_PAIRS=[
  ]
 ];
 const NATIVE_EN_TO_RU=[["WASD / arrows: move · SPACE: dash · ESC: pause","WASD / стрелки: движение · ПРОБЕЛ: рывок · ESC: пауза"],["Relict Swarm game arena","Игровая арена Relict Swarm"],["Current weapon loadout","Текущее вооружение"],["All five weapon slots","Все пять слотов оружия"],["Weapons and fusions","Оружие и синтез"],["FIFTEEN MINUTES","ПЯТНАДЦАТЬ МИНУТ"],["ZERO PROTOCOL","НУЛЕВОЙ ПРОТОКОЛ"],["Toggle audio","Выключить звук"],["PROTOCOL III","ПРОТОКОЛ III"],["Toggle audio","Выключить звук"],["PROTOCOL II","ПРОТОКОЛ II"],["PROTOCOL IV","ПРОТОКОЛ IV"],["Fusion Lab","Лаборатория синтеза"],["PROTOCOL I","ПРОТОКОЛ I"],["PROTOCOL V","ПРОТОКОЛ V"],["DESTROYED","УНИЧТОЖЕНО"],["FUSION","СИНТЕЗ"],["REAPER","ЖНЕЦ"],["Pause","Пауза"],["HULL","КОРПУС"],["DATA","ДАННЫЕ"],["DASH","РЫВОК"],["LV.","УР."]];
+I18N_PAIRS.push(['ЯЗЫК','LANGUAGE']);
 I18N_PAIRS.sort((a,b)=>b[0].length-a[0].length);
 const localeKey='relictswarm_ui_locale_v1';
 let locale='en';
