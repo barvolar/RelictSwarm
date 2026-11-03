@@ -32,6 +32,11 @@ function fusionMine(x,y,damage,col,r,variant,freezeStrength=0){
 // A lock stops overlapping beams and orbit blades from triggering it every frame.
 function shatterFrozen(e,damage,r=62){
  if(!e||e.hp<=0||e.frost<=0||(e.shatterLock||0)>S.t)return false;
+ // Dense packs used to trigger one full-area explosion per frozen enemy in the same frame.
+ // A short shared quota preserves shattering but avoids quadratic damage spikes.
+ if(S.t-(S.shatterQuotaAt??-999)>=.25){S.shatterQuotaAt=S.t;S.shatterQuotaCount=0;}
+ if((S.shatterQuotaCount||0)>=3)return false;
+ S.shatterQuotaCount=(S.shatterQuotaCount||0)+1;
  e.frost=0;e.shatterLock=S.t+1.15;
  damageArea(e.x,e.y,r,damage,{color:'#b9edff',slow:.55});
  burst(e.x,e.y,'#cbf7ff',12,85);
