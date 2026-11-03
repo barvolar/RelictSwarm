@@ -70,7 +70,7 @@ test('player audio settings have only volume sliders; sound laboratory requires 
  const normal=ctx.audioMixerHTML();
  assert.ok(normal.includes('sfxVolume'));
  assert.ok(normal.includes('musicVolume'));
- assert.ok(normal.includes('НАСТРОЙКИ ЗВУКА'));
+ assert.ok(normal.includes('AUDIO SETTINGS'));
  for(const id of ['data-sound-test','musicMenuPreview','musicCombatPreview','audioPreview','flamePreview'])assert.ok(!normal.includes(id),'developer-only '+id);
  ctx.location.search='?dev=1';
  const debug=ctx.audioMixerHTML();

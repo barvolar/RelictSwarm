@@ -1,7 +1,7 @@
 function saveAudioSettings(){try{localStorage.setItem(audioSettingsKey,JSON.stringify(audioSettings))}catch{}}
 function refreshAudioControls(){
- const b=$('soundBtn'),h=$('audioHudBtn');if(b)b.textContent=audioSettings.on?'♫ Звук: вкл.':'♪ Звук: выкл.';
- if(h){h.textContent=audioSettings.on?'♫':'♪';h.title=audioSettings.on?'Выключить звук':'Включить звук';h.setAttribute('aria-label',h.title)}
+ const b=$('soundBtn'),h=$('audioHudBtn');if(b)b.textContent=audioSettings.on?'♫ Sound: on':'♪ Sound: off';
+ if(h){h.textContent=audioSettings.on?'♫':'♪';h.title=audioSettings.on?'Turn audio off':'Turn audio on';h.setAttribute('aria-label',h.title)}
  for(const [id,v] of [['sfxVolume',audioSettings.sfx],['musicVolume',audioSettings.music]]){const el=$(id);if(el){el.value=String(Math.round(v*100));const label=$(id+'Value');if(label)label.textContent=Math.round(v*100)+'%'}}
  if(sfxBus)sfxBus.gain.value=audioSettings.on?audioSettings.sfx:0;
  if(musicBus)musicBus.gain.value=audioSettings.on?audioSettings.music:0;
@@ -31,24 +31,24 @@ function bindAudioMixer(){refreshAudioControls();for(const [id,key] of [['sfxVol
  });
 }
 // Audio diagnostics are only visible on an explicit developer URL (?dev=1).
-// No sound data is removed; players retain music and effects volume controls.
+// Player-facing controls remain available; the sample-free audio is synthesized locally.
 function audioDebugEnabled(){
  return typeof location!=='undefined' && new URLSearchParams(location.search).get('dev')==='1';
 }
 function audioMixerHTML(){
  const debug=audioDebugEnabled();
  return `<div class="audio-mixer" id="audioMixerPanel">
-  <div class="audio-mixer-head"><span>НАСТРОЙКИ ЗВУКА</span></div>
-  <label class="audio-mixer-row">Эффекты <input type="range" min="0" max="100" step="1" id="sfxVolume" value="${Math.round(audioSettings.sfx*100)}"/><b id="sfxVolumeValue">${Math.round(audioSettings.sfx*100)}%</b></label>
-  <label class="audio-mixer-row">Музыка <input type="range" min="0" max="100" step="1" id="musicVolume" value="${Math.round(audioSettings.music*100)}"/><b id="musicVolumeValue">${Math.round(audioSettings.music*100)}%</b></label>
-  ${debug?`<div class="audio-mixer-head"><span>РЕЖИМ РАЗРАБОТЧИКА · ТЕСТ ЗВУКА</span></div>
+  <div class="audio-mixer-head"><span>AUDIO SETTINGS</span></div>
+  <label class="audio-mixer-row">Effects <input type="range" min="0" max="100" step="1" id="sfxVolume" value="${Math.round(audioSettings.sfx*100)}"/><b id="sfxVolumeValue">${Math.round(audioSettings.sfx*100)}%</b></label>
+  <label class="audio-mixer-row">Music <input type="range" min="0" max="100" step="1" id="musicVolume" value="${Math.round(audioSettings.music*100)}"/><b id="musicVolumeValue">${Math.round(audioSettings.music*100)}%</b></label>
+  ${debug?`<div class="audio-mixer-head"><span>DEVELOPER MODE · AUDIO TEST</span></div>
    <div style="display:flex;gap:7px;flex-wrap:wrap">
-    <button class="btn" type="button" id="musicMenuPreview">♪ МУЗЫКА МЕНЮ</button>
-    <button class="btn" type="button" id="musicCombatPreview">♫ МУЗЫКА БОЯ</button>
-    <button class="btn" type="button" id="audioPreview">◉ ВЫСТРЕЛ + ВЗРЫВ</button>
-    <button class="btn" type="button" id="flamePreview">♨ ОГНЕМЁТ: ПРОВЕРКА</button>
+    <button class="btn" type="button" id="musicMenuPreview">♪ MENU THEME</button>
+    <button class="btn" type="button" id="musicCombatPreview">♫ COMBAT THEME</button>
+    <button class="btn" type="button" id="audioPreview">◉ SHOT + EXPLOSION</button>
+    <button class="btn" type="button" id="flamePreview">♨ FLAMETHROWER PREVIEW</button>
    </div>
-   <div class="audio-mixer-head"><span>ТЕСТ ЗВУКОВ ОРУЖИЯ</span></div>
+   <div class="audio-mixer-head"><span>WEAPON SOUND TEST</span></div>
    <div class="sound-test-grid">${BASE_WEAPONS.map(id=>`<button type="button" data-sound-test="${id}">${DRONES[id].glyph} ${DRONES[id].name}</button>`).join('')}</div>`:''}
  </div>`;
 }
