@@ -2557,7 +2557,8 @@ function bossReinforcements(e,id,count,limit=9){
  const n=Math.max(0,Math.min(count,limit-nearby,148-S.enemy.length));
  for(let k=0;k<n;k++){
   const a=(k+.5)*TAU/Math.max(1,n)+S.t*.15;
-  spawnEnemyNear(id,e.x+Math.cos(a)*(e.r+92),e.y+Math.sin(a)*(e.r+92));
+  const spawned=spawnEnemy(id,a,Math.max(220,Math.hypot(e.x-S.player.x,e.y-S.player.y)));
+  if(spawned){spawned.x=clamp(e.x+Math.cos(a)*(e.r+92),-1740,1740);spawned.y=clamp(e.y+Math.sin(a)*(e.r+92),-1740,1740);spawned.summoned=true;}
  }
 }
 function bossAttack(e,dt,dx,dy,d){
@@ -2571,6 +2572,7 @@ function bossAttack(e,dt,dx,dy,d){
  if(e.id==='boss1'){
   if(turn%2){
    // Reaper: the red lane predicts where the boss will physically dash.
+   e.bossDashWind=1.05;
    bossHazard({type:'dash',owner:e,x:e.x,y:e.y,ang:aim,
     len:clamp(d+55,170,540),r:29+phase*8,delay:1.05,col:'#ff8759',dmg:24+phase*9});
    banner('ЖНЕЦ: РЫВОК ПО ЛИНИИ!',1.3);
@@ -2667,6 +2669,7 @@ function bossAttack(e,dt,dx,dy,d){
  }else if(e.id==='omega'){
   // Omega: rotate dangerous corridors and alternate a safe-centered pressure ring.
   if(turn%2===1){
+   e.bossDashWind=1.55;
    bossHazard({type:'sweep',owner:e,x:e.x,y:e.y,
     ang:aim-1.2,turnSpeed:1.18+phase*.22,len:640,
     r:33+phase*8,delay:1.55,col:'#ffc06f',dmg:34+phase*9});
