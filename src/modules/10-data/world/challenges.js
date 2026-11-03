@@ -22,6 +22,7 @@ const CHALLENGES=[
  {id:'master_fuser',glyph:'✦',name:'Алхимия оружия',desc:'Создать 2 синтеза за один забег',reward:160},
  {id:'boss_hunt',glyph:'⬡',name:'Охота на титанов',desc:'Уничтожить 3 боссов за забег',reward:170},
  {id:'no_hit',glyph:'✧',name:'Чистый манёвр',desc:'Первые 5 минут без полученного урона',reward:175},
+ {id:'minimalist',glyph:'◇',name:'Три слота',desc:'Победить, ни разу не используя больше 3 оружий одновременно',reward:240},
  {id:'no_repairs',glyph:'♥',name:'Без ремонта',desc:'Победить без аптечек и карточек лечения',reward:230},
  {id:'threat_three',glyph:'◇',name:'Высшая готовность',desc:'Победить на угрозе III или выше',reward:260}
 ];
@@ -36,14 +37,16 @@ function challengeValue(id,s=S,won=false){
   case'master_fuser':return s.hybrids?.length||0;
   case'boss_hunt':return c.bossesKilled||0;
   case'no_hit':return s.t>=300&&!c.hitBeforeFive?1:0;
+  case'minimalist':return won&&(c.maxWeapons||1)<=3?1:0;
   case'no_repairs':return won&&c.manualHeals===0?1:0;
   case'threat_three':return won&&s.threat>=3?1:0;
   default:return 0;
  }
 }
-function challengeTarget(id){return {swarm:350,core_hunter:2,master_fuser:2,boss_hunt:3,no_hit:1,no_repairs:1,threat_three:1}[id]||1;}
+function challengeTarget(id){return {swarm:350,core_hunter:2,master_fuser:2,boss_hunt:3,no_hit:1,minimalist:1,no_repairs:1,threat_three:1}[id]||1;}
 function challengeProgressLabel(id,s=S,won=false){
  const value=challengeValue(id,s,won),total=challengeTarget(id);
+ if(id==='minimalist')return (s?.challengeStats?.maxWeapons||1)+'/3 слота · нужна победа';
  if(id==='no_repairs')return (s?.challengeStats?.manualHeals||0)+' использований ремонта · победа обязательна';
  if(id==='no_hit')return s?.challengeStats?.hitBeforeFive?'Попадание до 5:00, условие нарушено':(s?.t>=300?'Выполнено':formatTime(s?.t||0)+' / 05:00');
  if(id==='threat_three')return 'Протокол '+(s?.threat||1)+' · нужна победа на III+';
