@@ -15,7 +15,7 @@ function droneUpdate(dt){
       if(e.hp>0&&Math.hypot(e.x-pp.x,e.y-pp.y)<e.r+(26+Math.min(12,Math.sqrt(rank)*2))){
        if(frost&&e.frost>0)shatterFrozen(e,18*baseDmg,56);
        if(e.hp<=0)continue;
-       hurtEnemy(e,(16+Math.sqrt(rank)*4)*baseDmg*speedBoost*overflow,{knock:rank>=7?8:4,burn:thermal?1.3:0,stun:tesla?.08:frost?.35:0,slow:frost?2:0});if(frost&&e.hp>0){e.frost=Math.max(e.frost||0,1.8);applyChill(e,15)}found++;
+       hurtEnemy(e,(16+Math.sqrt(rank)*4)*baseDmg*speedBoost*overflow*(magnet?1.18:1),{knock:rank>=7?8:4,burn:thermal?1.3:0,stun:tesla?.08:frost?.35:0,slow:frost?2:0});if(frost&&e.hp>0){e.frost=Math.max(e.frost||0,1.8);applyChill(e,15)}found++;
       }
     }}
     if(tesla&&found){const near=closest(pos.x,pos.y,280);if(near)scheduleChain(pos,near,2+Math.min(8,wm(d,'jumps')),22*baseDmg,235,'#ffe9a1',.20)}
