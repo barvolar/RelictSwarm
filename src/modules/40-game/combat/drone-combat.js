@@ -22,8 +22,8 @@ function droneUpdate(dt){
     if(found){sfx('sawHit',.8);d.hitCd=Math.max(.13,(.36-Math.min(rank,12)*.007)/(speedBoost*(S.haste||1)));if(Math.random()<.15)burst(pos.x,pos.y,thermal?'#ff8a45':AMBER,3,65);}
    }
    // THERMOPILA is a *new persistent trail weapon*, not merely a colored ring.
-   if(thermal){d.trailTimer=(d.trailTimer||0)-dt;if(d.trailTimer<=0){d.trailTimer=.48;for(const pp of positions){
-    if(S.effects.filter(e=>e.thermalTrail).length<25)S.effects.push({x:pp.x,y:pp.y,r:19+Math.min(rank,12)*.7,life:1.8,clock:0,damage:17*baseDmg,col:'#ff8d43',fire:true,thermalTrail:true});
+   if(thermal){d.trailTimer=(d.trailTimer||0)-dt;if(d.trailTimer<=0){d.trailTimer=.38;for(const pp of positions){
+    if(S.effects.filter(e=>e.thermalTrail).length<25)S.effects.push({x:pp.x,y:pp.y,r:34+Math.min(rank,12)*.9,life:2.3,clock:0,damage:34*baseDmg,col:'#ff8d43',fire:true,thermalTrail:true});
     if(Math.random()<.13)burst(pp.x,pp.y,'#ff9d42',2,60);
    }}}
    continue;
@@ -59,10 +59,10 @@ function droneUpdate(dt){
    const n=Math.min(5,1+wm(d,'beams'));
    for(let j=0;j<n;j++){
     const off=(j-(n-1)/2)*16,source=weaponMuzzle(pos,target,off,30);
-    launchBullet(source.x,source.y,target,26*baseDmg,'fusion_ion',2+Math.floor(rank/8));
+    launchBullet(source.x,source.y,target,42*baseDmg,'fusion_ion',2+Math.floor(rank/8));
     S.fx.push({type:'beam',a:source,b:{x:target.x,y:target.y},life:.28,max:.28,col:'#cc9bff',width:3.4});
    }
-   target.marked=Math.max(target.marked||0,3.5);scheduleChain(weaponMuzzle(pos,target,0,30),target,5+Math.min(10,wm(d,'jumps')),27*baseDmg,250,'#d5afff',.18,1.08);burst(target.x,target.y,'#b6dfff',16,135);continue;
+   target.marked=Math.max(target.marked||0,3.5);scheduleChain(weaponMuzzle(pos,target,0,30),target,5+Math.min(10,wm(d,'jumps')),35*baseDmg,250,'#d5afff',.18,1.08);burst(target.x,target.y,'#b6dfff',16,135);continue;
   }
   if(d.id==='fusion_starfall'||d.id==='fusion_predator'){
    const star=d.id==='fusion_starfall',n=Math.min(8,3+wm(d,'salvo'));
@@ -94,10 +94,10 @@ function droneUpdate(dt){
   }
   if(d.id==='rail'||d.id==='fusion_glacier'){
    // Railgun: hits every enemy crossing a long, thick laser corridor. Charging flash is visible before the shot.
-   const isIce=d.id==='fusion_glacier',a=aimGeometry(pos,target),origin=weaponMuzzle(pos,target,0,27),length=Math.min(1500,640+55*Math.sqrt(wm(d,'pierce'))),width=(isIce?17:11)+6*Math.sqrt(wm(d,'width'));
+   const isIce=d.id==='fusion_glacier',a=aimGeometry(pos,target),origin=weaponMuzzle(pos,target,0,27),length=Math.min(1500,640+55*Math.sqrt(wm(d,'pierce'))),width=(isIce?21:11)+6*Math.sqrt(wm(d,'width'));
    const end={x:origin.x+a.dx*length,y:origin.y+a.dy*length};
    let hits=0;
-   for(const e of S.enemy){if(e.hp>0&&pointSegmentDist(e.x,e.y,origin.x,origin.y,end.x,end.y)<e.r+width/2){if(isIce&&e.frost>0)shatterFrozen(e,20*baseDmg,60);if(e.hp<=0)continue;hurtEnemy(e,((isIce?84:100)*baseDmg+rank*7)*attackOverflow,{knock:isIce?8:20,stun:isIce?.9+wm(d,'freeze')*.13:.07,slow:isIce?2.2:0});if(isIce&&e.hp>0){e.frost=1.9;applyChill(e,21+wm(d,'freeze')*6);}hits++;}}
+   for(const e of S.enemy){if(e.hp>0&&pointSegmentDist(e.x,e.y,origin.x,origin.y,end.x,end.y)<e.r+width/2){if(isIce&&e.frost>0)shatterFrozen(e,20*baseDmg,60);if(e.hp<=0)continue;hurtEnemy(e,((isIce?106:100)*baseDmg+rank*7)*attackOverflow,{knock:isIce?8:20,stun:isIce?.9+wm(d,'freeze')*.13:.07,slow:isIce?2.2:0});if(isIce&&e.hp>0){e.frost=1.9;applyChill(e,21+wm(d,'freeze')*6);}hits++;}}
    S.fx.push({type:'rail',a:origin,b:end,life:.44,max:.44,col:isIce?'#a6edff':'#ffd886',width});
    burst(origin.x,origin.y,isIce?'#b6f4ff':'#ffecb9',21,120);if(hits)shake=Math.max(shake,4);continue;
   }
