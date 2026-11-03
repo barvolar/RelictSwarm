@@ -2320,7 +2320,7 @@ function droneUpdate(dt){
    }
    // THERMOPILA is a *new persistent trail weapon*, not merely a colored ring.
    if(thermal){d.trailTimer=(d.trailTimer||0)-dt;if(d.trailTimer<=0){d.trailTimer=.38;for(const pp of positions){
-    if(S.effects.filter(e=>e.thermalTrail).length<25)S.effects.push({x:pp.x,y:pp.y,r:42+Math.min(rank,12)*.9,life:2.3,clock:0,damage:75*baseDmg,col:'#ff8d43',fire:true,thermalTrail:true});
+    if(S.effects.filter(e=>e.thermalTrail).length<25)S.effects.push({x:pp.x,y:pp.y,r:38+Math.min(rank,12)*.9,life:2.3,clock:0,damage:45*baseDmg,col:'#ff8d43',fire:true,thermalTrail:true});
     if(Math.random()<.13)burst(pp.x,pp.y,'#ff9d42',2,60);
    }}}
    // Glacial blades leave compact cold wakes; this gives the fusion a real
