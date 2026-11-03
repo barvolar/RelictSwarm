@@ -93,8 +93,9 @@ test('polar residue chills, rail plasma ignites, and base plasma burns',()=>{
   wm:(d,k)=>d.mods?.[k]||0,
   DRONES:{fusion_polar:{color:'#adefff'},fusion_railplasma:{color:'#b5caff'}},
   fusionLine:()=>({origin:{x:0,y:0},a:{dx:1,dy:0},hits:[{x:100,y:0,hp:1000}]}),
+  fusionField:(x,y,r,damage,life,col,opts={})=>S.effects.push({x,y,r,damage,life,col,fire:!!opts.fire,ice:!!opts.ice,chill:opts.chill||0}),
   shatterFrozen(){},applyChill(){},burst(){}});
- vm.runInContext(read('src/modules/40-game/combat/fusion-projectiles.js')+'\n'+specials,ctx);
+ vm.runInContext(specials,ctx);
  ctx.fireFusionSpecial({id:'fusion_polar',mods:{}},{x:0,y:0},{x:200,y:0},1,3);
  assert.equal(S.effects.length,4);
  assert.ok(S.effects.every(e=>e.ice===true&&e.fire===false&&e.chill>0));
