@@ -52,7 +52,7 @@ function skinOrbit(radius,color,angle,segments,width=2){
   cx.beginPath();cx.arc(0,0,radius,a,a+span);cx.stroke();
   const x=Math.cos(a)*radius,y=Math.sin(a)*radius;
   cx.save();cx.translate(x,y);cx.rotate(a+Math.PI/2);
-  poly([[-5,-3],[0,-8],[5,-3],[3,5],[-3,5]],color,skin.light,.6);cx.restore();
+  poly([[-5,-3],[0,-8],[5,-3],[3,5],[-3,5]],color,'#dffbff',.6);cx.restore();
  }
  cx.restore();
 }
