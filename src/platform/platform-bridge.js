@@ -75,6 +75,8 @@
    // The CrazyGames SDK only runs in local/portal environments.
    if(crazy.environment==='disabled')return;
    sdk=crazy;
+   language=String(sdk.user?.systemInfo?.locale||'en');
+   window.RelicOnPlatformLocale?.(language);
    try{sdk.game?.loadingStart?.();crazyLoadingStarted=true;}
    catch(e){console.warn('[Platform] loadingStart',e)}
    if(readyForPlayers)markReady();
@@ -89,7 +91,7 @@
  }
  Promise.resolve().then(()=>window.YaGames.init()).then(instance=>{
   sdk=instance;
-  language=instance.environment?.i18n?.lang||'ru';
+  language=instance.environment?.i18n?.lang||'ru';window.RelicOnPlatformLocale?.(language);
   // ru is currently the only translated locale. Keep it as the UI fallback.
   try{instance.on?.('game_api_pause',platformPause);
       instance.on?.('game_api_resume',platformResume)}catch(e){console.warn('[Platform] SDK events',e)}
