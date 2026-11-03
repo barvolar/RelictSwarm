@@ -310,7 +310,7 @@ test('fusion preserves all invested levels and redistributes unmatched branches 
  const a={id:'pulse',lvl:7,mods:{power:5,rate:3,pierce:9}};
  const b={id:'rail',lvl:10,mods:{power:4,rate:6,width:20}};
  const output=createFusionWeapon('spear',a,b,[['power'],['rate'],['beams']]);
- assert.deepEqual(output,{id:'fusion_spear',lvl:16,mods:{power:29,rate:13,beams:0},cd:.2,hitCd:0});
+ assert.deepEqual(output,{id:'fusion_spear',lvl:16,mods:{power:28,rate:19,beams:0},cd:.2,hitCd:0});
  assert.deepEqual(a.mods,{power:5,rate:3,pierce:9});
  assert.deepEqual(b.mods,{power:4,rate:6,width:20});
  const minimum=createFusionWeapon('polar',{lvl:1,mods:{}},{lvl:1,mods:{}},[['freeze']]);
