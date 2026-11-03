@@ -15,10 +15,10 @@ function drawBackground(camX,camY,zoom=1){rect(0,0,W,H,'#08111d');const viewW=W/
   cx.strokeStyle='#ffcc78';cx.lineWidth=2;cx.setLineDash([18,20]);cx.strokeRect(-edge+25,-edge+25,edge*2-50,edge*2-50);cx.setLineDash([]);
   cx.fillStyle='#ffe2a0';cx.font='bold 15px Trebuchet MS';cx.textAlign='center';
   for(let k=-1600;k<=1600;k+=400){
-   cx.fillText('⚠ ГРАНИЦА СЕКТОРА',k,-edge+56);
-   cx.fillText('⚠ ГРАНИЦА СЕКТОРА',k,edge-42);
-   cx.save();cx.translate(-edge+53,k);cx.rotate(-Math.PI/2);cx.fillText('⚠ ГРАНИЦА СЕКТОРА',0,0);cx.restore();
-   cx.save();cx.translate(edge-53,k);cx.rotate(Math.PI/2);cx.fillText('⚠ ГРАНИЦА СЕКТОРА',0,0);cx.restore();
+   cx.fillText('⚠ SECTOR BOUNDARY',k,-edge+56);
+   cx.fillText('⚠ SECTOR BOUNDARY',k,edge-42);
+   cx.save();cx.translate(-edge+53,k);cx.rotate(-Math.PI/2);cx.fillText('⚠ SECTOR BOUNDARY',0,0);cx.restore();
+   cx.save();cx.translate(edge-53,k);cx.rotate(Math.PI/2);cx.fillText('⚠ SECTOR BOUNDARY',0,0);cx.restore();
   }
   cx.restore();
-  }if(trainingMode){cx.save();for(const r of [150,300,450]){ring(0,0,r,'#355f66',1.5)}for(let q=-4;q<=4;q++){line(q*80,-420,q*80,420,'#244f5633',1);line(-420,q*80,420,q*80,'#244f5633',1)}cx.font='bold 14px Trebuchet MS';cx.fillStyle='#74cfc4aa';cx.textAlign='center';cx.fillText('ИСПЫТАТЕЛЬНЫЙ СЕКТОР // 08',0,-315);cx.restore()}cx.restore()}
+  }if(trainingMode){cx.save();for(const r of [150,300,450]){ring(0,0,r,'#355f66',1.5)}for(let q=-4;q<=4;q++){line(q*80,-420,q*80,420,'#244f5633',1);line(-420,q*80,420,q*80,'#244f5633',1)}cx.font='bold 14px Trebuchet MS';cx.fillStyle='#74cfc4aa';cx.textAlign='center';cx.fillText('TRAINING SECTOR // 08',0,-315);cx.restore()}cx.restore()}
