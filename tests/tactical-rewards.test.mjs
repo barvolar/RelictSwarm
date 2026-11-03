@@ -65,5 +65,5 @@ test('marking a target produces a bounded bonus; shield prevents a single hit',(
  assert.equal(c.run('tacticAbsorbHit()'),false);
  const e={hp:100,tacticMarkedUntil:300};
  c.S.enemy=[e];
- assert.equal(c.run('tacticModifyDamage(S.enemy[0],100,{})'),112);
+ assert.ok(Math.abs(c.run('tacticModifyDamage(S.enemy[0],100,{})')-112)<1e-8);
 });
