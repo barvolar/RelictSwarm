@@ -2323,6 +2323,16 @@ function droneUpdate(dt){
     if(S.effects.filter(e=>e.thermalTrail).length<25)S.effects.push({x:pp.x,y:pp.y,r:42+Math.min(rank,12)*.9,life:2.3,clock:0,damage:75*baseDmg,col:'#ff8d43',fire:true,thermalTrail:true});
     if(Math.random()<.13)burst(pp.x,pp.y,'#ff9d42',2,60);
    }}}
+   // Glacial blades leave compact cold wakes; this gives the fusion a real
+   // defensive zone instead of being only a weaker saw with a freeze colour.
+   if(frost){d.frostWakeTimer=(d.frostWakeTimer||0)-dt;if(d.frostWakeTimer<=0){
+    d.frostWakeTimer=.56;
+    for(const pp of positions){
+     if(S.effects.filter(e=>e.frostBladeWake).length<18)
+      S.effects.push({x:pp.x,y:pp.y,r:39,life:1.9,clock:0,
+       damage:34*baseDmg,col:'#abedff',ice:true,chill:16,frostBladeWake:true});
+    }
+   }}
    continue;
   }
   let target=chooseCombatTarget(pos.x,pos.y,d.id==='flame'?205+24*Math.sqrt(wm(d,'range'))+100:550,d.id);
