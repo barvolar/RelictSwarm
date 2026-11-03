@@ -1,10 +1,10 @@
 <!doctype html>
-<html lang="ru">
+<html lang="en">
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no"/>
 <meta name="theme-color" content="#070c16"/>
-<meta name="description" content="Реликтовый рой — автономный HTML5 roguelite про боевых дронов, сборки и выживание."/>
+<meta name="description" content="Relict Swarm is a fast-paced HTML5 roguelite about battle drones, weapon fusions and survival."/>
 <title>РЕЛИКТОВЫЙ РОЙ | HTML5 Roguelite</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23081121'/%3E%3Cpath d='M32 6 54 20v24L32 58 10 44V20Z' fill='none' stroke='%233ce8e0' stroke-width='5'/%3E%3Ccircle cx='32' cy='32' r='11' fill='%23ffb55c'/%3E%3C/svg%3E"/>
 <style>
@@ -603,6 +603,8 @@ button.forge-card:hover{filter:brightness(1.25)}.forge-card.is-done{border-color
    // The CrazyGames SDK only runs in local/portal environments.
    if(crazy.environment==='disabled')return;
    sdk=crazy;
+   language=String(sdk.user?.systemInfo?.locale||'en');
+   window.RelicOnPlatformLocale?.(language);
    try{sdk.game?.loadingStart?.();crazyLoadingStarted=true;}
    catch(e){console.warn('[Platform] loadingStart',e)}
    if(readyForPlayers)markReady();
@@ -617,7 +619,7 @@ button.forge-card:hover{filter:brightness(1.25)}.forge-card.is-done{border-color
  }
  Promise.resolve().then(()=>window.YaGames.init()).then(instance=>{
   sdk=instance;
-  language=instance.environment?.i18n?.lang||'ru';
+  language=instance.environment?.i18n?.lang||'ru';window.RelicOnPlatformLocale?.(language);
   // ru is currently the only translated locale. Keep it as the UI fallback.
   try{instance.on?.('game_api_pause',platformPause);
       instance.on?.('game_api_resume',platformResume)}catch(e){console.warn('[Platform] SDK events',e)}
@@ -671,7 +673,8 @@ function eligibleFusionIds(state, recipes) {
 
 // Boss hit/shield/DPS caps. Takes a snapshot and returns next counters without mutation.
 function calculateBossDamage(enemy, raw, time, threat) {
- const maxHit=enemy.id==='omega'?340:enemy.id==='synth3'?230:enemy.id==='synth2'?190:enemy.id==='synth1'?260:enemy.id==='boss2'?255:285;
+ const balanceId=enemy.bossBalanceId||enemy.id;
+ const maxHit=balanceId==='omega'?340:balanceId==='synth3'?230:enemy.id==='synth2'?190:enemy.id==='synth1'?260:enemy.id==='boss2'?255:285;
  const afterHitCap=Math.min(raw,maxHit);
  const afterShield=enemy.shield>0?afterHitCap*.27:afterHitCap;
  const restart=!enemy.damageSecondAt||time-enemy.damageSecondAt>=1;
@@ -908,6 +911,8 @@ const RAID_EVENTS=[
  {t:725,name:'ЗАСАДА: ШЕСТЬ СТОРОН',units:[['hunter',12],['phantom',12]]},
  {t:835,name:'ПОСЛЕДНИЙ РУБЕЖ РОЯ',units:[['hive',4],['brute',7],['sentry',9]]}
 ];
+const BOSS_POOLS={boss:['boss1','boss2','boss3'],synth:['synth1','synth2','synth3']};
+function shuffledBosses(kind){const ids=BOSS_POOLS[kind].slice();for(let i=ids.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[ids[i],ids[j]]=[ids[j],ids[i]];}return ids;}
 const BOSS_EVENTS=[{t:180,id:'boss1'},{t:420,id:'boss2'},{t:660,id:'boss3'},{t:900,id:'omega'}];
 const SYNTH_EVENTS=[{t:365,id:'synth1'},{t:550,id:'synth2'},{t:765,id:'synth3'}];
 let trainingMode=false,trainingSelected='pulse',trainingThreat='dummies',trainingPanelOpen=true,trainingRecord={damage:0,hits:[],lastDps:0},trainingRespawn=0;
@@ -1387,8 +1392,2409 @@ function resize(){
  C.style.width=W+'px';C.style.height=H+'px';cx.setTransform(scale,0,0,scale,0,0);
 }
 addEventListener('resize',resize,{passive:true});resize();
+// Browser-only, opt-in RU/EN localization. Legacy save format remains untouched.
+const I18N_PAIRS=[
+ [
+  "РЕЛИКТОВЫЙ",
+  "RELICT"
+ ],
+ [
+  "РОЙ",
+  "SWARM"
+ ],
+ [
+  "Реликтовый рой",
+  "Relict Swarm"
+ ],
+ [
+  "АКТИВНАЯ ОБОЛОЧКА",
+  "ACTIVE SHELL"
+ ],
+ [
+  "кристаллов · лучший счёт",
+  "crystals · best score"
+ ],
+ [
+  "▶ ИГРАТЬ",
+  "▶ PLAY"
+ ],
+ [
+  "⬡ ПРОКАЧКА",
+  "⬡ UPGRADES"
+ ],
+ [
+  "⚙ НАСТРОЙКИ",
+  "⚙ SETTINGS"
+ ],
+ [
+  "[ ПОДГОТОВКА К ЗАБЕГУ ]",
+  "[ RUN SETUP ]"
+ ],
+ [
+  "Протокол выживания",
+  "Survival Protocol"
+ ],
+ [
+  "Продержись 15 минут, отражай атаки роя и собирай оружие. Облик:",
+  "Survive 15 minutes, repel the swarm and build your arsenal. Skin:"
+ ],
+ [
+  "УРОВЕНЬ УГРОЗЫ",
+  "THREAT LEVEL"
+ ],
+ [
+  "▶ НАЧАТЬ ЗАБЕГ",
+  "▶ START RUN"
+ ],
+ [
+  "◂ НАЗАД",
+  "◂ BACK"
+ ],
+ [
+  "Телефон: виртуальный джойстик и кнопка рывка. Автоатака включена.",
+  "Mobile: floating joystick and dash button. Weapons fire automatically."
+ ],
+ [
+  "[ АНГАР ]",
+  "[ HANGAR ]"
+ ],
+ [
+  "Прокачка",
+  "Upgrades"
+ ],
+ [
+  "Постоянные улучшения и облики",
+  "Permanent upgrades and skins"
+ ],
+ [
+  "МОДУЛИ",
+  "RESEARCH"
+ ],
+ [
+  "СКИНЫ",
+  "SKINS"
+ ],
+ [
+  "ИССЛЕДОВАННЫЕ СИНТЕЗЫ",
+  "DISCOVERED FUSIONS"
+ ],
+ [
+  "Новые типы вооружения открываются в забегах.",
+  "Discover new weapons during runs."
+ ],
+ [
+  "Скины изменяют только внешний вид робота. Урон, здоровье и скорость не меняются. Выбранный облик сохраняется на устройстве.",
+  "Skins are cosmetic only. They do not change damage, health or speed. Your selected skin is saved locally."
+ ],
+ [
+  "В КОЛЛЕКЦИИ",
+  "OWNED"
+ ],
+ [
+  "ЦЕНА:",
+  "PRICE:"
+ ],
+ [
+  "✓ ВЫБРАН",
+  "✓ EQUIPPED"
+ ],
+ [
+  "ВЫБРАТЬ",
+  "SELECT"
+ ],
+ [
+  "ОБЫЧНЫЙ",
+  "COMMON"
+ ],
+ [
+  "НЕОБЫЧНЫЙ",
+  "UNCOMMON"
+ ],
+ [
+  "РЕДКИЙ",
+  "RARE"
+ ],
+ [
+  "ЭПИЧЕСКИЙ",
+  "EPIC"
+ ],
+ [
+  "ЛЕГЕНДАРНЫЙ",
+  "LEGENDARY"
+ ],
+ [
+  "ОБЫЧНАЯ",
+  "COMMON"
+ ],
+ [
+  "НЕОБЫЧНАЯ",
+  "UNCOMMON"
+ ],
+ [
+  "РЕДКАЯ",
+  "RARE"
+ ],
+ [
+  "ЭПИЧЕСКАЯ",
+  "EPIC"
+ ],
+ [
+  "◈ ЦЕНТР ИССЛЕДОВАНИЙ",
+  "◈ RESEARCH CENTER"
+ ],
+ [
+  "Исследовано",
+  "Researched"
+ ],
+ [
+  "уровней",
+  "levels"
+ ],
+ [
+  "Исследования действуют в каждом новом забеге.",
+  "Research applies to every new run."
+ ],
+ [
+  "Следующий:",
+  "Next:"
+ ],
+ [
+  "✓ МАКСИМУМ",
+  "✓ MAXED"
+ ],
+ [
+  "· УЛУЧШИТЬ",
+  "· UPGRADE"
+ ],
+ [
+  "РЕДКОСТЬ КАРТОЧЕК",
+  "CARD RARITY"
+ ],
+ [
+  "ИЗУЧЕНО",
+  "RESEARCHED"
+ ],
+ [
+  "НЕ ИЗУЧЕНО",
+  "UNDISCOVERED"
+ ],
+ [
+  "ОТКРЫТО",
+  "UNLOCKED"
+ ],
+ [
+  "ядро особого босса",
+  "special boss core"
+ ],
+ [
+  "УР.",
+  "LV."
+ ],
+ [
+  " УР.",
+  " LV."
+ ],
+ [
+  " СЛОТЫ ",
+  " SLOTS "
+ ],
+ [
+  "[ СИСТЕМА ]",
+  "[ SYSTEM ]"
+ ],
+ [
+  "Настройки",
+  "Settings"
+ ],
+ [
+  "♪ ВКЛЮЧИТЬ ЗВУК",
+  "♪ ENABLE SOUND"
+ ],
+ [
+  "♫ ВЫКЛЮЧИТЬ ЗВУК",
+  "♫ MUTE"
+ ],
+ [
+  "? КАК ИГРАТЬ",
+  "? HOW TO PLAY"
+ ],
+ [
+  "НАСТРОЙКИ ЗВУКА",
+  "AUDIO SETTINGS"
+ ],
+ [
+  "Эффекты",
+  "Effects"
+ ],
+ [
+  "Музыка",
+  "Music"
+ ],
+ [
+  "♫ Звук: вкл.",
+  "♫ Sound: on"
+ ],
+ [
+  "♪ Звук: выкл.",
+  "♪ Sound: off"
+ ],
+ [
+  "Выключить звук",
+  "Mute audio"
+ ],
+ [
+  "Включить звук",
+  "Enable audio"
+ ],
+ [
+  "ИНСТРУКЦИЯ",
+  "INSTRUCTIONS"
+ ],
+ [
+  "СОБИРАЙ НЕПОВТОРИМЫЙ БИЛД",
+  "BUILD A UNIQUE LOADOUT"
+ ],
+ [
+  "Каждая карточка оружия увеличивает его уровень на +1. Обычная улучшает один параметр, необычная два, редкая три, эпическая все четыре. Верхнего предела уровней нет. Два разных оружия любого уровня и камень сильного босса синтеза превращаются в одно совершенно новое оружие. Его тоже можно прокачивать бесконечно.",
+  "Every weapon card raises its level by one. Common cards upgrade one stat, Uncommon two, Rare three and Epic all four. Weapon levels have no cap. Two different weapons of any level and a fusion core create a new weapon, which can also level up indefinitely."
+ ],
+ [
+  "WASD / стрелки",
+  "WASD / arrows"
+ ],
+ [
+  "Пробел — рывок",
+  "Space — dash"
+ ],
+ [
+  "F — синтез",
+  "F — fusion"
+ ],
+ [
+  "ESC — пауза",
+  "ESC — pause"
+ ],
+ [
+  "Телефон: джойстик и ⚡",
+  "Mobile: joystick and ⚡"
+ ],
+ [
+  "Бонусы на арене: ✚ ремонт, ◎ магнит всех данных, ϟ ярость и ⬡ неуязвимость. Особые боссы синтеза появляются примерно на 3:10 и 6:10. Обычные боссы НЕ дают камни.",
+  "Arena bonuses: ✚ repair, ◎ magnet, ϟ rage and ⬡ invulnerability. Fusion bosses are scheduled at 6:05, 9:10 and 12:45. Regular bosses grant tactical modules, not cores."
+ ],
+ [
+  "ПОНЯТНО",
+  "GOT IT"
+ ],
+ [
+  "[ ПАУЗА ]",
+  "[ PAUSED ]"
+ ],
+ [
+  "Система ожидает",
+  "System standing by"
+ ],
+ [
+  "На поле уже",
+  "The field contains"
+ ],
+ [
+  "обломков. Машины терпеливо дождутся твоего возвращения.",
+  "wrecks. The machines are patiently waiting for your return."
+ ],
+ [
+  "КОНФИГУРАЦИЯ ОРУЖИЯ",
+  "WEAPON CONFIGURATION"
+ ],
+ [
+  "Без модулей",
+  "No modifiers"
+ ],
+ [
+  "▶ ПРОДОЛЖИТЬ",
+  "▶ RESUME"
+ ],
+ [
+  "ЗАВЕРШИТЬ ЗАБЕГ",
+  "END RUN"
+ ],
+ [
+  "ВЫБЕРИ МОДИФИКАЦИЮ",
+  "CHOOSE AN UPGRADE"
+ ],
+ [
+  "Оружие:",
+  "Weapons:"
+ ],
+ [
+  "Выбери одну из трёх модификаций",
+  "Choose one of three upgrades"
+ ],
+ [
+  "УЛУЧШЕНИЕ ОРУЖИЯ",
+  "WEAPON UPGRADE"
+ ],
+ [
+  "НОВОЕ ОРУЖИЕ",
+  "NEW WEAPON"
+ ],
+ [
+  "ПАССИВНЫЙ МОДУЛЬ",
+  "PASSIVE MODULE"
+ ],
+ [
+  "Ремонтный пакет",
+  "Repair Kit"
+ ],
+ [
+  "Перегрузка",
+  "Overdrive"
+ ],
+ [
+  "Форсаж",
+  "Afterburner"
+ ],
+ [
+  "Дополнительная броня",
+  "Extra Armor"
+ ],
+ [
+  "Синхронизация",
+  "Synchronization"
+ ],
+ [
+  "Поле захвата",
+  "Collection Field"
+ ],
+ [
+  "Урон всех дронов",
+  "Damage of all drones"
+ ],
+ [
+  "Скорость движения",
+  "Movement speed"
+ ],
+ [
+  "Максимальная прочность",
+  "Maximum hull"
+ ],
+ [
+  "Ремонт корпуса",
+  "Hull repair"
+ ],
+ [
+  "Скорость атак дронов",
+  "Drone attack speed"
+ ],
+ [
+  "Радиус сбора данных",
+  "Data pickup radius"
+ ],
+ [
+  "Восстановить корпус",
+  "Restore hull"
+ ],
+ [
+  "Занимает слот",
+  "Uses slot"
+ ],
+ [
+  "Реролл заменяет все три карточки без повторов. Цвет рамки означает тип выбора, редкость показана отдельно.",
+  "Reroll replaces all three cards without repeats. Border colors indicate choice types; rarity is shown separately."
+ ],
+ [
+  "Бесплатных перебросов:",
+  "Free rerolls:"
+ ],
+ [
+  "↻ ПЕРЕБРОСИТЬ 3 КАРТОЧКИ",
+  "↻ REROLL 3 CARDS"
+ ],
+ [
+  "↻ РЕРОЛЛ ИСПОЛЬЗОВАН",
+  "↻ REROLL USED"
+ ],
+ [
+  "Следующая",
+  "Next"
+ ],
+ [
+  "◈ ПРОТОКОЛ СИНТЕЗА",
+  "◈ FUSION PROTOCOL"
+ ],
+ [
+  "ДВА ОРУЖИЯ → ОДНО НОВОЕ",
+  "TWO WEAPONS → ONE NEW WEAPON"
+ ],
+ [
+  "Ядра:",
+  "Cores:"
+ ],
+ [
+  "Уровень оружия не важен: даже оружия 1-го уровня подходят. За камень победи и подбери добычу Хранителя ядра (≈4:25), Кузнеца хаоса (≈9:10) или Сбоя реактора (≈12:45). Синтез",
+  "Weapon level does not matter: even level 1 weapons work. Defeat a fusion boss and collect its core (scheduled for 6:05, 9:10 and 12:45). Fusion"
+ ],
+ [
+  "уничтожит два исходных оружия",
+  "consumes both source weapons"
+ ],
+ [
+  "и создаст одно уникальное с новой механикой и последующей бесконечной прокачкой.",
+  "and creates a unique weapon with new mechanics and unlimited upgrades."
+ ],
+ [
+  "РЕЦЕПТОВ ДОСТУПНО",
+  "RECIPES AVAILABLE"
+ ],
+ [
+  "ВСЕГО",
+  "TOTAL"
+ ],
+ [
+  "ФИЛЬТР",
+  "FILTER"
+ ],
+ [
+  "Все 25 рецептов",
+  "All 25 recipes"
+ ],
+ [
+  "Только доступные",
+  "Available only"
+ ],
+ [
+  "СБРОСИТЬ",
+  "RESET"
+ ],
+ [
+  "◂ НАЗАД В БОЙ",
+  "◂ RETURN TO BATTLE"
+ ],
+ [
+  "✓ УЖЕ СОЗДАНО",
+  "✓ ALREADY CRAFTED"
+ ],
+ [
+  "Нужны оба исходных оружия",
+  "Both source weapons required"
+ ],
+ [
+  "Нужно ядро особого босса синтеза",
+  "Fusion boss core required"
+ ],
+ [
+  "Предел: 3 синтеза за забег",
+  "Limit: 3 fusions per run"
+ ],
+ [
+  "✦ ГОТОВО К ПРЕОБРАЗОВАНИЮ",
+  "✦ READY TO FUSE"
+ ],
+ [
+  "ПРОТОКОЛ ВЫПОЛНЕН",
+  "PROTOCOL COMPLETE"
+ ],
+ [
+  "СИГНАЛ ПОТЕРЯН",
+  "SIGNAL LOST"
+ ],
+ [
+  "Омега уничтожена",
+  "Omega destroyed"
+ ],
+ [
+  "Корпус выведен из строя",
+  "Hull destroyed"
+ ],
+ [
+  "✦ ПОБЕДА",
+  "✦ VICTORY"
+ ],
+ [
+  "ЗАБЕГ ПРЕРВАН",
+  "RUN ABORTED"
+ ],
+ [
+  "ПОРАЖЕНИЕ",
+  "DEFEAT"
+ ],
+ [
+  "Угроза отражена. Открыт следующий протокол сложности.",
+  "Threat defeated. The next difficulty protocol is unlocked."
+ ],
+ [
+  "Запись сохранена в локальной истории. Усиль билд и попробуй снова.",
+  "Your record is saved locally. Upgrade your loadout and try again."
+ ],
+ [
+  "ВЫЖИВАНИЕ",
+  "SURVIVAL"
+ ],
+ [
+  "УБИЙСТВА",
+  "KILLS"
+ ],
+ [
+  "СЧЁТ",
+  "SCORE"
+ ],
+ [
+  "УРОВЕНЬ",
+  "LEVEL"
+ ],
+ [
+  "ОРУЖИЕ / СИНТЕЗ",
+  "WEAPONS / FUSIONS"
+ ],
+ [
+  "КРИСТАЛЛЫ",
+  "CRYSTALS"
+ ],
+ [
+  "Угроза:",
+  "Threat:"
+ ],
+ [
+  "Результат сохранён только в этом браузере.",
+  "Your result is stored in this browser only."
+ ],
+ [
+  "↻ ЕЩЁ ОДИН ЗАБЕГ",
+  "↻ PLAY AGAIN"
+ ],
+ [
+  "◈ АНГАР",
+  "◈ HANGAR"
+ ],
+ [
+  "КОРПУС",
+  "HULL"
+ ],
+ [
+  "ДАННЫЕ",
+  "DATA"
+ ],
+ [
+  "УНИЧТОЖЕНО",
+  "DESTROYED"
+ ],
+ [
+  "УБ.",
+  "KILLS"
+ ],
+ [
+  "БОСС",
+  "BOSS"
+ ],
+ [
+  "ПОЛИГОН",
+  "TRAINING"
+ ],
+ [
+  "УРОНА",
+  "DAMAGE"
+ ],
+ [
+  "СЛОТЫ",
+  "SLOTS"
+ ],
+ [
+  "СЛОТ",
+  "SLOT"
+ ],
+ [
+  "СВОБОДЕН",
+  "EMPTY"
+ ],
+ [
+  "СИНТЕЗ",
+  "FUSION"
+ ],
+ [
+  "ЩИТ",
+  "SHIELD"
+ ],
+ [
+  "ЯРОСТЬ",
+  "RAGE"
+ ],
+ [
+  "МАГНИТ",
+  "MAGNET"
+ ],
+ [
+  "РЫВОК",
+  "DASH"
+ ],
+ [
+  "Система активирована",
+  "System online"
+ ],
+ [
+  "СИСТЕМА АКТИВИРОВАНА // СОБИРАЙ ДАННЫЕ",
+  "SYSTEM ONLINE // COLLECT DATA"
+ ],
+ [
+  "✦ БОСС ПОВЕРЖЕН!",
+  "✦ BOSS DEFEATED!"
+ ],
+ [
+  "◈ БОСС ПАЛ! ПОДБЕРИ ЯДРО СИНТЕЗА!",
+  "◈ BOSS DEFEATED! COLLECT THE FUSION CORE!"
+ ],
+ [
+  "ОМЕГА ПРИБЫЛА: УНИЧТОЖЬ ЕЁ, ЧТОБЫ ЗАВЕРШИТЬ ЗАБЕГ",
+  "OMEGA HAS ARRIVED: DEFEAT IT TO COMPLETE THE RUN"
+ ],
+ [
+  "ВТОРАЯ ФАЗА:",
+  "SECOND PHASE:"
+ ],
+ [
+  "ВЫСОКАЯ УГРОЗА",
+  "HIGH THREAT"
+ ],
+ [
+  "БОСС СИНТЕЗА:",
+  "FUSION BOSS:"
+ ],
+ [
+  "РЕЦЕПТ",
+  "RECIPE"
+ ],
+ [
+  "НОВОЕ ОРУЖИЕ:",
+  "NEW WEAPON:"
+ ],
+ [
+  "ЯДРО СИНТЕЗА ПОДОБРАНО!",
+  "FUSION CORE COLLECTED!"
+ ],
+ [
+  "ПОДКРЕПЛЕНИЕ ПРИБЛИЖАЕТСЯ",
+  "REINFORCEMENTS APPROACHING"
+ ],
+ [
+  "ПРИОРИТЕТ ЦЕЛЕЙ",
+  "TARGET PRIORITY"
+ ],
+ [
+  "СОБИРАЙ ДАННЫЕ",
+  "COLLECT DATA"
+ ],
+ [
+  "ЖНЕЦ: РЫВОК ПО ЛИНИИ!",
+  "REAPER: LINE DASH!"
+ ],
+ [
+  "ЖНЕЦ: ВЕЕР ЛЕЗВИЙ!",
+  "REAPER: BLADE FAN!"
+ ],
+ [
+  "АРХОНТ: ВНЕШНЕЕ КОЛЬЦО, ЦЕНТР БЕЗОПАСЕН!",
+  "ARCHON: OUTER RING, CENTER IS SAFE!"
+ ],
+ [
+  "АРХОНТ: ПОСЛЕДОВАТЕЛЬНЫЕ ЛОВУШКИ!",
+  "ARCHON: SEQUENTIAL TRAPS!"
+ ],
+ [
+  "ХРАНИТЕЛЬ: РАЗРЕЗЫ И КОЛЬЦО!",
+  "GUARDIAN: SLASHES AND RING!"
+ ],
+ [
+  "КУЗНЕЦ: МЕТЕОРЫ НА ПЕРЕХВАТ! МЕНЯЙ НАПРАВЛЕНИЕ!",
+  "SMITH: INTERCEPTING METEORS! CHANGE DIRECTION!"
+ ],
+ [
+  "КУЗНЕЦ: ПРЕСС + УДАР НАКОВАЛЬНИ! УХОДИ В СТОРОНУ!",
+  "SMITH: PRESS AND ANVIL! DODGE SIDEWAYS!"
+ ],
+ [
+  "КУЗНЕЦ: СПИРАЛЬ + ВЫЖЖЕННАЯ ЗОНА!",
+  "SMITH: SPIRAL AND BURNING ZONE!"
+ ],
+ [
+  "КАРАТЕЛЬ: ИЩИ ПРОХОД МЕЖДУ ЛИНИЯМИ!",
+  "PUNISHER: FIND A GAP BETWEEN LANES!"
+ ],
+ [
+  "РЕАКТОР: БЕЗОПАСНАЯ ЗОНА В ЦЕНТРЕ!",
+  "REACTOR: SAFE ZONE IN THE CENTER!"
+ ],
+ [
+  "РЕАКТОР: ВРАЩАЮЩИЙСЯ ЛУЧ!",
+  "REACTOR: ROTATING BEAM!"
+ ],
+ [
+  "ОМЕГА: ВРАЩАЮЩИЕСЯ ЛУЧИ!",
+  "OMEGA: ROTATING BEAMS!"
+ ],
+ [
+  "ОМЕГА: КОЛЬЦО ПЕРЕГРУЗКИ!",
+  "OMEGA: OVERLOAD RING!"
+ ],
+ [
+  "ЛАЗЕР",
+  "LASER"
+ ],
+ [
+  "РАЗРЯД",
+  "ARC"
+ ],
+ [
+  "ПИЛА",
+  "SAW"
+ ],
+ [
+  "РАКЕТА",
+  "ROCKET"
+ ],
+ [
+  "ПЛАЗМА",
+  "PLASMA"
+ ],
+ [
+  "РЕЛЬСОТРОН",
+  "RAILGUN"
+ ],
+ [
+  "КРИОИЗЛУЧАТЕЛЬ",
+  "CRYO EMITTER"
+ ],
+ [
+  "МИННЫЙ СЕЯТЕЛЬ",
+  "MINE LAYER"
+ ],
+ [
+  "ВОЗВРАТНЫЙ ДИСК",
+  "RETURNING DISC"
+ ],
+ [
+  "ГРАВИЯДРО",
+  "GRAVITY CORE"
+ ],
+ [
+  "ОГНЕМЁТ",
+  "FLAMETHROWER"
+ ],
+ [
+  "КРИОРЕЛЬСОТРОН",
+  "CRYO RAILGUN"
+ ],
+ [
+  "СИНГУЛЯРНАЯ МИНА",
+  "SINGULARITY MINE"
+ ],
+ [
+  "ПЛАМЕННЫЙ ЦИКЛОН",
+  "FLAME CYCLONE"
+ ],
+ [
+  "ИОННЫЙ ШТОРМ",
+  "ION STORM"
+ ],
+ [
+  "ИОННАЯ СЕТЬ",
+  "ION NET"
+ ],
+ [
+  "ТЕРМОПИЛА",
+  "THERMAL SAW"
+ ],
+ [
+  "ЗВЁЗДНЫЙ ДОЖДЬ",
+  "STARFALL"
+ ],
+ [
+  "ХИЩНИК",
+  "PREDATOR"
+ ],
+ [
+  "ТЕСЛА-РАЗРЫВ",
+  "TESLA RIFT"
+ ],
+ [
+  "ИОННОЕ КОПЬЁ",
+  "ION SPEAR"
+ ],
+ [
+  "ПОЛЯРНЫЙ ЛУЧ",
+  "POLAR BEAM"
+ ],
+ [
+  "ПРИЗМЕННАЯ СИНГУЛЯРНОСТЬ",
+  "PRISM SINGULARITY"
+ ],
+ [
+  "ОСАДНЫЙ ДРОТИК",
+  "SIEGE DART"
+ ],
+ [
+  "ГРОМОВОЕ КОПЬЁ",
+  "THUNDER SPEAR"
+ ],
+ [
+  "МАТРИЦА ПЕРЕГРУЗКИ",
+  "OVERLOAD MATRIX"
+ ],
+ [
+  "АБСОЛЮТНЫЙ НОЛЬ",
+  "ABSOLUTE ZERO"
+ ],
+ [
+  "ТЕРМОШОК",
+  "THERMAL SHOCK"
+ ],
+ [
+  "НАПАЛМ-ЗАЛП",
+  "NAPALM SALVO"
+ ],
+ [
+  "ГЛЯЦИАЛЬНЫЙ ВЕНЕЦ",
+  "GLACIAL CROWN"
+ ],
+ [
+  "ДУГОВОЙ ДИСК",
+  "ARC DISC"
+ ],
+ [
+  "МИННЫЙ БУМЕРАНГ",
+  "MINE BOOMERANG"
+ ],
+ [
+  "СОЛНЕЧНОЕ ЯДРО",
+  "SOLAR CORE"
+ ],
+ [
+  "КРИОМИНА",
+  "CRYO MINE"
+ ],
+ [
+  "КОНТУР ПЛАВЛЕНИЯ",
+  "MELTDOWN CIRCUIT"
+ ],
+ [
+  "ПЛАЗМЕННЫЙ ШИП",
+  "PLASMA SPIKE"
+ ],
+ [
+  "МАГНИТНЫЙ ВЕНЕЦ",
+  "MAGNETIC CROWN"
+ ],
+ [
+  "СИСТЕМА «ХИЩНИК»",
+  "PREDATOR SYSTEM"
+ ],
+ [
+  "КАТУШКА ТЕСЛЫ",
+  "TESLA COIL"
+ ],
+ [
+  "Пробивной ледяной луч замораживает всех врагов на линии огня.",
+  "A piercing icy beam freezes enemies along its path."
+ ],
+ [
+  "Мины затягивают врагов перед мощным гравитационным взрывом.",
+  "Mines pull enemies inward before a powerful gravity blast."
+ ],
+ [
+  "Возвратные пылающие диски режут врагов и оставляют огненные следы.",
+  "Returning flaming discs slice enemies and leave burning trails."
+ ],
+ [
+  "Пробивной луч вызывает цепные разряды.",
+  "A piercing beam creates chain lightning."
+ ],
+ [
+  "Огненные орбитальные лезвия оставляют пылающий след.",
+  "Orbiting fiery blades leave a burning trail."
+ ],
+ [
+  "Ракеты раскрываются плазменными штормами.",
+  "Rockets explode into plasma storms."
+ ],
+ [
+  "Метка лазера наводит хищные самонаводящиеся ракеты.",
+  "A laser mark guides homing predator rockets."
+ ],
+ [
+  "Электропилы искажают пространство цепями молний.",
+  "Electric saws distort space with chain lightning."
+ ],
+ [
+  "Точные лазерные импульсы. На высоком ранге пробивают противников.",
+  "Precise laser pulses pierce targets at high ranks."
+ ],
+ [
+  "Цепная молния перескакивает между врагами.",
+  "Chain lightning jumps between enemies."
+ ],
+ [
+  "Орбитальная пила разрывает всех рядом с роботом.",
+  "An orbiting saw shreds nearby enemies."
+ ],
+ [
+  "Самонаводящиеся ракеты взрываются и поражают группы.",
+  "Homing rockets explode and damage groups."
+ ],
+ [
+  "Создаёт нестабильную область, сжигающую врагов.",
+  "Creates an unstable area that burns enemies."
+ ],
+ [
+  "Заряжает мощный пробивной выстрел через целую колонну врагов.",
+  "Charges a powerful shot that pierces lines of enemies."
+ ],
+ [
+  "Выпускает морозный веер, замедляющий и оглушающий толпу.",
+  "Fires a freezing fan that slows and stuns crowds."
+ ],
+ [
+  "Расставляет управляемые мины; приближение врага вызывает взрыв.",
+  "Places mines that explode when enemies approach."
+ ],
+ [
+  "Бросает пилящие диски: они поражают врагов по пути туда и обратно.",
+  "Throws slicing discs that damage enemies in both directions."
+ ],
+ [
+  "Создаёт сингулярности, стягивающие врагов в одну точку.",
+  "Creates singularities that pull enemies together."
+ ],
+ [
+  "Жжёт широким направленным конусом, оставляя врагов гореть.",
+  "Burns enemies in a wide cone, leaving them ablaze."
+ ],
+ [
+  "Бронепластины",
+  "Armor Plates"
+ ],
+ [
+  "Саморемонт",
+  "Self Repair"
+ ],
+ [
+  "Композитная броня",
+  "Composite Armor"
+ ],
+ [
+  "Ремонтные наниты",
+  "Repair Nanites"
+ ],
+ [
+  "Боевой процессор",
+  "Combat Processor"
+ ],
+ [
+  "Разгон турелей",
+  "Turret Overclock"
+ ],
+ [
+  "Критический анализ",
+  "Critical Analysis"
+ ],
+ [
+  "Усиленные боеприпасы",
+  "Enhanced Ammunition"
+ ],
+ [
+  "Улучшенные приводы",
+  "Improved Actuators"
+ ],
+ [
+  "Конденсатор рывка",
+  "Dash Capacitor"
+ ],
+ [
+  "Магнитный захват",
+  "Magnetic Pickup"
+ ],
+ [
+  "Стабилизатор усилений",
+  "Buff Stabilizer"
+ ],
+ [
+  "Анализ данных",
+  "Data Analysis"
+ ],
+ [
+  "Переработка реликтов",
+  "Relic Recycling"
+ ],
+ [
+  "Система поиска",
+  "Discovery System"
+ ],
+ [
+  "Боевой анализатор",
+  "Combat Analyzer"
+ ],
+ [
+  "Защита и ремонт",
+  "Defense and repair"
+ ],
+ [
+  "Сила и точность",
+  "Power and accuracy"
+ ],
+ [
+  "Мобильность и сбор",
+  "Mobility and pickup"
+ ],
+ [
+  "Опыт и награды",
+  "XP and rewards"
+ ],
+ [
+  "+15 HP до 6-го уровня, затем +7 HP",
+  "+15 HP per level through level 6, then +7 HP"
+ ],
+ [
+  "+0,12 HP/с до 5-го уровня, затем +0,04 HP/с",
+  "+0.12 HP/s through level 5, then +0.04 HP/s"
+ ],
+ [
+  "−0,4% получаемого урона за уровень",
+  "−0.4% damage taken per level"
+ ],
+ [
+  "+1% к лечению за уровень",
+  "+1% healing per level"
+ ],
+ [
+  "+6% урона до 6-го уровня, затем +1,2%",
+  "+6% damage through level 6, then +1.2%"
+ ],
+ [
+  "+0,5% к частоте атак за уровень",
+  "+0.5% attack speed per level"
+ ],
+ [
+  "+0,35 п.п. к шансу критического попадания",
+  "+0.35 percentage points crit chance per level"
+ ],
+ [
+  "+2 п.п. к критическому урону за уровень",
+  "+2 percentage points crit damage per level"
+ ],
+ [
+  "+0,4% к скорости движения за уровень",
+  "+0.4% movement speed per level"
+ ],
+ [
+  "−1% к перезарядке рывка за уровень",
+  "−1% dash cooldown per level"
+ ],
+ [
+  "+16 к радиусу до 6-го уровня, затем +8",
+  "+16 pickup range through level 6, then +8"
+ ],
+ [
+  "+1% к длительности временных бонусов",
+  "+1% buff duration per level"
+ ],
+ [
+  "+1% получаемого опыта за уровень",
+  "+1% XP per level"
+ ],
+ [
+  "+2% к кристаллам по итогам забега",
+  "+2% end-of-run crystals per level"
+ ],
+ [
+  "Повышает шанс необычных, редких и эпических карточек",
+  "Increases Uncommon, Rare and Epic card chances"
+ ],
+ [
+  "+1% к итоговому счёту за уровень",
+  "+1% final score per level"
+ ],
+ [
+  "Обычная сложность. Базовые волны и механики.",
+  "Normal difficulty with standard waves."
+ ],
+ [
+  "Больше охотников и элиты, враги опаснее.",
+  "More hunters and elite enemies."
+ ],
+ [
+  "Сложные смешанные группы, усиленные боссы.",
+  "Mixed formations and stronger bosses."
+ ],
+ [
+  "Плотные тактические волны, опасные прорывы.",
+  "Dense tactical waves and dangerous breakthroughs."
+ ],
+ [
+  "Высшая угроза. Проверка сборки, мобильности и выживания.",
+  "Maximum threat. A test of your build and survival skills."
+ ],
+ [
+  "Скарабей",
+  "Scarab"
+ ],
+ [
+  "Охотник",
+  "Hunter"
+ ],
+ [
+  "Таран",
+  "Rammer"
+ ],
+ [
+  "Стрелок",
+  "Sentry"
+ ],
+ [
+  "Матка",
+  "Hive Mother"
+ ],
+ [
+  "Фантом",
+  "Phantom"
+ ],
+ [
+  "СИНТЕЗ-АЛЬФА // ХРАНИТЕЛЬ ЯДРА",
+  "FUSION ALPHA // CORE GUARDIAN"
+ ],
+ [
+  "СИНТЕЗ-БЕТА // КУЗНЕЦ ХАОСА",
+  "FUSION BETA // CHAOS SMITH"
+ ],
+ [
+  "СИНТЕЗ-ГАММА // СБОЙ РЕАКТОРА",
+  "FUSION GAMMA // REACTOR FAILURE"
+ ],
+ [
+  "ЖНЕЦ-01 // РАЗРЫВАТЕЛЬ",
+  "REAPER-01 // RUPTURE"
+ ],
+ [
+  "АРХОНТ // ПРИЗЫВАТЕЛЬ",
+  "ARCHON // SUMMONER"
+ ],
+ [
+  "КАРАТЕЛЬ // ЛОВУШКИ ПЕРИМЕТРА",
+  "PUNISHER // PERIMETER TRAPS"
+ ],
+ [
+  "ОМЕГА // ПРОБУЖДЕНИЕ",
+  "OMEGA // AWAKENING"
+ ],
+ [
+  "РЕЛИКТ",
+  "RELICT"
+ ],
+ [
+  "ПАТРУЛЬ",
+  "PATROL"
+ ],
+ [
+  "ПОГРАНИЧНИК",
+  "BORDER GUARD"
+ ],
+ [
+  "ДОЗОР",
+  "WATCHER"
+ ],
+ [
+  "АРКТИК",
+  "ARCTIC"
+ ],
+ [
+  "РЕЗЕРВ",
+  "RESERVE"
+ ],
+ [
+  "ГРАФИТ",
+  "GRAPHITE"
+ ],
+ [
+  "ПЕСОЧНЫЙ КОРПУС",
+  "SAND HULL"
+ ],
+ [
+  "ЧЁРНЫЙ ПЕСОК",
+  "BLACK SAND"
+ ],
+ [
+  "ПЕПЕЛЬНЫЙ ОХОТНИК",
+  "EMBER HUNTER"
+ ],
+ [
+  "ВОЛЬТАЖ",
+  "VOLTAGE"
+ ],
+ [
+  "КИСЛОТНЫЙ ШТОРМ",
+  "ACID STORM"
+ ],
+ [
+  "КРИТИЧЕСКИЙ",
+  "CRITICAL"
+ ],
+ [
+  "СТАЛЬНОЙ НОЛЬ",
+  "STEEL ZERO"
+ ],
+ [
+  "ТУМАН",
+  "MIST"
+ ],
+ [
+  "ПУСТЫННЫЙ КОРШУН",
+  "DESERT KESTREL"
+ ],
+ [
+  "СПЕКТР",
+  "SPECTRUM"
+ ],
+ [
+  "ЛЕДЯНОЙ ПРИЗРАК",
+  "ICE GHOST"
+ ],
+ [
+  "КОБАЛЬТОВЫЙ ПРИЗРАК",
+  "COBALT GHOST"
+ ],
+ [
+  "ТЁМНЫЙ ПРОТОКОЛ",
+  "DARK PROTOCOL"
+ ],
+ [
+  "ЗВЁЗДНЫЙ ОХОТНИК",
+  "STAR HUNTER"
+ ],
+ [
+  "ГЕЛИОС",
+  "HELIOS"
+ ],
+ [
+  "КВАНТОВЫЙ СТРАЖ",
+  "QUANTUM GUARD"
+ ],
+ [
+  "ПУЛЬСАР",
+  "PULSAR"
+ ],
+ [
+  "НОВА",
+  "NOVA"
+ ],
+ [
+  "СТРАЖ РОЯ",
+  "SWARM GUARD"
+ ],
+ [
+  "АСТРАЛЬНАЯ МАШИНА",
+  "ASTRAL MACHINE"
+ ],
+ [
+  "СИНГУЛЯРНОСТЬ",
+  "SINGULARITY"
+ ],
+ [
+  "ХРОНОС",
+  "CHRONOS"
+ ],
+ [
+  "ОМЕГА",
+  "OMEGA"
+ ],
+ [
+  "АРХОНТ НУЛЯ",
+  "ZERO ARCHON"
+ ],
+ [
+  "Исходная оболочка",
+  "Original shell"
+ ],
+ [
+  "Служебная голубая окраска",
+  "Standard blue finish"
+ ],
+ [
+  "Сигнальные жёлтые панели",
+  "Yellow warning plates"
+ ],
+ [
+  "Тёмно-зелёная охранная окраска",
+  "Dark green guard finish"
+ ],
+ [
+  "Серебристо-синяя броня",
+  "Silver-blue armor"
+ ],
+ [
+  "Оранжевые заводские отметки",
+  "Orange factory markings"
+ ],
+ [
+  "Матовый графитовый сплав",
+  "Matte graphite alloy"
+ ],
+ [
+  "Пустынная окраска",
+  "Desert camouflage"
+ ],
+ [
+  "Песочные боковые крылья",
+  "Sandy side wings"
+ ],
+ [
+  "Огненные крылья и наконечники",
+  "Flaming wings and tips"
+ ],
+ [
+  "Электрические лопасти",
+  "Electric blades"
+ ],
+ [
+  "Химические дефлекторы",
+  "Chemical deflectors"
+ ],
+ [
+  "Аварийные красные крылья",
+  "Emergency red wings"
+ ],
+ [
+  "Стальные стабилизаторы",
+  "Steel stabilizers"
+ ],
+ [
+  "Серые лёгкие крылья",
+  "Light gray wings"
+ ],
+ [
+  "Стреловидные крылья",
+  "Swept-back wings"
+ ],
+ [
+  "Фазовые крылья и свечение",
+  "Phase wings and glow"
+ ],
+ [
+  "Многослойные призрачные крылья",
+  "Layered spectral wings"
+ ],
+ [
+  "Кристаллические крылья",
+  "Crystal wings"
+ ],
+ [
+  "Синие эмиттеры и разветвлённые крылья",
+  "Blue emitters and split wings"
+ ],
+ [
+  "Теневые крылья",
+  "Shadow wings"
+ ],
+ [
+  "Золотые крылья",
+  "Golden wings"
+ ],
+ [
+  "Солнечные крылья",
+  "Solar wings"
+ ],
+ [
+  "Энергетические сегменты",
+  "Energy segments"
+ ],
+ [
+  "Вращающийся энергетический диск",
+  "Rotating energy disc"
+ ],
+ [
+  "Световые орбиты и излучатели",
+  "Luminous orbits and emitters"
+ ],
+ [
+  "Вращающиеся бронещиты",
+  "Rotating armor shields"
+ ],
+ [
+  "Руническая карусель",
+  "Runic carousel"
+ ],
+ [
+  "Гравитационные орбиты и парящие крылья",
+  "Gravity orbits and floating wings"
+ ],
+ [
+  "Часовой венец и временные орбиты",
+  "Clockwork crown and temporal orbits"
+ ],
+ [
+  "Коронные лезвия",
+  "Crown blades"
+ ],
+ [
+  "Тройные венцы и парящие крылья",
+  "Triple crowns and hovering wings"
+ ],
+ [
+  "© 2026 · Оригинальная векторная графика · Без внешних загрузок",
+  "© 2026 · Original vector art · No external assets"
+ ],
+ [
+  "WASD / стрелки — движение · ПРОБЕЛ — рывок · ESC — пауза",
+  "WASD / arrows — move · SPACE — dash · ESC — pause"
+ ],
+ [
+  "Узкий ускоренный пробивной импульс. Дополнительные лазеры поражают цели рядом с линией.",
+  "An accelerated shot pierces enemies, with secondary lasers hitting nearby targets."
+ ],
+ [
+  "Лазер накладывает лёд, оставляя морозную полосу и раскалывая замороженных врагов.",
+  "A freezing laser leaves an icy trail and shatters frozen enemies."
+ ],
+ [
+  "Создаёт микросингулярность; от неё расходятся лазерные лучи к захваченным врагам.",
+  "Creates a micro-singularity that fires laser beams at trapped enemies."
+ ],
+ [
+  "Тяжёлый снаряд пробивает колонну врагов, затем взрывается и разбрасывает ударную волну.",
+  "A heavy shot pierces a line of enemies, then explodes in a shockwave."
+ ],
+ [
+  "Пробивающий импульс порождает последовательные разряды на пути и у последней цели.",
+  "A piercing pulse creates lightning arcs along its path."
+ ],
+ [
+  "Плазменные узлы создают зону поражения и бьют электрическими дугами по целям вокруг.",
+  "Plasma nodes create a damage zone and arc electricity to nearby enemies."
+ ],
+ [
+  "Чёрная дыра втягивает врагов, замораживает их и в конце раскалывается ледяным импульсом.",
+  "A black hole pulls in enemies, freezes them, then bursts in an icy pulse."
+ ],
+ [
+  "Попеременные струи жара и холода взрывают врагов, получивших оба статуса.",
+  "Heat and cold detonate enemies affected by both elements."
+ ],
+ [
+  "Ракеты разбрасывают горящий напалм, создавая длительные огненные зоны.",
+  "Rockets scatter burning napalm, creating persistent fire zones."
+ ],
+ [
+  "Орбитальные ледяные пилы охлаждают, замораживают и раскалывают врагов.",
+  "Orbiting frost saws chill, freeze and shatter enemies."
+ ],
+ [
+  "Возвратные диски бьют током, выпуская цепные молнии при ударе.",
+  "Returning discs unleash chain lightning on impact."
+ ],
+ [
+  "Возвратные диски рассыпают мины по маршруту, образуя опасные коридоры.",
+  "Returning discs scatter mines along their path."
+ ],
+ [
+  "Огненный вихрь притягивает противников и прожигает их в центре.",
+  "A fire vortex pulls enemies in and burns them at its center."
+ ],
+ [
+  "Мины после взрыва формируют ледяные поля, замедляющие и замораживающие врагов.",
+  "Exploding mines create frost fields that slow and freeze enemies."
+ ],
+ [
+  "Плотная дуга сверхгорячей плазмы прожигает толпу и оставляет раскалённые зоны.",
+  "A dense arc of plasma burns through crowds and leaves hot zones."
+ ],
+ [
+  "Пробивной заряд по линии оставляет за каждым попаданием плазменный ожог.",
+  "A piercing line shot leaves plasma burns with every hit."
+ ],
+ [
+  "Вращающиеся клинки втягивают врагов к орбите и режут их при сближении.",
+  "Rotating blades pull enemies into their orbit and slice them."
+ ],
+ [
+  "Пробивает сразу несколько врагов, замедляет и замораживает линию наступления.",
+  "Pierces multiple enemies, slowing and freezing their advance."
+ ],
+ [
+  "Каждая мина стягивает ближайших врагов и взрывается, когда они оказываются достаточно близко.",
+  "Each mine pulls enemies in and explodes when they approach."
+ ],
+ [
+  "Огненные диски летят к врагам и обратно, оставляя за собой пылающие зоны.",
+  "Flaming discs travel out and back, leaving burning zones."
+ ],
+ [
+  "Лазер помечает цель; разряд перескакивает по соседям с усилением.",
+  "A laser marks the target; electricity jumps to nearby enemies."
+ ],
+ [
+  "Пила разливает раскалённую плазму и оставляет горящие зоны.",
+  "The saw releases hot plasma and leaves burning zones."
+ ],
+ [
+  "Рой ракет взрывается плазмой и замедляет противников.",
+  "A rocket swarm explodes into plasma, slowing enemies."
+ ],
+ [
+  "Лазер помечает цель, ракеты атакуют её залпом.",
+  "A laser marks a target for a rocket salvo."
+ ],
+ [
+  "Пила выпускает парализующие разряды по окружающим врагам.",
+  "The saw releases stunning arcs at nearby enemies."
+ ],
+ [
+  "ОХОТА: ФЛАНГОВЫЙ ЗАХВАТ",
+  "HUNT: FLANK ATTACK"
+ ],
+ [
+  "ОСАДА: ТАРАНЫ И СТРЕЛКИ",
+  "SIEGE: RAMMERS AND SENTRIES"
+ ],
+ [
+  "ГНЕЗДО: МАТКИ ПОДДЕРЖКИ",
+  "HIVE: SUPPORT MATRIARCHS"
+ ],
+ [
+  "ПЕРЕХВАТ: МАНЁВРЕННАЯ ГРУППА",
+  "INTERCEPTION: MOBILE SQUAD"
+ ],
+ [
+  "БРОНЕВОЙ ПРОРЫВ",
+  "ARMORED BREAKTHROUGH"
+ ],
+ [
+  "ЗАСАДА: ШЕСТЬ СТОРОН",
+  "AMBUSH: SIX FRONTS"
+ ],
+ [
+  "ПОСЛЕДНИЙ РУБЕЖ РОЯ",
+  "SWARM'S LAST STAND"
+ ],
+ [
+  "КРИОЭНЕРГИЯ",
+  "CRYO ENERGY"
+ ],
+ [
+  "ЛЕДЯНОЙ КАНАЛ",
+  "FROST CHANNEL"
+ ],
+ [
+  "ДЛИТЕЛЬНОСТЬ ЛЬДА",
+  "FROST DURATION"
+ ],
+ [
+  "СКОРОСТЬ ЗАРЯДА",
+  "CHARGE SPEED"
+ ],
+ [
+  "ГРАВИБОМБА",
+  "GRAVITY BOMB"
+ ],
+ [
+  "УЗЛЫ ПОЛЯ",
+  "FIELD NODES"
+ ],
+ [
+  "СИЛА СТЯГИВАНИЯ",
+  "PULL FORCE"
+ ],
+ [
+  "РАДИУС ВЗРЫВА",
+  "BLAST RADIUS"
+ ],
+ [
+  "ОГНЕННЫЕ КРОМКИ",
+  "FLAMING EDGES"
+ ],
+ [
+  "ЧИСЛО ДИСКОВ",
+  "DISC COUNT"
+ ],
+ [
+  "ДАЛЬНОСТЬ",
+  "RANGE"
+ ],
+ [
+  "ТЕМП ВЫБРОСА",
+  "LAUNCH RATE"
+ ],
+ [
+  "ЭНЕРГИЯ БУРИ",
+  "STORM ENERGY"
+ ],
+ [
+  "ЧАСТОТА ИМПУЛЬСОВ",
+  "PULSE RATE"
+ ],
+ [
+  "ЦЕПНЫЕ ЦЕЛИ",
+  "CHAIN TARGETS"
+ ],
+ [
+  "ПРОБИВНЫЕ ЛУЧИ",
+  "PIERCING BEAMS"
+ ],
+ [
+  "РАСКАЛЁННЫЕ ЛЕЗВИЯ",
+  "HEATED BLADES"
+ ],
+ [
+  "КОЛИЧЕСТВО ПИЛ",
+  "SAW COUNT"
+ ],
+ [
+  "ОГНЕННАЯ ОРБИТА",
+  "FIRE ORBIT"
+ ],
+ [
+  "СКОРОСТЬ ПИЛ",
+  "SAW SPEED"
+ ],
+ [
+  "РАКЕТНАЯ МОЩЬ",
+  "ROCKET POWER"
+ ],
+ [
+  "РОЙ РАКЕТ",
+  "ROCKET SWARM"
+ ],
+ [
+  "ЗОНА ПЛАЗМЫ",
+  "PLASMA ZONE"
+ ],
+ [
+  "ПЕРЕЗАРЯДКА",
+  "RELOAD"
+ ],
+ [
+  "МОЩЬ ОХОТНИКА",
+  "PREDATOR POWER"
+ ],
+ [
+  "ЧИСЛО МЕТОК",
+  "MARK COUNT"
+ ],
+ [
+  "ЧИСЛО РАКЕТ",
+  "ROCKET COUNT"
+ ],
+ [
+  "СЛЕЖЕНИЕ",
+  "TRACKING"
+ ],
+ [
+  "ЭНЕРГИЯ КАТУШКИ",
+  "COIL ENERGY"
+ ],
+ [
+  "РАЗРЯДНЫЕ ПИЛЫ",
+  "ELECTRIC SAWS"
+ ],
+ [
+  "ОРБИТА ТЕСЛЫ",
+  "TESLA ORBIT"
+ ],
+ [
+  "ДУГИ ТЕСЛЫ",
+  "TESLA ARCS"
+ ],
+ [
+  "УРОН",
+  "DAMAGE"
+ ],
+ [
+  "ПРОБИТИЕ",
+  "PIERCING"
+ ],
+ [
+  "РАСЩЕПЛЕНИЕ",
+  "SPLITTING"
+ ],
+ [
+  "ОБЛЕДЕНЕНИЕ",
+  "FREEZING"
+ ],
+ [
+  "РАДИУС",
+  "RADIUS"
+ ],
+ [
+  "ВЗРЫВНАЯ ВОЛНА",
+  "BLAST WAVE"
+ ],
+ [
+  "ЦЕПЬ",
+  "CHAIN"
+ ],
+ [
+  "ШИРИНА АТАКИ",
+  "ATTACK WIDTH"
+ ],
+ [
+  "ДОПОЛНИТЕЛЬНЫЕ ЗАРЯДЫ",
+  "EXTRA SHOTS"
+ ],
+ [
+  "КОЛИЧЕСТВО",
+  "COUNT"
+ ],
+ [
+  "СКОРОСТЬ",
+  "SPEED"
+ ],
+ [
+  "ПРИТЯЖЕНИЕ",
+  "ATTRACTION"
+ ],
+ [
+  "ШИРИНА КАНАЛА",
+  "CHANNEL WIDTH"
+ ],
+ [
+  "УРОН ЛУЧА",
+  "BEAM DAMAGE"
+ ],
+ [
+  "ЧАСТОТА ВЫСТРЕЛОВ",
+  "FIRING RATE"
+ ],
+ [
+  "ЛАЗЕРНЫЕ СТВОЛЫ",
+  "LASER BARRELS"
+ ],
+ [
+  "ПРОБИВАНИЕ",
+  "PIERCING"
+ ],
+ [
+  "МОЩНОСТЬ РАЗРЯДА",
+  "ARC POWER"
+ ],
+ [
+  "ПЕРЕСКОКИ",
+  "JUMPS"
+ ],
+ [
+  "РАДИУС ПЕРЕСКОКА",
+  "JUMP RADIUS"
+ ],
+ [
+  "СКОРОСТЬ АТАКИ",
+  "ATTACK SPEED"
+ ],
+ [
+  "ЗАТОЧКА ЛЕЗВИЙ",
+  "BLADE EDGE"
+ ],
+ [
+  "ЧИСЛО ПИЛ",
+  "SAW COUNT"
+ ],
+ [
+  "РАДИУС ОРБИТЫ",
+  "ORBIT RADIUS"
+ ],
+ [
+  "ОБОРОТЫ",
+  "SPIN RATE"
+ ],
+ [
+  "УРОН БОЕГОЛОВКИ",
+  "WARHEAD DAMAGE"
+ ],
+ [
+  "РАКЕТНЫЙ ЗАЛП",
+  "ROCKET SALVO"
+ ],
+ [
+  "УСКОРЕННАЯ ПЕРЕЗАРЯДКА",
+  "FAST RELOAD"
+ ],
+ [
+  "ПЛАЗМЕННАЯ ТЕМПЕРАТУРА",
+  "PLASMA TEMPERATURE"
+ ],
+ [
+  "ШИРИНА ОБЛАКА",
+  "CLOUD WIDTH"
+ ],
+ [
+  "ДЛИТЕЛЬНОСТЬ",
+  "DURATION"
+ ],
+ [
+  "ПОДАЧА ПЛАЗМЫ",
+  "PLASMA FEED"
+ ],
+ [
+  "РАСШИРЕНИЕ КАНАЛА",
+  "CHANNEL EXPANSION"
+ ],
+ [
+  "ПРОБИВНАЯ ДЛИНА",
+  "PIERCING RANGE"
+ ],
+ [
+  "РАЗГОН ЗАРЯДА",
+  "CHARGE ACCELERATION"
+ ],
+ [
+  "МОРОЗНЫЙ ОЖОГ",
+  "FROSTBITE"
+ ],
+ [
+  "ДАЛЬНОСТЬ МОРОЗА",
+  "FROST RANGE"
+ ],
+ [
+  "СИЛА ОХЛАЖДЕНИЯ",
+  "CHILL POWER"
+ ],
+ [
+  "МОЩНОСТЬ МИН",
+  "MINE POWER"
+ ],
+ [
+  "ДОПОЛНИТЕЛЬНАЯ МИНА",
+  "EXTRA MINE"
+ ],
+ [
+  "РАДИУС ДЕТОНАЦИИ",
+  "DETONATION RADIUS"
+ ],
+ [
+  "ТЕМП УСТАНОВКИ",
+  "DEPLOY RATE"
+ ],
+ [
+  "ПАРНЫЕ ДИСКИ",
+  "TWIN DISCS"
+ ],
+ [
+  "ДАЛЬНОСТЬ БРОСКА",
+  "THROW RANGE"
+ ],
+ [
+  "СКОРОСТЬ ЗАПУСКА",
+  "LAUNCH SPEED"
+ ],
+ [
+  "РАДИУС ЗАХВАТА",
+  "CAPTURE RADIUS"
+ ],
+ [
+  "СИЛА ПРИТЯЖЕНИЯ",
+  "PULL STRENGTH"
+ ],
+ [
+  "ВРЕМЯ СИНГУЛЯРНОСТИ",
+  "SINGULARITY DURATION"
+ ],
+ [
+  "ДЛИНА ПЛАМЕНИ",
+  "FLAME LENGTH"
+ ],
+ [
+  "СИЛА ПОДЖОГА",
+  "IGNITION POWER"
+ ],
+ [
+  "ОБЫЧНОЕ",
+  "NORMAL"
+ ],
+ [
+  "ВЫСОКОЕ",
+  "HIGH"
+ ],
+ [
+  "НИЗКОЕ",
+  "LOW"
+ ],
+ [
+  "МИНИМАЛЬНОЕ",
+  "MINIMAL"
+ ],
+ [
+  "Урон оружия",
+  "Weapon damage"
+ ],
+ [
+  "Скорость вращения",
+  "Spin speed"
+ ],
+ [
+  "Частота нанесения урона",
+  "Damage tick rate"
+ ],
+ [
+  "Накопление холода",
+  "Chill buildup"
+ ],
+ [
+  "Доп. урон по охлаждённым",
+  "Extra damage vs chilled"
+ ],
+ [
+  "Расстояние пилы от робота",
+  "Saw orbit distance"
+ ],
+ [
+  "Частота атак",
+  "Attack rate"
+ ],
+ [
+  "Радиус взрыва",
+  "Explosion radius"
+ ],
+ [
+  "Дальность морозного веера",
+  "Frost fan range"
+ ],
+ [
+  "Длина пламени",
+  "Flame length"
+ ],
+ [
+  "Радиус захвата",
+  "Capture radius"
+ ],
+ [
+  "Время действия",
+  "Duration"
+ ],
+ [
+  "Радиус цепной молнии",
+  "Chain lightning radius"
+ ],
+ [
+  "Ширина луча",
+  "Beam width"
+ ],
+ [
+  "параметров",
+  "stats"
+ ],
+ [
+  "параметра",
+  "stats"
+ ],
+ [
+  "параметр",
+  "stat"
+ ],
+ [
+  "боевой элемент",
+  "combat unit"
+ ],
+ [
+  "Количество: ",
+  "Count: "
+ ],
+ [
+  "БОСС ПОВЕРЖЕН",
+  "BOSS DEFEATED"
+ ],
+ [
+  "Облик ",
+  "Skin "
+ ],
+ [
+  " · Награда ×",
+  " · Reward ×"
+ ],
+ [
+  " п.п.",
+  " p.p."
+ ],
+ [
+  " ед.",
+  " units"
+ ],
+ [
+  "устройство",
+  "device"
+ ],
+ [
+  "пила",
+  "saw"
+ ],
+ [
+  "мина",
+  "mine"
+ ],
+ [
+  "диск",
+  "disc"
+ ],
+ [
+  "КРИО",
+  "CRYO"
+ ],
+ [
+  "ИЗЛУЧАТЕЛЬ",
+  "EMITTER"
+ ],
+ [
+  "Управление испытанием",
+  "Training controls"
+ ],
+ [
+  "Синтез: любые уровни двух нужных оружий + ядро",
+  "Fusion: two matching weapons of any level + core"
+ ],
+ [
+  "Полная детализация, максимум эффектов и разрешения.",
+  "Full detail, maximum effects and resolution."
+ ],
+ [
+  "Детальные враги и сбалансированные эффекты.",
+  "Detailed enemies with balanced effects."
+ ],
+ [
+  "Детальные враги, меньше свечений и частиц.",
+  "Detailed enemies, fewer glows and particles."
+ ],
+ [
+  "Облегчённые враги и минимальная графическая нагрузка.",
+  "Simplified enemies and minimal graphics load."
+ ],
+ [
+  "+20% урон",
+  "+20% damage"
+ ],
+ [
+  "+6 ширина",
+  "+6 width"
+ ],
+ [
+  "+0.13с оглушение",
+  "+0.13s stun"
+ ],
+ [
+  "+16% темп",
+  "+16% rate"
+ ],
+ [
+  "+22% урон",
+  "+22% damage"
+ ],
+ [
+  "+1 мина",
+  "+1 mine"
+ ],
+ [
+  "+22% тяга",
+  "+22% pull"
+ ],
+ [
+  "+17 радиус",
+  "+17 radius"
+ ],
+ [
+  "+1 диск",
+  "+1 disc"
+ ],
+ [
+  "+35 расстояние",
+  "+35 range"
+ ],
+ [
+  "+16% частота",
+  "+16% rate"
+ ],
+ [
+  "+18% урон",
+  "+18% damage"
+ ],
+ [
+  "+14% темп",
+  "+14% rate"
+ ],
+ [
+  "+1 перескок",
+  "+1 jump"
+ ],
+ [
+  "+1 луч",
+  "+1 beam"
+ ],
+ [
+  "+1 пила",
+  "+1 saw"
+ ],
+ [
+  "+19 радиус",
+  "+19 radius"
+ ],
+ [
+  "+23% обороты",
+  "+23% spin"
+ ],
+ [
+  "+1 ракета",
+  "+1 rocket"
+ ],
+ [
+  "+20 радиус",
+  "+20 radius"
+ ],
+ [
+  "+17% темп",
+  "+17% rate"
+ ],
+ [
+  "+15% темп",
+  "+15% rate"
+ ],
+ [
+  "+1 электропила",
+  "+1 electric saw"
+ ],
+ [
+  "+18 радиус",
+  "+18 radius"
+ ],
+ [
+  "+20% к урону",
+  "+20% damage"
+ ],
+ [
+  "+1 дополнительная цель",
+  "+1 extra target"
+ ],
+ [
+  "+0.13с холода",
+  "+0.13s chill"
+ ],
+ [
+  "+18 к радиусу",
+  "+18 radius"
+ ],
+ [
+  "+16 к радиусу",
+  "+16 radius"
+ ],
+ [
+  "+1 скачок",
+  "+1 jump"
+ ],
+ [
+  "+30 дальности",
+  "+30 range"
+ ],
+ [
+  "+1 снаряд",
+  "+1 projectile"
+ ],
+ [
+  "+1 устройство",
+  "+1 device"
+ ],
+ [
+  "+20% обороты",
+  "+20% spin"
+ ],
+ [
+  "+22% сила",
+  "+22% force"
+ ],
+ [
+  "+6 единиц",
+  "+6 units"
+ ],
+ [
+  "+23% к урону",
+  "+23% damage"
+ ],
+ [
+  "+18% к темпу",
+  "+18% rate"
+ ],
+ [
+  "+1 луч одновременно",
+  "+1 simultaneous beam"
+ ],
+ [
+  "+1 противник насквозь",
+  "+1 pierced enemy"
+ ],
+ [
+  "+1 цель в цепи",
+  "+1 chain target"
+ ],
+ [
+  "дальность цепи растёт с убывающей отдачей",
+  "chain range increases with diminishing returns"
+ ],
+ [
+  "быстрее с убывающей отдачей",
+  "faster with diminishing returns"
+ ],
+ [
+  "+1 настоящая орбитальная пила",
+  "+1 real orbiting saw"
+ ],
+ [
+  "+19 к дальности от робота",
+  "+19 orbit range"
+ ],
+ [
+  "+23% к скорости вращения и +9% к частоте урона",
+  "+23% spin and +9% hit rate"
+ ],
+ [
+  "+20% к урону ракеты",
+  "+20% rocket damage"
+ ],
+ [
+  "+1 ракета за выстрел",
+  "+1 rocket per shot"
+ ],
+ [
+  "увеличивает радиус, убывающая отдача",
+  "increases radius with diminishing returns"
+ ],
+ [
+  "+17% к частоте залпов",
+  "+17% salvo rate"
+ ],
+ [
+  "+21 к радиусу",
+  "+21 radius"
+ ],
+ [
+  "+0.65 с существования облака",
+  "+0.65s cloud duration"
+ ],
+ [
+  "+17% к частоте запуска",
+  "+17% launch rate"
+ ],
+ [
+  "+6 к ширине с убывающей отдачей",
+  "+6 width with diminishing returns"
+ ],
+ [
+  "+55 дальность",
+  "+55 range"
+ ],
+ [
+  "+22 дальность, убывающая отдача",
+  "+22 range, diminishing returns"
+ ],
+ [
+  "быстрее накапливается холод, больше урон по охлаждённым",
+  "chill builds faster, chilled enemies take more damage"
+ ],
+ [
+  "+1 мина за раскладку",
+  "+1 mine per deployment"
+ ],
+ [
+  "+20% урон каждого диска",
+  "+20% damage per disc"
+ ],
+ [
+  "+20% периодический урон",
+  "+20% damage over time"
+ ],
+ [
+  "радиус растёт с убывающей отдачей",
+  "radius grows with diminishing returns"
+ ],
+ [
+  "длительность растёт с убывающей отдачей",
+  "duration grows with diminishing returns"
+ ],
+ [
+  "+20% прямой урон",
+  "+20% direct damage"
+ ],
+ [
+  "дальше бьёт с убывающей отдачей",
+  "increased range with diminishing returns"
+ ],
+ [
+  "+25% к урону горения в течение 4 секунд",
+  "+25% burn damage over 4 seconds"
+ ]
+];
+I18N_PAIRS.sort((a,b)=>b[0].length-a[0].length);
+const localeKey='relictswarm_ui_locale_v1';
+let locale='en';
+try{const stored=localStorage.getItem(localeKey);
+ const systemLang=(typeof navigator!=='undefined'?navigator.language:'')||'';
+ locale=stored==='en'||stored==='ru'?stored:
+  (typeof window!=='undefined'&&window.RelicPlatform?.provider==='crazygames')?'en':
+  /^ru(?:-|$)/i.test(systemLang)?'ru':'en';
+}catch{locale='en';}
+const i18nTextCache=new WeakMap(),i18nAttrsCache=new WeakMap();
+function localizedText(raw){
+ if(locale!=='en'||typeof raw!=='string'||!/[А-Яа-яЁё]/.test(raw))return raw;
+ let result=raw;
+ for(const [ru,en] of I18N_PAIRS)if(result.includes(ru))result=result.split(ru).join(en);
+ return result;
+}
+function localizeTextNode(node){
+ const v=node.nodeValue;
+ let info=i18nTextCache.get(node);
+ if(!info||(v!==info.ru&&v!==info.last))info={ru:v,last:v};
+ const translated=locale==='ru'?info.ru:localizedText(info.ru);
+ if(v!==translated)node.nodeValue=translated;
+ info.last=translated;i18nTextCache.set(node,info);
+}
+function localizeAttrs(element){
+ let originals=i18nAttrsCache.get(element);
+ if(!originals){originals={};i18nAttrsCache.set(element,originals);}
+ for(const key of ['title','placeholder','aria-label']){
+  if(!element.hasAttribute?.(key))continue;
+  const raw=element.getAttribute(key),old=originals[key];
+  if(!old||old.ru!==raw&&old.last!==raw)originals[key]={ru:raw,last:raw};
+  const saved=originals[key],next=locale==='en'?localizedText(saved.ru):saved.ru;
+  if(raw!==next)element.setAttribute(key,next);
+  saved.last=next;
+ }
+}
+function localizeTree(root){
+ if(!root||!root.ownerDocument)return;
+ if(root.nodeType===3){localizeTextNode(root);return;}
+ if(root.nodeType!==1)return;
+ localizeAttrs(root);
+ const walker=document.createTreeWalker(root,NodeFilter.SHOW_ELEMENT|NodeFilter.SHOW_TEXT);
+ while(walker.nextNode()){const n=walker.currentNode;if(n.nodeType===3)localizeTextNode(n);else localizeAttrs(n);}
+}
+if(typeof window!=='undefined')window.RelicOnPlatformLocale=function(value){
+ let stored=null;try{stored=localStorage.getItem(localeKey);}catch{}
+ if(stored==='ru'||stored==='en')return;
+ const next=/^ru(?:-|$)/i.test(String(value||''))?'ru':'en';
+ if(next===locale)return;
+ locale=next;document.documentElement.lang=locale;localizeTree(document.body);
+ if(typeof mode!=='undefined'&&mode==='menu')menu();
+};
+function changeLocale(next){
+ if(next!=='en'&&next!=='ru')return;
+ locale=next;
+ try{localStorage.setItem(localeKey,locale);}catch{}
+ document.documentElement.lang=locale;
+ document.title=locale==='en'?'RELICT SWARM | HTML5 Roguelite':'РЕЛИКТОВЫЙ РОЙ | HTML5 Roguelite';
+ localizeTree(document.body);
+ if(mode==='menu')showSettings();
+}
+if(typeof MutationObserver!=='undefined'&&typeof document!=='undefined'&&document.body){
+ document.documentElement.lang=locale;
+ document.title=locale==='en'?'RELICT SWARM | HTML5 Roguelite':'РЕЛИКТОВЫЙ РОЙ | HTML5 Roguelite';
+ localizeTree(document.body);
+ const observer=new MutationObserver(records=>{
+  for(const record of records){
+   if(record.type==='characterData')localizeTextNode(record.target);
+   else if(record.type==='attributes')localizeAttrs(record.target);
+   else for(const node of record.addedNodes)localizeTree(node);
+  }
+ });
+ observer.observe(document.body,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:['title','placeholder','aria-label']});
+}
 const touching=matchMedia('(pointer:coarse)').matches || 'ontouchstart' in window;let keys={},joy={x:0,y:0,pid:null},mouse={x:0,y:0};const input=(k)=>!!keys[k];
-addEventListener('keydown',e=>{if(['ArrowDown','ArrowUp','ArrowLeft','ArrowRight','Space'].includes(e.code))e.preventDefault();keys[e.code]=true;if(e.repeat)return;if(e.code==='Escape'){if(mode==='playing')pause();else if(mode==='paused')resume()}if(e.code==='Space'&&mode==='playing')dash();if(mode==='playing'&&e.code==='KeyF'){if(trainingMode)renderTrainingPanel(true);else openForge();}if(mode==='upgrade'&&['Digit1','Digit2','Digit3'].includes(e.code)){const n=+e.code.slice(-1)-1;chooseUpgrade(n)}if(mode==='upgrade'&&e.code==='KeyR')requestReroll();});addEventListener('keyup',e=>{keys[e.code]=false});addEventListener('blur',()=>{keys={};resetFloatingJoy();if(mode==='playing')pause()});
+addEventListener('keydown',e=>{if(['ArrowDown','ArrowUp','ArrowLeft','ArrowRight','Space'].includes(e.code))e.preventDefault();keys[e.code]=true;if(e.repeat)return;if(e.code==='Escape'){if(mode==='playing')pause();else if(mode==='paused')resume()}if(e.code==='Space'&&mode==='playing')dash();if(mode==='playing'&&e.code==='KeyF'){if(trainingMode)renderTrainingPanel(true);else openForge();}if(mode==='tactic'&&['Digit1','Digit2','Digit3'].includes(e.code))chooseTactic(+e.code.slice(-1)-1);if(mode==='upgrade'&&['Digit1','Digit2','Digit3'].includes(e.code)){const n=+e.code.slice(-1)-1;chooseUpgrade(n)}if(mode==='upgrade'&&e.code==='KeyR')requestReroll();});addEventListener('keyup',e=>{keys[e.code]=false});addEventListener('blur',()=>{keys={};resetFloatingJoy();if(mode==='playing')pause()});
 // A floating joystick starts at the first touch in the left 60% of the arena.
 // Capture the pointer on the canvas, not on the decorative stick, to allow multitouch dash.
 const joyEl=$('joystick'),joyKnob=$('joyKnob'),arenaEl=$('world');
@@ -1713,7 +4119,7 @@ function sfxWeapon(id){
 }
 
 function clickSound(){sfx('ui',.68)}
-function setMode(m){if(m!=='playing'){resetFloatingJoy();stopFlameStream(false);silenceMaintainedLoops();}mode=m;if(typeof window!=='undefined')window.RelicPlatform?.syncGameplay(m==='playing');perfShow();if(m!=='menu')musicPreviewMode=null;syncMusic();const playVisible=['playing','upgrade','paused','end','forge'].includes(m);$('trainingPanel').classList.toggle('hidden',!(trainingMode&&m==='playing'));$('hud').classList.toggle('hidden',!playVisible);$('touchControls').classList.toggle('hidden',!(touching&&m==='playing'));$('forgeBtn').classList.toggle('hidden',!['playing','upgrade','forge'].includes(m));$('modal').classList.toggle('hidden',m==='playing');$('menuFoot').classList.toggle('hidden',m!=='menu');$('modal').scrollTop=0;}
+function setMode(m){if(m!=='playing'){resetFloatingJoy();stopFlameStream(false);silenceMaintainedLoops();}mode=m;if(typeof window!=='undefined')window.RelicPlatform?.syncGameplay(m==='playing');perfShow();if(m!=='menu')musicPreviewMode=null;syncMusic();const playVisible=['playing','upgrade','paused','end','forge','tactic'].includes(m);$('trainingPanel').classList.toggle('hidden',!(trainingMode&&m==='playing'));$('hud').classList.toggle('hidden',!playVisible);$('touchControls').classList.toggle('hidden',!(touching&&m==='playing'));$('forgeBtn').classList.toggle('hidden',!['playing','upgrade','forge'].includes(m));$('modal').classList.toggle('hidden',m==='playing');$('menuFoot').classList.toggle('hidden',m!=='menu');$('modal').scrollTop=0;}
 // TEST SECTOR: completely separate from survival. None of its weapon changes are persisted.
 function leaveTraining(){trainingMode=false;trainingPanelOpen=true;S=null;trainingRecord={damage:0,hits:[],lastDps:0};$('bossWrap').classList.add('hidden');menu()}
 function createTrainingDummy(x,y){const info=ENEMY.brute;return {id:'brute',trainingDummy:true,x,y,hp:100000000,maxHp:100000000,r:25,spd:0,dmg:0,t:0,hit:0,shock:0,marked:0,attack:9999,fire:9999,charge:0,slow:0,stun:0,burn:0,phase:0,special:0,seed:0,elite:false,value:0}}
@@ -1816,9 +4222,9 @@ function renderSkins(){
 }
 function showSettings(){
  setMode('menu');
- $('modalContent').innerHTML=`<div class="section-top"><div><div class="label">[ СИСТЕМА ]</div><div class="panel-title">Настройки</div></div><button id="backHome" class="btn ghost small-back">◂ НАЗАД</button></div><div class="settings-action"><button id="soundBtn" class="btn">${mute?'♪ ВКЛЮЧИТЬ ЗВУК':'♫ ВЫКЛЮЧИТЬ ЗВУК'}</button><button id="howBtn" class="btn ghost">? КАК ИГРАТЬ</button></div>${audioMixerHTML()}${renderQualityControls()}${window.SwarmTelemetry?.settingsHTML?.()||''}`;
+ $('modalContent').innerHTML=`<div class="section-top"><div><div class="label">[ СИСТЕМА ]</div><div class="panel-title">Настройки</div></div><button id="backHome" class="btn ghost small-back">◂ НАЗАД</button></div><div class="settings-action"><button id="soundBtn" class="btn">${mute?'♪ ВКЛЮЧИТЬ ЗВУК':'♫ ВЫКЛЮЧИТЬ ЗВУК'}</button><button id="howBtn" class="btn ghost">? КАК ИГРАТЬ</button></div><div class="settings-action"><label for="langBtn">ЯЗЫК / LANGUAGE</label><button id="langBtn" type="button" class="btn">RU / EN · ${locale.toUpperCase()}</button></div>${audioMixerHTML()}${renderQualityControls()}${window.SwarmTelemetry?.settingsHTML?.()||''}`;
  $('backHome').onclick=menu;$('soundBtn').onclick=soundToggle;
- $('howBtn').onclick=showHow;bindAudioMixer();
+ $('howBtn').onclick=showHow;$('langBtn').onclick=()=>changeLocale(locale==='ru'?'en':'ru');bindAudioMixer();
 }
 let activeMetaTab='hull';
 function renderShop(){
@@ -1861,7 +4267,7 @@ function renderLab(){
  const sh=$('lab');if(!sh)return;
  sh.innerHTML=Object.entries(HYBRIDS).map(([id,h])=>`<div class="lab-entry ${save.recipes?.[id]?'found':''}"><span style="color:${h.color}">${h.glyph}</span><div><b>${h.name}</b><small>${DRONES[h.a].name} + ${DRONES[h.b].name} · ядро особого босса</small></div><em>${save.recipes?.[id]?'ОТКРЫТО':'НЕ ИЗУЧЕНО'}</em></div>`).join('');
 }
-function showHow(){setMode('menu');$('modalContent').innerHTML=`<div class="label">ИНСТРУКЦИЯ</div><div class="panel-title">СОБИРАЙ НЕПОВТОРИМЫЙ БИЛД</div><p class="panel-desc">Каждая карточка оружия увеличивает его уровень на +1. Обычная улучшает один параметр, необычная два, редкая три, эпическая все четыре. Верхнего предела уровней нет. Два разных оружия любого уровня и камень сильного босса синтеза превращаются в одно совершенно новое оружие. Его тоже можно прокачивать бесконечно.</p><div class="howto"><span>WASD / стрелки</span><span>Пробел — рывок</span><span>F — синтез</span><span>ESC — пауза</span><span>Телефон: джойстик и ⚡</span></div><p class="panel-desc">Бонусы на арене: ✚ ремонт, ◎ магнит всех данных, ϟ ярость и ⬡ неуязвимость. Особые боссы синтеза появляются примерно на 3:10 и 6:10. Обычные боссы НЕ дают камни.</p><button class="btn primary" id="backFromHow">ПОНЯТНО</button>`;$('backFromHow').onclick=showSettings}
+function showHow(){setMode('menu');$('modalContent').innerHTML=`<div class="label">ИНСТРУКЦИЯ</div><div class="panel-title">СОБИРАЙ НЕПОВТОРИМЫЙ БИЛД</div><p class="panel-desc">Каждая карточка оружия увеличивает его уровень на +1. Обычная улучшает один параметр, необычная два, редкая три, эпическая все четыре. Верхнего предела уровней нет. Два разных оружия любого уровня и камень сильного босса синтеза превращаются в одно совершенно новое оружие. Его тоже можно прокачивать бесконечно.</p><div class="howto"><span>WASD / стрелки</span><span>Пробел — рывок</span><span>F — синтез</span><span>ESC — пауза</span><span>Телефон: джойстик и ⚡</span></div><p class="panel-desc">Бонусы на арене: ✚ ремонт, ◎ магнит всех данных, ϟ ярость и ⬡ неуязвимость. Особые боссы синтеза появляются в 6:05, 9:10 и 12:45. Обычные боссы дают тактические модули, а не ядра.</p><button class="btn primary" id="backFromHow">ПОНЯТНО</button>`;$('backFromHow').onclick=showSettings}
 // v0.10.15: Local balance telemetry. No network requests, identifiers, or gameplay changes.
 const BAL_STORE='relictSwarm_last_balance_report_v1';
 let bal=null,balLast=null;
@@ -1995,8 +4401,8 @@ function balFinalize(won,giveup){
   remainingBosses:S.bosses.filter(e=>e.hp>0).map(e=>({id:e.id,hpPct:balR(100*e.hp/e.maxHp)}))};
  bal.events.push({t:balR(S.t),what:'run_end',result:bal.result.status});balStore();window.SwarmTelemetry?.finish?.(balReport(),perf.samples);
 }
-function start(){perfReset();trainingMode=false;runId++;selectedThreat=Math.max(1,Math.min(save.threatUnlocked,selectedThreat));S={threat:selectedThreat,t:0,elapsed:0,player:{x:0,y:0,hp:120+metaBonus('hull'),maxHp:120+metaBonus('hull'),speed:225*(1+metaBonus('speed')),rad:17,inv:1,hit:0,dx:0,dy:-1,dashCd:0,dashTime:0,regen:metaBonus('regen')},cam:{x:0,y:0},lvl:1,xp:0,xpNeed:19,playerDmg:1+metaBonus('power'),magnet:100+metaBonus('magnet'),haste:1+metaBonus('haste'),armor:metaBonus('armor'),healBonus:metaBonus('repair'),critChance:metaBonus('critChance'),critMultiplier:1.5+metaBonus('critDamage'),xpBonus:metaBonus('xp'),buffDuration:1+metaBonus('duration'),dashCooldown:3.6*(1-metaBonus('dash')),score:0,kills:0,shards:0,enemy:[],bullets:[],enemyBullets:[],pickups:[],parts:[],fx:[],floaters:[],drones:[{id:'pulse',lvl:1,cd:0,hitCd:0,mods:{}}],mines:[],gravityWells:[],effects:[],chains:[],hazards:[],hybrids:[],fusionCores:0,synthFlags:[false,false,false],powerupClock:25,rageTimer:0,invulnTimer:0,magnetTimer:0,dead:false,wins:false,spawn:0,spawnCount:0,raidFlags:RAID_EVENTS.map(()=>false),upgrades:[],pendingUp:0,rerollsRemaining:1,rerollsUsed:0,bossFlags:BOSS_EVENTS.map(()=>false),bosses:[],clock:0,regenT:0};balInit();$('bossWrap').classList.add('hidden');$('wavebanner').classList.add('hidden');$('toast').classList.add('hidden');setMode('playing');toast('СИСТЕМА АКТИВИРОВАНА // СОБИРАЙ ДАННЫЕ');sfx('level',.75);for(let i=0;i<9;i++)spawnEnemy('scarab',i*TAU/9,rand(235,340));updateHUD()}
-function weaponSummary(){return `<div class="line"></div><div class="label">КОНФИГУРАЦИЯ ОРУЖИЯ</div><div class="tiny" style="margin:10px 0;line-height:1.9">${S.drones.map(d=>`<b style="color:${DRONES[d.id].color}">${DRONES[d.id].name} ур. ${d.lvl}</b>: ${weaponBranches(d.id).filter(m=>wm(d,m[0])>0).map(m=>m[1]+' '+wm(d,m[0])).join(', ')||'Без модулей'}`).join('<br>')}</div>`}
+function start(){perfReset();trainingMode=false;runId++;selectedThreat=Math.max(1,Math.min(save.threatUnlocked,selectedThreat));S={threat:selectedThreat,t:0,elapsed:0,player:{x:0,y:0,hp:120+metaBonus('hull'),maxHp:120+metaBonus('hull'),speed:225*(1+metaBonus('speed')),rad:17,inv:1,hit:0,dx:0,dy:-1,dashCd:0,dashTime:0,regen:metaBonus('regen')},cam:{x:0,y:0},lvl:1,xp:0,xpNeed:19,playerDmg:1+metaBonus('power'),magnet:100+metaBonus('magnet'),haste:1+metaBonus('haste'),armor:metaBonus('armor'),healBonus:metaBonus('repair'),critChance:metaBonus('critChance'),critMultiplier:1.5+metaBonus('critDamage'),xpBonus:metaBonus('xp'),buffDuration:1+metaBonus('duration'),dashCooldown:3.6*(1-metaBonus('dash')),score:0,kills:0,shards:0,enemy:[],bullets:[],enemyBullets:[],pickups:[],parts:[],fx:[],floaters:[],drones:[{id:'pulse',lvl:1,cd:0,hitCd:0,mods:{}}],mines:[],gravityWells:[],effects:[],chains:[],hazards:[],hybrids:[],fusionCores:0,bossOrder:shuffledBosses('boss'),synthOrder:shuffledBosses('synth'),tactics:{},tacticChoices:[],tacticFiredCount:0,tacticNaniteKills:0,tacticArmor:0,tacticShieldReady:false,tacticShieldAt:0,tacticLastNanoAt:-1000,tacticLastShrapnelAt:-1000,tacticLastChainAt:-1000,tacticLastRetaliationAt:-1000,tacticNextCryoAt:14,tacticFields:[],synthFlags:[false,false,false],powerupClock:25,rageTimer:0,invulnTimer:0,magnetTimer:0,dead:false,wins:false,spawn:0,spawnCount:0,raidFlags:RAID_EVENTS.map(()=>false),upgrades:[],pendingUp:0,rerollsRemaining:1,rerollsUsed:0,bossFlags:BOSS_EVENTS.map(()=>false),bosses:[],clock:0,regenT:0};balInit();$('bossWrap').classList.add('hidden');$('wavebanner').classList.add('hidden');$('toast').classList.add('hidden');setMode('playing');toast('СИСТЕМА АКТИВИРОВАНА // СОБИРАЙ ДАННЫЕ');sfx('level',.75);for(let i=0;i<9;i++)spawnEnemy('scarab',i*TAU/9,rand(235,340));updateHUD()}
+function weaponSummary(){const owned=Object.entries(S.tactics||{}).filter(([,level])=>level>0).map(([id,level])=>{const m=TACTICS.find(a=>a.id===id);return m?'<span style="white-space:nowrap">'+m.glyph+' '+tacticLanguage(m.en,m.name)+' '+tacticLanguage('LV.','УР.')+level+'</span>':''}).filter(Boolean).join(' · ');return `<div class="line"></div><div class="label">КОНФИГУРАЦИЯ ОРУЖИЯ</div><div class="tiny" style="margin:10px 0;line-height:1.9">${S.drones.map(d=>`<b style="color:${DRONES[d.id].color}">${DRONES[d.id].name} ур. ${d.lvl}</b>: ${weaponBranches(d.id).filter(m=>wm(d,m[0])>0).map(m=>m[1]+' '+wm(d,m[0])).join(', ')||'Без модулей'}`).join('<br>')}</div>${owned?'<div class="line"></div><div class="label">'+tacticLanguage('TACTICAL MODULES','ТАКТИЧЕСКИЕ МОДУЛИ')+'</div><div class="tiny" style="line-height:1.9">'+owned+'</div>':''}`}
 function pause(){if(mode!=='playing')return;if(trainingMode){setMode('paused');$('modalContent').innerHTML=`<div class="label">[ ПОЛИГОН ]</div><div class="panel-title">Испытание приостановлено</div><p class="panel-desc">Изменения оружия здесь не сохраняются в обычный забег.</p><div class="button-row"><button class="btn primary" id="resumeBtn">▶ ПРОДОЛЖИТЬ</button><button class="btn ghost" id="quitBtn">◂ В ГЛАВНОЕ МЕНЮ</button></div>`;$('resumeBtn').onclick=resume;$('quitBtn').onclick=leaveTraining;return;}setMode('paused');$('modalContent').innerHTML=`<div class="label">[ ПАУЗА ]</div><div class="panel-title" style="margin-top:9px">Система ожидает</div><p class="panel-desc">На поле уже ${S.kills} обломков. Машины терпеливо дождутся твоего возвращения.</p>${weaponSummary()}${renderQualityControls()}<div class="button-row"><button id="resumeBtn" class="btn primary">▶ ПРОДОЛЖИТЬ</button><button id="quitBtn" class="btn ghost">ЗАВЕРШИТЬ ЗАБЕГ</button></div>`;$('resumeBtn').onclick=resume;$('quitBtn').onclick=()=>finish(false,true)}
 function resume(){if(mode!=='paused')return;setMode('playing');last=performance.now()}
 function toast(v,time=2.8){$('toast').textContent=v;$('toast').classList.remove('hidden');showToastUntil=(S?.t||0)+time}
@@ -2012,10 +4418,12 @@ function finish(won=false,giveup=false){
  $('modalContent').innerHTML=`<div class="label">${won?'ПРОТОКОЛ ВЫПОЛНЕН':'СИГНАЛ ПОТЕРЯН'}</div><div class="panel-title" style="margin-top:8px">${won?'Омега уничтожена':'Корпус выведен из строя'}</div><div class="result-badge">${won?'✦ ПОБЕДА':'✕ '+(giveup?'ЗАБЕГ ПРЕРВАН':'ПОРАЖЕНИЕ')}</div><p class="panel-desc">${won?'Угроза отражена. Открыт следующий протокол сложности.':'Запись сохранена в локальной истории. Усиль билд и попробуй снова.'}</p><div class="stats-three"><div class="statbox"><b>${formatTime(S.t)}</b><span>ВЫЖИВАНИЕ</span></div><div class="statbox"><b>${S.kills}</b><span>УБИЙСТВА</span></div><div class="statbox"><b>${rankedScore.toLocaleString('ru')}</b><span>СЧЁТ ×${modifier.score}</span></div></div><div class="stats-three"><div class="statbox"><b>${S.lvl}</b><span>УРОВЕНЬ</span></div><div class="statbox"><b>${S.drones.length} / ${S.hybrids.length}</b><span>ОРУЖИЕ / СИНТЕЗ</span></div><div class="statbox"><b>✧ ${earned}</b><span>КРИСТАЛЛЫ ×${modifier.reward}</span></div></div><p class="tiny">Угроза: ${modifier.name} · Результат сохранён только в этом браузере.</p><div class="button-row"><button id="againBtn" class="btn primary">↻ ЕЩЁ ОДИН ЗАБЕГ</button><button id="hangarBtn" class="btn ghost">◈ АНГАР</button></div>`;
  $('againBtn').onclick=start;$('hangarBtn').onclick=menu;sfx(won?'win':'lose');} 
 function formatTime(t){let s=Math.max(0,Math.ceil(t)),m=Math.floor(s/60);return `${String(m).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`}
-function dash(){if(!S||mode!=='playing'||S.player.dashCd>0)return;let p=S.player,dir=getInput();let m=hypot(dir.x,dir.y);if(Math.abs(dir.x)+Math.abs(dir.y)<.15){dir.x=p.dx;dir.y=p.dy;m=hypot(dir.x,dir.y)}p.dx=dir.x/m;p.dy=dir.y/m;p.dashCd=S.dashCooldown||3.6;p.dashTime=.2;p.inv=Math.max(p.inv,.32);burst(p.x,p.y,equippedSkin().core,22,180);S.fx.push({type:'ring',x:p.x,y:p.y,r:28,life:.34,max:.34,col:equippedSkin().core});sfx('dash')}
+function dash(){if(!S||mode!=='playing'||S.player.dashCd>0)return;let p=S.player,dir=getInput();let m=hypot(dir.x,dir.y);if(Math.abs(dir.x)+Math.abs(dir.y)<.15){dir.x=p.dx;dir.y=p.dy;m=hypot(dir.x,dir.y)}p.dx=dir.x/m;p.dy=dir.y/m;p.dashCd=S.dashCooldown||3.6;S.tacticDashIntercepted=false;p.dashTime=.2;p.inv=Math.max(p.inv,.32);burst(p.x,p.y,equippedSkin().core,22,180);S.fx.push({type:'ring',x:p.x,y:p.y,r:28,life:.34,max:.34,col:equippedSkin().core});sfx('dash')}
 function getInput(){let x=(input('KeyD')||input('ArrowRight')?1:0)-(input('KeyA')||input('ArrowLeft')?1:0)+joy.x,y=(input('KeyS')||input('ArrowDown')?1:0)-(input('KeyW')||input('ArrowUp')?1:0)+joy.y,m=Math.max(1,Math.hypot(x,y));return {x:x/m,y:y/m}}
 function getDronePos(d,i){if(['saw','fusion_thermal','fusion_tesla','fusion_frostblade','fusion_magnetblade'].includes(d.id))return sawPositions(d,i)[0];const a=S.t*.6+i*TAU/S.drones.length-Math.PI/2,r=57+(i%2)*15;return {x:S.player.x+Math.cos(a)*r,y:S.player.y+Math.sin(a)*r,a}}
-function spawnEnemy(id,a=null,dis=null){if(S.enemy.length>170&&!id.startsWith('boss')&&!id.startsWith('synth')&&id!=='omega'){if(bal&&!trainingMode)bal.totals.spawnBlocked++;return;}let p=S.player,ang=a??rand(0,TAU),d=dis??Math.max(360,Math.min(670,Math.max(W,H)*.55+90)),sp=ENEMY[id],factor=1+S.t/150+Math.max(0,S.lvl-18)*.012,elite=id.startsWith('boss')||id.startsWith('synth')||id==='omega';let x=clamp(p.x+Math.cos(ang)*d,-1760,1760),y=clamp(p.y+Math.sin(ang)*d,-1760,1760);const threat=THREAT_MODES[(S.threat||1)-1];let hp=sp.hp*(elite?(1+Math.max(0,S.t-180)/390):factor)*threat.hp;const obj={id,x,y,vx:0,vy:0,hp,maxHp:hp,r:sp.rad,spd:sp.spd*(1+Math.min(.3,S.t/1600))*threat.speed,dmg:sp.dmg*(elite?1:1+S.t/580)*threat.damage,t:rand(0,4),hit:0,shock:0,marked:0,attack:rand(.5,1.6),fire:rand(1,3),charge:0,slow:0,stun:0,burn:0,phase:0,special:elite?rand(1.6,3.5):0,summoned:false,seed:rand(0,500),elite,value:sp.value};if(!elite&&S.t>135&&Math.random()<Math.min(.21,.035+S.t/4800+(S.threat-1)*.023)){
+function spawnEnemy(id,a=null,dis=null,encounter=null){if(S.enemy.length>170&&!id.startsWith('boss')&&!id.startsWith('synth')&&id!=='omega'){if(bal&&!trainingMode)bal.totals.spawnBlocked++;return;}let p=S.player,ang=a??rand(0,TAU),d=dis??Math.max(360,Math.min(670,Math.max(W,H)*.55+90)),sp=ENEMY[id],factor=1+S.t/150+Math.max(0,S.lvl-18)*.012,elite=id.startsWith('boss')||id.startsWith('synth')||id==='omega';let x=clamp(p.x+Math.cos(ang)*d,-1760,1760),y=clamp(p.y+Math.sin(ang)*d,-1760,1760);const threat=THREAT_MODES[(S.threat||1)-1];const balanceId=encounter&&id!=='omega'?(encounter.kind==='synth'?SYNTH_EVENTS[encounter.slot]?.id:BOSS_EVENTS[encounter.slot]?.id):id;
+const stats=ENEMY[balanceId]||sp;
+let hp=(encounter&&id!=='omega'?stats.hp:sp.hp)*(elite?(1+Math.max(0,S.t-180)/390):factor)*threat.hp;const obj={id,x,y,vx:0,vy:0,hp,maxHp:hp,r:sp.rad,spd:sp.spd*(1+Math.min(.3,S.t/1600))*threat.speed,dmg:stats.dmg*(elite?1:1+S.t/580)*threat.damage,bossBalanceId:balanceId,t:rand(0,4),hit:0,shock:0,marked:0,attack:rand(.5,1.6),fire:rand(1,3),charge:0,slow:0,stun:0,burn:0,phase:0,special:elite?rand(1.6,3.5):0,summoned:false,seed:rand(0,500),elite,value:stats.value,rewardXp:stats.xp};if(!elite&&S.t>135&&Math.random()<Math.min(.21,.035+S.t/4800+(S.threat-1)*.023)){
  obj.champion=true;obj.hp*=3.2;obj.maxHp=obj.hp;obj.spd*=1.10;obj.dmg*=1.65;obj.r*=1.19;obj.value*=3;
  }S.enemy.push(obj);balSpawn(obj);if(elite){S.bosses.push(obj);banner('⚠ '+sp.name+' // ВЫСОКАЯ УГРОЗА',5);$('bossWrap').classList.remove('hidden')}return obj}
 function burst(x,y,col,n=11,power=100){if(!S)return;for(let i=0;i<n&&S.parts.length<650;i++){let a=rand(0,TAU),v=rand(power*.15,power),life=rand(.25,.75);S.parts.push({x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v,life,max:life,size:rand(1.5,4),col})}}
@@ -2050,6 +4458,7 @@ function applyChill(e,amount){
 function hurtEnemy(e,n,opts={}){if(e.hp<=0||!Number.isFinite(n))return;
  const critical=!opts.silentHit&&n>0&&!opts.crit&&Math.random()<(S.critChance||0);
  if(critical)n*=S.critMultiplier||1.5;
+ if(typeof tacticModifyDamage==='function')n=tacticModifyDamage(e,n,opts);
  if(e.elite){
   const hit=calculateBossDamage(e,n,S.t,S.threat);
   n=hit.damage;
@@ -2061,16 +4470,16 @@ function hurtEnemy(e,n,opts={}){if(e.hp<=0||!Number.isFinite(n))return;
   }
  }
  if(trainingMode){trainingRecord.damage+=n;trainingRecord.hits.push({t:S.t,d:n});if(trainingRecord.hits.length>3200)trainingRecord.hits.splice(0,1000)}
- const before=e.hp;balDamage(e,before,n);e.hp-=n;
+ const before=e.hp;balDamage(e,before,n);e.hp-=n;if(typeof tacticOnEnemyHit==='function')tacticOnEnemyHit(e,n,opts);
  if(n>0&&!opts.burn&&!opts.silentHit&&Math.random()<.16)sfx('hit',.7);
  if(e.elite&&e.hp>0&&before/e.maxHp>.52&&e.hp/e.maxHp<=.52){e.phase=1;e.shield=2.0;e.special=Math.max(e.special||0,1.5);e.bossDashWind=0;S.hazards=S.hazards.filter(h=>h.owner!==e);burst(e.x,e.y,ENEMY[e.id].col,45,220);banner('⚠ ВТОРАЯ ФАЗА: '+ENEMY[e.id].name,3.5);sfx('bossPhase');shake=14;}
- e.hit=.11;if(opts.slow)e.slow=Math.max(e.slow,opts.slow);if(opts.stun)e.stun=Math.max(e.stun,opts.stun);if(opts.burn){e.burn=Math.max(e.burn,opts.burn);e.burnStrength=Math.max(e.burnStrength||0,opts.burnPower||16*S.playerDmg*(1+S.t/500));e.burnClock??=0;}if(opts.knock){let m=hypot(e.x-S.player.x,e.y-S.player.y);e.x+=(e.x-S.player.x)/m*opts.knock;e.y+=(e.y-S.player.y)/m*opts.knock}if(e.trainingDummy){
+ e.hit=.11;if(opts.slow)e.slow=Math.max(e.slow,opts.slow);if(opts.stun)e.stun=Math.max(e.stun,e.elite?Math.min(.14,opts.stun):opts.stun);if(opts.burn){e.burn=Math.max(e.burn,opts.burn);e.burnStrength=Math.max(e.burnStrength||0,opts.burnPower||16*S.playerDmg*(1+S.t/500));e.burnClock??=0;}if(opts.knock){let m=hypot(e.x-S.player.x,e.y-S.player.y);e.x+=(e.x-S.player.x)/m*opts.knock;e.y+=(e.y-S.player.y)/m*opts.knock}if(e.trainingDummy){
   e.displayDamage=(e.displayDamage||0)+n;
   if(S.t-(e.lastDamageDisplay||-1)>=.22){floatNum(e.x+rand(-5,5),e.y-25,e.displayDamage,'#ffebae');e.lastDamageDisplay=S.t;e.displayDamage=0;}
  }else if(n>8&&Math.random()<.38)floatNum(e.x+rand(-8,8),e.y-25,n,(critical||opts.crit)?AMBER:'#dbffff');if(e.hp<=0)killEnemy(e)}
-function killEnemy(e){if(e.hp>0)return;if(trainingMode){S.kills++;burst(e.x,e.y,ENEMY[e.id].col,12,100);return;}const z=ENEMY[e.id];S.kills++;balKill(e);if(!e.elite&&Math.random()<.13)sfx('kill',.65);S.score+=z.value;burst(e.x,e.y,z.col,e.elite?55:10,e.elite?260:110);S.fx.push({type:'ring',x:e.x,y:e.y,r:e.r,life:.4,max:.4,col:z.col});S.pickups.push({x:e.x+rand(-6,6),y:e.y+rand(-6,6),xp:z.xp,r:7,life:30,type:'xp'});if(Math.random()<(e.elite?1:e.champion?.35:.025)){S.pickups.push({x:e.x+rand(-10,10),y:e.y+rand(-10,10),xp:e.elite?28:1,r:9,life:30,type:'shard'})}if(Math.random()<.025){S.pickups.push({x:e.x,y:e.y+12,xp:32,r:8,life:40,type:'heal'})}if(e.champion&&Math.random()<.21)spawnPowerup(e.x,e.y);if(e.id==='hive'){for(let i=0;i<2;i++)spawnEnemyNear('scarab',e.x,e.y)}if(e.elite){sfx('heavyExplosion',1,true);sfx('bossDown');S.bosses=S.bosses.filter(z=>z!==e);S.lastBossDefeatAt=S.t;$('bossWrap').classList.toggle('hidden',S.bosses.length===0);if(e.id==='omega'){finish(true);return}if(e.id.startsWith('synth')){S.pickups.push({x:e.x,y:e.y,xp:1,r:17,life:120,type:'core'});burst(e.x,e.y,AMBER,65,290);banner('◈ БОСС ПАЛ! ПОДБЕРИ ЯДРО СИНТЕЗА!',5)}else banner('✦ БОСС ПОВЕРЖЕН!',2.8)}if(Math.random()<.10)clickSound(100+Math.random()*90,.07,'triangle',.012)}
+function killEnemy(e){if(e.hp>0)return;if(trainingMode){S.kills++;burst(e.x,e.y,ENEMY[e.id].col,12,100);return;}const z=ENEMY[e.id];S.kills++;tacticOnEnemyDeath(e);balKill(e);if(!e.elite&&Math.random()<.13)sfx('kill',.65);S.score+=(e.value??z.value);burst(e.x,e.y,z.col,e.elite?55:10,e.elite?260:110);S.fx.push({type:'ring',x:e.x,y:e.y,r:e.r,life:.4,max:.4,col:z.col});S.pickups.push({x:e.x+rand(-6,6),y:e.y+rand(-6,6),xp:e.rewardXp??z.xp,r:7,life:30,type:'xp'});if(Math.random()<(e.elite?1:e.champion?.35:.025)){S.pickups.push({x:e.x+rand(-10,10),y:e.y+rand(-10,10),xp:e.elite?28:1,r:9,life:30,type:'shard'})}if(Math.random()<.025){S.pickups.push({x:e.x,y:e.y+12,xp:32,r:8,life:40,type:'heal'})}if(e.champion&&Math.random()<.21)spawnPowerup(e.x,e.y);if(e.id==='hive'){for(let i=0;i<2;i++)spawnEnemyNear('scarab',e.x,e.y)}if(e.elite){sfx('heavyExplosion',1,true);sfx('bossDown');S.bosses=S.bosses.filter(z=>z!==e);S.lastBossDefeatAt=S.t;$('bossWrap').classList.toggle('hidden',S.bosses.length===0);if(e.id==='omega'){finish(true);return}if(e.id.startsWith('synth')){S.pickups.push({x:e.x,y:e.y,xp:1,r:17,life:120,type:'core'});burst(e.x,e.y,AMBER,65,290);banner('◈ БОСС ПАЛ! ПОДБЕРИ ЯДРО СИНТЕЗА!',5)}else {banner('✦ БОСС ПОВЕРЖЕН!',2.8);if(e.id!=='omega')showTacticChoices();}}if(Math.random()<.10)clickSound(100+Math.random()*90,.07,'triangle',.012)}
 function spawnEnemyNear(id,x,y){const e=spawnEnemy(id,rand(0,TAU),280);if(e){e.x=x+rand(-22,22);e.y=y+rand(-22,22)}}
-function hitPlayer(dmg,x,y){if(trainingMode)return;const p=S.player;if(p.inv>0||S.dead)return;dmg*=1-(S.armor||0);balPlayerHit(Math.min(p.hp,dmg));p.hp-=dmg;p.inv=.62;p.hit=.32;shake=Math.max(shake,7);burst(p.x,p.y,RED,18,160);floatNum(p.x,p.y-35,dmg,RED);sfx('damage');if(p.hp<=0){p.hp=0;finish(false)}}
+function hitPlayer(dmg,x,y){if(trainingMode)return;const p=S.player;if(p.inv>0||S.dead)return;if(tacticAbsorbHit())return;dmg=Math.max(0,dmg*(1-(S.armor||0)));const absorbed=Math.min(dmg,S.tacticArmor||0);S.tacticArmor=Math.max(0,(S.tacticArmor||0)-absorbed);dmg-=absorbed;if(dmg<=0)return;balPlayerHit(Math.min(p.hp,dmg));p.hp-=dmg;p.inv=.62;p.hit=.32;shake=Math.max(shake,7);burst(p.x,p.y,RED,18,160);floatNum(p.x,p.y-35,dmg,RED);sfx('damage');tacticPlayerDamaged();if(p.hp<=0){p.hp=0;finish(false)}}
 function gainXP(n){if(trainingMode)return;S.xp+=n*(1+(S.xpBonus||0));while(S.xp>=S.xpNeed){S.xp-=S.xpNeed;S.lvl++;S.xpNeed=Math.floor(17+S.lvl*11+Math.pow(S.lvl,1.26)*2.8);S.pendingUp++;heal(4)}if(S.pendingUp>0&&mode==='playing')showUpgrades()}
 function eligibleHybrids(){return eligibleFusionIds(S,HYBRIDS);}
 function rarityRoll(){
@@ -2104,6 +4513,163 @@ function upgradeChoices(excluded=[]){
  return out;
 }
 // The card shows individual effects, not a prose string joining unrelated stats.
+// Run-only tactical rewards. Never consume weapon slots or alter permanent saves.
+const TACTICS=[
+ {id:'echo',name:'ЭХО РЫВКА',en:'DASH ECHO',glyph:'ϟ',one:'После рывка электрический импульс повреждает ближайших врагов.',enOne:'Dashing releases an electric pulse that damages nearby enemies.',two:'Импульс оглушает обычных врагов на 0,7 секунды.',enTwo:'The pulse also stuns regular enemies for 0.7 seconds.'},
+ {id:'gravity',name:'ГРАВИТАЦИОННЫЙ СЛЕД',en:'GRAVITY TRAIL',glyph:'◎',one:'После рывка остаётся поле на 2 секунды. Враги внутри замедляются.',enOne:'Leave a 2-second slowing field at the end of a dash.',two:'При исчезновении поле стягивает обычных врагов к центру.',enTwo:'When it fades, the field pulls regular enemies inward.'},
+ {id:'intercept',name:'ФАЗОВЫЙ ПЕРЕХВАТ',en:'PHASE INTERCEPT',glyph:'◇',one:'Рывок уничтожает вражеские снаряды, соприкоснувшиеся с роботом.',enOne:'Dashing destroys enemy projectiles on contact.',two:'Первый перехват за рывок ускоряет атаки на 3 секунды.',enTwo:'The first interception per dash boosts attack rate for 3 seconds.'},
+ {id:'resonance',name:'РЕЗОНАНС ОРУЖИЯ',en:'WEAPON RESONANCE',glyph:'✦',one:'Каждая шестая дальнобойная атака выпускает дополнительный снаряд.',enOne:'Every sixth ranged attack launches an extra projectile.',two:'Дополнительный снаряд выбирает другую цель, если она есть.',enTwo:'The extra projectile seeks another target when available.'},
+ {id:'shrapnel',name:'ОСКОЛОЧНЫЙ КАСКАД',en:'SHRAPNEL CASCADE',glyph:'✸',one:'При убийстве врага возможен взрыв осколков. Не чаще раза в секунду.',enOne:'Kills can trigger a shrapnel burst, once per second at most.',two:'Осколки дополнительно задевают врагов на большем расстоянии.',enTwo:'Shrapnel also damages enemies farther from the explosion.'},
+ {id:'hunter',name:'ПРОТОКОЛ ОХОТНИКА',en:'HUNTER PROTOCOL',glyph:'⌖',one:'Попадание по боссу закрепляет его как приоритет дальнего оружия на 5 секунд.',enOne:'Hitting a boss prioritizes it for ranged weapons for 5 seconds.',two:'Попадания по отмеченному боссу периодически бьют его прислужников.',enTwo:'Hits on the tracked boss periodically damage nearby minions.'},
+ {id:'mark',name:'МЕТКА РАЗРУШЕНИЯ',en:'FRACTURE MARK',glyph:'◆',one:'Каждые три раздельных попадания отмечают врага: +12% получаемого урона на 3 секунды.',enOne:'Three separate hits mark an enemy to take 12% more damage for 3 seconds.',two:'После гибели врага метка переходит на двух ближайших противников.',enTwo:'When a marked enemy dies, the mark spreads to two nearby enemies.'},
+ {id:'shield',name:'АВАРИЙНЫЙ БАРЬЕР',en:'EMERGENCY BARRIER',glyph:'⬡',one:'Автоматически блокирует одно попадание. Восстановление 40 секунд.',enOne:'Automatically blocks one hit. Recharges in 40 seconds.',two:'После блокировки скорость движения повышается на 25% на 2 секунды.',enTwo:'Blocking a hit grants 25% movement speed for 2 seconds.'},
+ {id:'nanites',name:'БОЕВЫЕ НАНИТЫ',en:'COMBAT NANITES',glyph:'✚',one:'Каждые 30 убийств лечат на 8 HP, не чаще раза в 18 секунд.',enOne:'Every 30 kills heals 8 HP, at most once every 18 seconds.',two:'Лишнее лечение создаёт до 12 единиц временной брони.',enTwo:'Excess healing grants up to 12 temporary armor points.'},
+ {id:'retaliation',name:'КОНТУР ВОЗМЕЗДИЯ',en:'RETALIATION CIRCUIT',glyph:'↯',one:'При получении урона отталкивает ближайших врагов. Откат 12 секунд.',enOne:'Taking damage knocks nearby enemies back. 12-second cooldown.',two:'Отброшенные враги получают урон и короткое оглушение.',enTwo:'Repelled enemies also take damage and a brief stun.'},
+ {id:'cryo',name:'КРИОИМПУЛЬС',en:'CRYO PULSE',glyph:'❅',one:'Каждые 14 секунд выпускает волну холода вокруг робота.',enOne:'Every 14 seconds, release a chilling wave around the robot.',two:'Гибель охлаждённого врага создаёт небольшую морозную волну.',enTwo:'Defeating a chilled enemy releases a small frost wave.'},
+ {id:'chain',name:'ЦЕПНАЯ РЕАКЦИЯ',en:'CHAIN REACTION',glyph:'Ϟ',one:'Оглушение врага передаёт разряд одному соседнему врагу. Откат 2 секунды.',enOne:'Stunning an enemy arcs electricity to a neighbor. 2-second cooldown.',two:'Разряд может дополнительно перейти на ещё одного врага.',enTwo:'The discharge can jump to one additional enemy.'}
+];
+function tacticLv(id){return S?.tactics?.[id]||0;}
+function tacticLanguage(en,ru){return typeof locale==='string'&&locale==='en'?en:ru;}
+function tacticOptions(){
+ const pool=TACTICS.filter(a=>tacticLv(a.id)<2),upgrades=pool.filter(a=>tacticLv(a.id)===1),picked=[];
+ if(upgrades.length)picked.push(upgrades[Math.floor(Math.random()*upgrades.length)]);
+ const remain=pool.filter(a=>!picked.includes(a));
+ while(picked.length<3&&remain.length){const j=Math.floor(Math.random()*remain.length);picked.push(remain.splice(j,1)[0]);}
+ return picked;
+}
+function showTacticChoices(){
+ if(!S||trainingMode||S.dead)return;
+ S.tacticChoices=tacticOptions();if(!S.tacticChoices.length)return;
+ setMode('tactic');
+ const title=tacticLanguage('BOSS DEFEATED','БОСС ПОВЕРЖЕН');
+ const hint=tacticLanguage('Choose one tactical module. It lasts for this run and uses no weapon slot.','Выбери один тактический модуль. Он действует до конца забега и не занимает слот оружия.');
+ $('modalContent').innerHTML='<div class="label">✦ '+title+'</div><div class="panel-title">'+tacticLanguage('TACTICAL REWARD','ТАКТИЧЕСКАЯ НАГРАДА')+'</div><p class="panel-desc">'+hint+'</p><div class="upgrade-list">'+S.tacticChoices.map((m,i)=>{
+  const level=tacticLv(m.id)+1;
+  const desc=level===1?tacticLanguage(m.enOne,m.one):tacticLanguage(m.enTwo,m.two);
+  const tag=level===1?tacticLanguage('NEW MODULE','НОВЫЙ МОДУЛЬ'):tacticLanguage('EVOLUTION','ЭВОЛЮЦИЯ');
+  return '<button type="button" class="upgrade-card upgrade-v2 upgrade-card--weapon" data-tactic="'+i+'"><span class="up-type-row"><span class="kind">'+tag+' · '+tacticLanguage('LEVEL','УР.')+' '+level+'</span></span><span class="up-heading"><span class="glyph">'+m.glyph+'</span><strong class="up-name">'+tacticLanguage(m.en,m.name)+'</strong></span><span class="up-description">'+desc+'</span><span class="number"><span class="up-action">'+tacticLanguage('SELECT','ВЫБРАТЬ')+'</span><span class="up-key">'+(i+1)+'</span></span></button>';
+ }).join('')+'</div>';
+ $('modalContent').querySelectorAll('[data-tactic]').forEach(b=>b.onclick=()=>chooseTactic(Number(b.dataset.tactic)));
+}
+function chooseTactic(i){
+ if(mode!=='tactic'||!S?.tacticChoices?.[i])return;
+ const m=S.tacticChoices[i];if(tacticLv(m.id)>=2)return;
+ S.tactics[m.id]=tacticLv(m.id)+1;
+ if(m.id==='shield'&&S.tactics[m.id]===1)S.tacticShieldReady=true;
+ if(m.id==='cryo'&&S.tactics[m.id]===1)S.tacticNextCryoAt=S.t+14;
+ S.tacticChoices=[];sfx('level',.8);toast(tacticLanguage('MODULE ACTIVATED: ','МОДУЛЬ АКТИВИРОВАН: ')+tacticLanguage(m.en,m.name)+' · '+S.tactics[m.id],2.8);
+ if(typeof bal!=='undefined'&&bal&&!trainingMode)bal.events.push({t:Math.round(S.t),what:'tactic_pick',id:m.id+':'+S.tactics[m.id]});
+ if(S.pendingUp>0)showUpgrades();else{setMode('playing');last=performance.now();updateHUD();}
+}
+function tacticPulse(x,y,r,damage,stun=0,chill=0){
+ if(!S)return;
+ S.tacticSuppress=true;
+ try{for(const e of S.enemy){if(e.hp<=0)continue;const dist=Math.hypot(e.x-x,e.y-y);if(dist>r+e.r)continue;
+   if(chill)applyChill(e,chill);
+   hurtEnemy(e,damage,{tacticalProc:true,stun:e.elite?Math.min(.1,stun):stun});
+ }}finally{S.tacticSuppress=false;}
+ if(S.fx.length<160)S.fx.push({type:'ring',x,y,r,life:.35,max:.35,col:chill?'#8fe9ff':TEAL});
+}
+function tacticAfterDash(){
+ const p=S.player;
+ if(tacticLv('echo'))tacticPulse(p.x,p.y,145,24*S.playerDmg,tacticLv('echo')>1?.7:0);
+ if(tacticLv('gravity')){if(S.tacticFields.length>=5)S.tacticFields.shift();S.tacticFields.push({x:p.x,y:p.y,life:2});}
+}
+function tacticOnIntercept(){
+ if(tacticLv('intercept')>1&&!S.tacticDashIntercepted){S.tacticDashIntercepted=true;S.tacticHasteUntil=S.t+3;}
+}
+function tacticWeaponFired(d,pos,target,damage){
+ if(!tacticLv('resonance')||!target)return;
+ S.tacticFiredCount=(S.tacticFiredCount||0)+1;
+ if(S.tacticFiredCount%6!==0||S.bullets.length>185)return;
+ const next=tacticLv('resonance')>1?closest(target.x,target.y,280,target):null;
+ launchBullet(pos.x,pos.y,next||target,Math.max(8,damage*17),'pulse',0);
+}
+function tacticModifyDamage(e,n,opts){
+ if(!trainingMode&&n>0&&S&&e.tacticMarkedUntil>S.t)return n*1.12;
+ return n;
+}
+function tacticOnEnemyHit(e,n,opts){
+ if(!S||trainingMode||S.tacticSuppress||opts.tacticalProc||n<=0)return;
+ if(tacticLv('hunter')&&e.elite){
+  S.tacticBossLockUntil=S.t+5;
+  if(tacticLv('hunter')>1&&S.t>(S.tacticLastHunterAt??-1000)+3){
+   S.tacticLastHunterAt=S.t;
+   const nearby=S.enemy.filter(z=>!z.elite&&z.hp>0&&Math.hypot(z.x-e.x,z.y-e.y)<230).slice(0,5);
+   S.tacticSuppress=true;try{for(const z of nearby)hurtEnemy(z,14*S.playerDmg,{tacticalProc:true});}finally{S.tacticSuppress=false;}
+  }
+ }
+ if(tacticLv('mark')&&e.hp>0&&S.t>(e.tacticLastMarkHit??-1000)+.12){
+  e.tacticLastMarkHit=S.t;e.tacticHitCount=(e.tacticHitCount||0)+1;
+  if(e.tacticHitCount>=3){e.tacticHitCount=0;e.tacticMarkedUntil=S.t+3;}
+ }
+ if(tacticLv('chain')&&opts.stun&&S.t>(S.tacticLastChainAt||-1000)+2){
+  S.tacticLastChainAt=S.t;
+  let current=e,visited=new Set([e]);
+  const count=tacticLv('chain')>1?2:1;
+  S.tacticSuppress=true;
+  try{for(let i=0;i<count;i++){const z=S.enemy.filter(z=>z.hp>0&&!visited.has(z)&&Math.hypot(z.x-current.x,z.y-current.y)<170)[0];
+   if(!z)break;visited.add(z);hurtEnemy(z,10*S.playerDmg,{tacticalProc:true,stun:.25});current=z;
+  }}finally{S.tacticSuppress=false;}
+ }
+}
+function tacticOnEnemyDeath(e){
+ if(!S||trainingMode||S.tacticSuppress||e.tacticDeathDone)return;
+ e.tacticDeathDone=true;
+ if(tacticLv('nanites')){
+  S.tacticNaniteKills=(S.tacticNaniteKills||0)+1;
+  if(S.tacticNaniteKills>=30&&S.t-(S.tacticLastNanoAt||-1000)>=18){
+   S.tacticNaniteKills=0;S.tacticLastNanoAt=S.t;const max=S.player.maxHp,missing=max-S.player.hp;
+   heal(8);if(tacticLv('nanites')>1)S.tacticArmor=Math.min(12,(S.tacticArmor||0)+Math.max(0,8-missing));
+  }
+ }
+ if(e.elite)return;
+ if(tacticLv('shrapnel')&&S.t-(S.tacticLastShrapnelAt||-1000)>=1&&Math.random()<.38){
+  S.tacticLastShrapnelAt=S.t;tacticPulse(e.x,e.y,tacticLv('shrapnel')>1?145:95,18*S.playerDmg);
+ }
+ if(tacticLv('mark')>1&&e.tacticMarkedUntil>S.t){
+  const others=S.enemy.filter(z=>z.hp>0&&z!==e&&Math.hypot(z.x-e.x,z.y-e.y)<270).slice(0,2);
+  for(const z of others)z.tacticMarkedUntil=S.t+3;
+ }
+ if(tacticLv('cryo')>1&&(e.frost>0||e.chill>10)){
+  tacticPulse(e.x,e.y,85,5*S.playerDmg,0,35);
+ }
+}
+function tacticAbsorbHit(){
+ if(!tacticLv('shield')||!S.tacticShieldReady)return false;
+ S.tacticShieldReady=false;S.tacticShieldAt=S.t+40;
+ S.player.inv=Math.max(S.player.inv,.4);
+ if(tacticLv('shield')>1)S.tacticSpeedUntil=S.t+2;
+ if(S.fx.length<160)S.fx.push({type:'ring',x:S.player.x,y:S.player.y,r:65,life:.55,max:.55,col:BLUE});
+ return true;
+}
+function tacticPlayerDamaged(){
+ if(!tacticLv('retaliation')||S.t-(S.tacticLastRetaliationAt||-1000)<12)return;
+ S.tacticLastRetaliationAt=S.t;
+ S.tacticSuppress=true;
+ try{for(const e of S.enemy){if(e.hp<=0||Math.hypot(e.x-S.player.x,e.y-S.player.y)>150)continue;
+  if(!e.elite){const dx=e.x-S.player.x,dy=e.y-S.player.y,d=Math.max(1,Math.hypot(dx,dy));e.x+=dx/d*55;e.y+=dy/d*55;}
+  if(tacticLv('retaliation')>1)hurtEnemy(e,12*S.playerDmg,{tacticalProc:true,stun:e.elite?.1:.36});
+ }}finally{S.tacticSuppress=false;}
+}
+function tacticUpdate(dt){
+ if(!S)return;
+ if(tacticLv('shield')&&!S.tacticShieldReady&&S.t>=S.tacticShieldAt)S.tacticShieldReady=true;
+ if(tacticLv('cryo')&&S.t>=S.tacticNextCryoAt){
+  S.tacticNextCryoAt=S.t+14;tacticPulse(S.player.x,S.player.y,155,6*S.playerDmg,0,42);
+ }
+ const speedBoost=S.tacticSpeedUntil>S.t;
+ if(speedBoost!==!!S.tacticSpeedApplied){
+  if(speedBoost){S.player.speed*=1.25;S.tacticSpeedApplied=true;}
+  else {S.player.speed/=1.25;S.tacticSpeedApplied=false;}
+ }
+ for(const f of S.tacticFields){
+  f.life-=dt;
+  if(f.life>0){for(const e of S.enemy)if(!e.elite&&e.hp>0&&Math.hypot(e.x-f.x,e.y-f.y)<125)e.slow=Math.max(e.slow,.22);}
+  else if(tacticLv('gravity')>1)for(const e of S.enemy){if(e.elite||e.hp<=0)continue;const dx=f.x-e.x,dy=f.y-e.y,d=Math.hypot(dx,dy);if(d<185&&d>5){e.x+=dx/d*42;e.y+=dy/d*42;}}
+ }
+ S.tacticFields=S.tacticFields.filter(f=>f.life>0);
+}
 // A reroll grant is intentionally independent of ads: a rewarded-ad callback
 // can call grantReroll(1) after the platform confirms the reward. No ads yet.
 function grantReroll(count=1){
@@ -2267,6 +4833,7 @@ function closest(x,y,max=360,except=null){let best=null,bestD=max*max;for(let e 
 // Ranged weapons favor a reachable boss, but switch to immediate threats when surrounded.
 // The nearest target still governs flame, saws, mines and short-range defensive effects.
 function chooseCombatTarget(x,y,max=550,weapon='pulse'){
+ if(!trainingMode&&tacticLv('hunter')&&S.tacticBossLockUntil>S.t){const boss=S.bosses.find(e=>e.hp>0&&Math.hypot(e.x-x,e.y-y)<=max);if(boss&& !['saw','flame','mine','gravity'].includes(weapon))return boss;}
  return selectCombatTarget(closest(x,y,max),S.bosses,x,y,max,weapon,trainingMode);
 }
 function damageArea(x,y,r,dmg,options={}){for(const e of S.enemy){if(e.hp<=0)continue;let dx=e.x-x,dy=e.y-y;if(dx*dx+dy*dy<(r+e.r)**2){hurtEnemy(e,dmg,options)}}S.fx.push({type:'ring',x,y,r,life:.32,max:.32,col:options.color||AMBER});burst(x,y,options.color||AMBER,19,r*2)}
@@ -2422,7 +4989,7 @@ function fireFusionSpecial(d,pos,target,base,rank){
 }
 
 function droneUpdate(dt){
- const haste=S.haste||1;
+ const haste=(S.haste||1)*(S.tacticHasteUntil>S.t?1.25:1);
  for(let i=0;i<S.drones.length;i++){
   const d=S.drones[i],meta=DRONES[d.id],rank=d.lvl;
   const pos=getDronePos(d,i),linked=S.hybrids.some(h=>HYBRIDS[h.id].a===d.id||HYBRIDS[h.id].b===d.id);
@@ -2476,6 +5043,7 @@ function droneUpdate(dt){
   // Preserve the .19-second firing floor; excess attack speed becomes extra damage.
   const {cooldown,attackOverflow}=calculateWeaponCooldown(meta.base,haste,wm(d,'rate'),rank);
   d.cd=cooldown;
+  tacticWeaponFired(d,pos,target,baseDmg);
   if(d.id==='fusion_ion'){
    const n=Math.min(5,1+wm(d,'beams'));
    for(let j=0;j<n;j++){
@@ -2611,7 +5179,7 @@ function updateProjectiles(dt){for(let b of S.bullets){b.life-=dt;
    b.x+=b.vx*dt;b.y+=b.vy*dt;for(const e of S.enemy){if(e.hp<=0||b.hitIds.has(e))continue;if(Math.hypot(e.x-b.x,e.y-b.y)<e.r+b.r){hurtEnemy(e,b.damage,{knock:7,burn:b.fireDisc?2.2:0});b.hitIds.add(e);if(b.specialDisc==='lightning')scheduleChain({x:b.x,y:b.y},e,3+Math.min(10,wm(b.owner,'jumps')),b.damage*.42,180,'#c3baff',.17);burst(e.x,e.y,b.col,4,60)}}
   }else if(b.type==='rocket'){if(!b.target||b.target.hp<=0)b.target=closest(b.x,b.y,420);if(b.target){let m=hypot(b.target.x-b.x,b.target.y-b.y),tx=(b.target.x-b.x)/m*b.spd,ty=(b.target.y-b.y)/m*b.spd;b.vx=lerp(b.vx,tx,Math.min(1,dt*5));b.vy=lerp(b.vy,ty,Math.min(1,dt*5))}b.x+=b.vx*dt;b.y+=b.vy*dt;const e=closest(b.x,b.y,19);if(e||b.life<=0){sfx('explosion',b.hybrid==='napalm'?1.1:.74);damageArea(b.x,b.y,b.blast,b.dmg,{color:b.hybrid==='starfall'?BLUE:b.hybrid==='napalm'?'#ff904f':RED,slow:b.hybrid==='starfall'?.8:0,knock:11,burn:b.hybrid==='napalm'?2.8:0});if(b.hybrid==='napalm')fusionField(b.x,b.y,b.blast*.95,b.dmg*.19,3,'#ff8742',{fire:true});if(b.hybrid==='starfall'){S.effects.push({x:b.x,y:b.y,r:73,life:1.65,clock:0,damage:b.dmg*.25,col:BLUE});burst(b.x,b.y,'#bef5ff',25,230);}b.life=-1;shake=Math.max(shake,2)}}else{b.x+=b.vx*dt;b.y+=b.vy*dt;for(let e of S.enemy){if(e.hp>0&&!(b.hitIds&&b.hitIds.has(e))&&Math.abs(e.x-b.x)<e.r+b.r&&Math.abs(e.y-b.y)<e.r+b.r&&Math.hypot(e.x-b.x,e.y-b.y)<e.r+b.r){hurtEnemy(e,b.dmg,{knock:5});if((b.type==='pulse'||b.type==='fusion_ion')&&performance.now()/1000-lastLaserImpact>.085){sfx('laserHit',.70);lastLaserImpact=performance.now()/1000}if(b.hitIds)b.hitIds.add(e);burst(b.x,b.y,TEAL,3,65);if(b.pierce>0){b.pierce--;b.dmg*=.75;b.x+=b.vx*dt*3;b.y+=b.vy*dt*3}else b.life=-1;break}}}}
  S.bullets=S.bullets.filter(b=>b.life>0);
- for(let b of S.enemyBullets){b.life-=dt;b.x+=b.vx*dt;b.y+=b.vy*dt;if(Math.hypot(S.player.x-b.x,S.player.y-b.y)<S.player.rad+b.r){hitPlayer(b.dmg,b.x,b.y);b.life=-1;burst(b.x,b.y,RED,6,60)}}S.enemyBullets=S.enemyBullets.filter(b=>b.life>0);
+ for(let b of S.enemyBullets){b.life-=dt;b.x+=b.vx*dt;b.y+=b.vy*dt;if(Math.hypot(S.player.x-b.x,S.player.y-b.y)<S.player.rad+b.r){if(S.player.dashTime>0&&tacticLv('intercept')){b.life=-1;tacticOnIntercept();continue;}hitPlayer(b.dmg,b.x,b.y);b.life=-1;burst(b.x,b.y,RED,6,60)}}S.enemyBullets=S.enemyBullets.filter(b=>b.life>0);
  for(let eff of S.effects){eff.life-=dt;eff.clock-=dt;if(eff.clock<=0){eff.clock=.28;for(let e of S.enemy){if(e.hp>0&&Math.hypot(e.x-eff.x,e.y-eff.y)<e.r+eff.r)hurtEnemy(e,eff.damage,{slow:.34,burn:.5})}}}S.effects=S.effects.filter(x=>x.life>0);
  updateChains(dt);for(let fx of S.fx)fx.life-=dt;S.fx=S.fx.filter(x=>x.life>0);if(S.fx.length>180)S.fx.splice(0,S.fx.length-180);
 }
@@ -2619,13 +5187,14 @@ function updateProjectiles(dt){for(let b of S.bullets){b.life-=dt;
 // V0.3: Boss mechanics are explicit and telegraphed; none shares the same generic radial shot.
 // Boss behaviours: readable threats with different positioning decisions.
 // The caps prevent overlapping encounters from overwhelming slower phones.
+function bossEncounterRatio(e){if(!e?.bossBalanceId||e.bossBalanceId===e.id)return 1;return (ENEMY[e.bossBalanceId]?.dmg||ENEMY[e.id]?.dmg||1)/Math.max(1,ENEMY[e.id]?.dmg||1)}
 function bossHazard(data){
  if(S.hazards.length>=48)return;
- S.hazards.push({...data,life:data.delay,hit:false});
+ S.hazards.push({...data,dmg:data.dmg*bossEncounterRatio(data.owner),life:data.delay,hit:false});
 }
 function bossBullet(e,angle,speed,damage,color,r=7,life=4.2){
  if(S.enemyBullets.length>=120)return;
- S.enemyBullets.push({x:e.x,y:e.y,vx:Math.cos(angle)*speed,vy:Math.sin(angle)*speed,r,dmg:damage,col:color,life});
+ S.enemyBullets.push({x:e.x,y:e.y,vx:Math.cos(angle)*speed,vy:Math.sin(angle)*speed,r,dmg:damage*bossEncounterRatio(e),col:color,life});
 }
 function bossReinforcements(e,id,count,limit=9){
  if(S.enemy.length>=148)return;
@@ -2974,7 +5543,7 @@ function executeRaid(evt){
  }
  banner('⚠ '+evt.name+' // ПРИОРИТЕТ ЦЕЛЕЙ!',3.4);sfx('warning',.6);
 }
-function update(dt){if(!S)return;if(trainingMode){updateTraining(dt);return;}S.t+=dt;S.spawn-=dt;S.rageTimer=Math.max(0,S.rageTimer-dt);S.invulnTimer=Math.max(0,S.invulnTimer-dt);S.magnetTimer=Math.max(0,S.magnetTimer-dt);S.powerupClock-=dt;if(S.powerupClock<=0){spawnPowerup();S.powerupClock=rand(22,34)}S.player.inv=Math.max(0,S.player.inv-dt);S.player.hit=Math.max(0,S.player.hit-dt);S.player.dashCd=Math.max(0,S.player.dashCd-dt);S.player.dashTime=Math.max(0,S.player.dashTime-dt);let p=S.player,inp=getInput(),mag=hypot(inp.x,inp.y);p.moving=Math.abs(inp.x)+Math.abs(inp.y)>.12;if(p.moving){p.dx=inp.x/mag;p.dy=inp.y/mag}if(p.dashTime>0){p.x+=p.dx*900*dt;p.y+=p.dy*900*dt;if(Math.random()<dt*90)burst(p.x,p.y,TEAL,1,40)}else{p.x+=inp.x*p.speed*dt;p.y+=inp.y*p.speed*dt}p.x=clamp(p.x,-1740,1740);p.y=clamp(p.y,-1740,1740);
+function update(dt){if(!S)return;if(trainingMode){updateTraining(dt);return;}S.t+=dt;S.spawn-=dt;S.rageTimer=Math.max(0,S.rageTimer-dt);S.invulnTimer=Math.max(0,S.invulnTimer-dt);S.magnetTimer=Math.max(0,S.magnetTimer-dt);S.powerupClock-=dt;if(S.powerupClock<=0){spawnPowerup();S.powerupClock=rand(22,34)}S.player.inv=Math.max(0,S.player.inv-dt);S.player.hit=Math.max(0,S.player.hit-dt);S.player.dashCd=Math.max(0,S.player.dashCd-dt);const wasDashing=S.player.dashTime>0;S.player.dashTime=Math.max(0,S.player.dashTime-dt);let p=S.player,inp=getInput(),mag=hypot(inp.x,inp.y);p.moving=Math.abs(inp.x)+Math.abs(inp.y)>.12;if(p.moving){p.dx=inp.x/mag;p.dy=inp.y/mag}if(p.dashTime>0){p.x+=p.dx*900*dt;p.y+=p.dy*900*dt;if(Math.random()<dt*90)burst(p.x,p.y,TEAL,1,40)}else{p.x+=inp.x*p.speed*dt;p.y+=inp.y*p.speed*dt}p.x=clamp(p.x,-1740,1740);p.y=clamp(p.y,-1740,1740);if(wasDashing&&p.dashTime===0)tacticAfterDash();tacticUpdate(dt);
  if(S.player.regen){S.player.hp=Math.min(S.player.maxHp,S.player.hp+S.player.regen*dt)}
  S.cam.x=lerp(S.cam.x,p.x,Math.min(1,dt*5));S.cam.y=lerp(S.cam.y,p.y,Math.min(1,dt*5));
   const phase=Math.min(4,Math.floor(S.t/180));
@@ -2995,9 +5564,10 @@ function update(dt){if(!S)return;if(trainingMode){updateTraining(dt);return;}S.t
    if(!S.bosses.some(b=>b.hp>0) && S.t-(S.lastBossDefeatAt??-1000)>=10){
     const next=scheduled.find(e=>S.t>=e.t&&!(e.kind==='boss'?S.bossFlags[e.i]:S.synthFlags[e.i]));
     if(next){if(next.kind==='boss')S.bossFlags[next.i]=true;else S.synthFlags[next.i]=true;
-     spawnEnemy(next.id);
-     if(next.kind==='synth')banner('◈ БОСС СИНТЕЗА: '+ENEMY[next.id].name,4);
-     if(next.id==='omega')toast('ОМЕГА ПРИБЫЛА: УНИЧТОЖЬ ЕЁ, ЧТОБЫ ЗАВЕРШИТЬ ЗАБЕГ',6);
+     const id=next.kind==='synth'?S.synthOrder[next.i]:next.id==='omega'?'omega':S.bossOrder[next.i];
+     spawnEnemy(id,null,null,{kind:next.kind,slot:next.i});
+     if(next.kind==='synth')banner('◈ БОСС СИНТЕЗА: '+ENEMY[id].name,4);
+     if(id==='omega')toast('ОМЕГА ПРИБЫЛА: УНИЧТОЖЬ ЕЁ, ЧТОБЫ ЗАВЕРШИТЬ ЗАБЕГ',6);
     }
    }
  droneUpdate(dt);updateHybridCombat(dt);updateAreaWeapons(dt);updateProjectiles(dt);if(mode!=='playing')return;updateEnemies(dt);if(mode!=='playing')return;updateHazards(dt);updateDrops(dt);if(mode!=='playing')return;balTick(dt);

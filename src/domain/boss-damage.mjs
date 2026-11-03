@@ -1,6 +1,7 @@
 // Boss hit/shield/DPS caps. Takes a snapshot and returns next counters without mutation.
 export function calculateBossDamage(enemy, raw, time, threat) {
- const maxHit=enemy.id==='omega'?340:enemy.id==='synth3'?230:enemy.id==='synth2'?190:enemy.id==='synth1'?260:enemy.id==='boss2'?255:285;
+ const balanceId=enemy.bossBalanceId||enemy.id;
+ const maxHit=balanceId==='omega'?340:balanceId==='synth3'?230:enemy.id==='synth2'?190:enemy.id==='synth1'?260:enemy.id==='boss2'?255:285;
  const afterHitCap=Math.min(raw,maxHit);
  const afterShield=enemy.shield>0?afterHitCap*.27:afterHitCap;
  const restart=!enemy.damageSecondAt||time-enemy.damageSecondAt>=1;

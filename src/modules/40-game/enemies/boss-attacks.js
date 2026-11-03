@@ -1,12 +1,13 @@
 // Boss behaviours: readable threats with different positioning decisions.
 // The caps prevent overlapping encounters from overwhelming slower phones.
+function bossEncounterRatio(e){if(!e?.bossBalanceId||e.bossBalanceId===e.id)return 1;return (ENEMY[e.bossBalanceId]?.dmg||ENEMY[e.id]?.dmg||1)/Math.max(1,ENEMY[e.id]?.dmg||1)}
 function bossHazard(data){
  if(S.hazards.length>=48)return;
- S.hazards.push({...data,life:data.delay,hit:false});
+ S.hazards.push({...data,dmg:data.dmg*bossEncounterRatio(data.owner),life:data.delay,hit:false});
 }
 function bossBullet(e,angle,speed,damage,color,r=7,life=4.2){
  if(S.enemyBullets.length>=120)return;
- S.enemyBullets.push({x:e.x,y:e.y,vx:Math.cos(angle)*speed,vy:Math.sin(angle)*speed,r,dmg:damage,col:color,life});
+ S.enemyBullets.push({x:e.x,y:e.y,vx:Math.cos(angle)*speed,vy:Math.sin(angle)*speed,r,dmg:damage*bossEncounterRatio(e),col:color,life});
 }
 function bossReinforcements(e,id,count,limit=9){
  if(S.enemy.length>=148)return;
