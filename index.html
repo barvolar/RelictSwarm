@@ -2824,23 +2824,51 @@ function bossAttack(e,dt,dx,dy,d){
   e.special=phase?3.3:4.65;
   banner('ХРАНИТЕЛЬ: РАЗРЕЗЫ И КОЛЬЦО!',1.6);
  }else if(e.id==='synth2'){
-  // Smith: a spiral volley leaves a two-shot gap in the player's direction.
-  const n=phase?16:12;
-  for(let j=0;j<n;j++){
-   if(j===0||j===n-1)continue;
-   const angle=aim+j*TAU/n+S.t*.12;
-   bossBullet(e,angle,240+phase*22,21+phase*6,'#88eaff',7,4);
+  // Chaos Smith: three different tactical checks, not one repetitive spiral.
+  // Prediction punishes running in a straight line, but every target is telegraphed.
+  const pattern=(turn-1)%3;
+  const moving=!!p.moving;
+  const runX=moving?(p.dx||0):0,runY=moving?(p.dy||0):0;
+  const sideX=-Math.sin(aim),sideY=Math.cos(aim);
+  const meteor=(x,y,delay,r=65)=>bossHazard({type:'forgeMeteor',owner:e,
+   x:clamp(x,-1720,1720),y:clamp(y,-1720,1720),r,
+   delay,col:'#ffad61',dmg:phase?33:25,linger:phase?1.65:1.35});
+  if(pattern===0){
+   // 1: intercept the player's predicted positions in a staggered sequence.
+   // Constant movement in one direction is no longer a universal safe strategy.
+   const count=phase?4:3;
+   for(let k=0;k<count;k++){
+    const t=1.04+k*.33;
+    const ahead=moving?225*t:0;
+    const sway=(k%2===0?-1:1)*(moving?16:48);
+    meteor(p.x+runX*ahead+sideX*sway,p.y+runY*ahead+sideY*sway,t,phase?71:65);
+   }
+   banner('КУЗНЕЦ: МЕТЕОРЫ НА ПЕРЕХВАТ! МЕНЯЙ НАПРАВЛЕНИЕ!',1.7);
+  }else if(pattern===1){
+   // 2: anvil press: two angled lanes converge where a fleeing player is headed.
+   const px=p.x+runX*(moving?190:0),py=p.y+runY*(moving?190:0);
+   const lineAim=Math.atan2(py-e.y,px-e.x);
+   for(const offset of [-.26,.26])
+    bossHazard({type:'slash',owner:e,x:e.x,y:e.y,ang:lineAim+offset,
+     len:Math.min(660,Math.max(350,Math.hypot(px-e.x,py-e.y)+110)),
+     r:phase?34:29,delay:1.06,col:'#ffd084',dmg:phase?36:29});
+   meteor(px,py,1.62,phase?79:71);
+   if(phase)meteor(p.x-runX*75+sideX*100,p.y-runY*75+sideY*100,1.94,62);
+   banner('КУЗНЕЦ: ПРЕСС + УДАР НАКОВАЛЬНИ! УХОДИ В СТОРОНУ!',1.7);
+  }else{
+   // 3: spiral with a genuine escape gap; the delayed burn forbids standing in it.
+   const n=phase?16:12;
+   for(let j=0;j<n;j++){
+    if(j===0||j===n-1)continue;
+    bossBullet(e,aim+j*TAU/n+S.t*.12,phase?264:245,phase?24:19,'#88eaff',7,4);
+   }
+   meteor(p.x+runX*(moving?255:0),p.y+runY*(moving?255:0),1.13,phase?76:68);
+   if(phase)bossHazard({type:'annulus',owner:e,x:e.x,y:e.y,
+    inner:99,r:228,delay:1.58,col:'#76e6fc',dmg:30});
+   banner('КУЗНЕЦ: СПИРАЛЬ + ВЫЖЖЕННАЯ ЗОНА!',1.65);
   }
-  for(let k=0;k<(phase?4:3);k++){
-   const lead=k*.34;
-   bossHazard({type:'circle',owner:e,
-    x:p.x+p.dx*100*lead+Math.cos(k*2.4)*58,
-    y:p.y+p.dy*100*lead+Math.sin(k*2.4)*58,
-    r:63,delay:1.0+k*.23,col:'#75f2e8',dmg:30+phase*8});
-  }
-  if(phase)bossReinforcements(e,'phantom',2,5);
-  e.special=phase?3.55:4.85;
-  banner('КУЗНЕЦ: ПРОХОД В СПИРАЛИ + МЕТЕОРЫ!',1.6);
+  if(phase&&turn%2===0)bossReinforcements(e,'phantom',2,5);
+  e.special=phase?2.95:3.65;
  }else if(e.id==='boss3'){
   // Punisher: broad parallel lanes switch axis every attack.
   const horizontal=turn%2===1,n=phase?4:3,gap=130;
@@ -2909,6 +2937,16 @@ function updateHazards(dt){
   if(h.owner&&h.owner.hp<=0){h.hit=true;h.life=-1;continue;}
   // The telegraphed sweep visibly rotates before the actual strike.
   if(h.type==='sweep'&&h.delay>0)h.ang+=(h.turnSpeed||0)*dt;
+  if(h.type==='forgeScorch'){
+   // Residual hot ground is hazardous briefly, then disappears.
+   h.scorchTick=(h.scorchTick??.4)-dt;
+   if(h.life>0&&h.scorchTick<=0){
+    h.scorchTick=.45;
+    if(Math.hypot(S.player.x-h.x,S.player.y-h.y)<h.r+S.player.rad)
+     hitPlayer(Math.max(7,h.dmg*.33),h.x,h.y);
+   }
+   continue;
+  }
   if(h.delay>0||h.hit)continue;
   h.hit=true;
   if(h.type==='slash'||h.type==='dash'||h.type==='sweep'){
@@ -2928,6 +2966,12 @@ function updateHazards(dt){
    if(d+S.player.rad>=h.inner&&d-S.player.rad<=h.r)hitPlayer(h.dmg,h.x,h.y);
    S.fx.push({type:'ring',x:h.x,y:h.y,r:h.r,life:.38,max:.38,col:h.col});
    burst(h.x,h.y,h.col,10,100);
+  }else if(h.type==='forgeMeteor'){
+   // The blast changes into a visible short-lived burn zone.
+   if(Math.hypot(S.player.x-h.x,S.player.y-h.y)<h.r+S.player.rad)hitPlayer(h.dmg,h.x,h.y);
+   S.fx.push({type:'ring',x:h.x,y:h.y,r:h.r,life:.40,max:.40,col:h.col});
+   burst(h.x,h.y,'#ffb55a',14,130);
+   h.type='forgeScorch';h.life=h.linger||1.35;h.hit=false;h.delay=0;h.scorchTick=.4;
   }else{
    if(Math.hypot(S.player.x-h.x,S.player.y-h.y)<h.r+S.player.rad)hitPlayer(h.dmg,h.x,h.y);
    S.fx.push({type:'ring',x:h.x,y:h.y,r:h.r,life:.4,max:.4,col:h.col});
@@ -2942,7 +2986,13 @@ function drawHazards(){
   // Red/amber indicates incoming enemy damage. Cyan in annuli marks safe centers.
   const k=clamp(1-h.delay/1.7,0,1),imminent=h.delay<.32;
   cx.save();cx.globalAlpha=.58+.35*k;
-  if(h.type==='slash'||h.type==='dash'||h.type==='sweep'){
+  if(h.type==='forgeScorch'){
+   const alpha=clamp(h.life/(h.linger||1.35),0,1);
+   cx.globalAlpha=.25+.45*alpha;
+   cx.fillStyle='#ef7737';cx.beginPath();cx.arc(h.x,h.y,h.r,0,TAU);cx.fill();
+   cx.strokeStyle='#ffb971';cx.lineWidth=3;cx.stroke();
+   ring(h.x,h.y,h.r*.65,'#ffd598',2);
+  }else if(h.type==='slash'||h.type==='dash'||h.type==='sweep'){
    const x1=h.x+Math.cos(h.ang)*h.len,y1=h.y+Math.sin(h.ang)*h.len;
    cx.strokeStyle=imminent?'#ffe4be':'#ff6475';
    cx.lineWidth=h.r*2;cx.lineCap='round';cx.setLineDash([12,12]);
@@ -2961,7 +3011,7 @@ function drawHazards(){
    cx.strokeStyle=imminent?'#fff5d9':'#ffccd0';cx.lineWidth=2.8;
    cx.beginPath();cx.arc(h.x,h.y,Math.max(h.inner+2,h.r*(1-k)),0,TAU);cx.stroke();
   }else{
-   cx.fillStyle=imminent?'#ff495436':'#ff364324';
+   cx.fillStyle=h.type==='forgeMeteor'?(imminent?'#ff9a523f':'#ff94402e'):(imminent?'#ff495436':'#ff364324');
    cx.strokeStyle=imminent?'#ffe1b1':'#ff6779';
    cx.lineWidth=imminent?5:3.5;
    cx.beginPath();cx.arc(h.x,h.y,h.r,0,TAU);cx.fill();cx.stroke();
@@ -3058,7 +3108,7 @@ function executeRaid(evt){
  }
  banner('⚠ '+evt.name+' // ПРИОРИТЕТ ЦЕЛЕЙ!',3.4);sfx('warning',.6);
 }
-function update(dt){if(!S)return;if(trainingMode){updateTraining(dt);return;}S.t+=dt;const freezeActive=S.timeStopTimer>0;S.timeStopTimer=Math.max(0,S.timeStopTimer-dt);S.spawn-=freezeActive?0:dt;S.rageTimer=Math.max(0,S.rageTimer-dt);S.invulnTimer=Math.max(0,S.invulnTimer-dt);S.magnetTimer=Math.max(0,S.magnetTimer-dt);S.powerupClock-=dt;if(S.powerupClock<=0){spawnPowerup();S.powerupClock=rand(60,85)}S.player.inv=Math.max(0,S.player.inv-dt);S.player.hit=Math.max(0,S.player.hit-dt);S.player.dashCd=Math.max(0,S.player.dashCd-dt);S.player.dashTime=Math.max(0,S.player.dashTime-dt);let p=S.player,inp=getInput(),mag=hypot(inp.x,inp.y);if(Math.abs(inp.x)+Math.abs(inp.y)>.12){p.dx=inp.x/mag;p.dy=inp.y/mag}if(p.dashTime>0){p.x+=p.dx*900*dt;p.y+=p.dy*900*dt;if(Math.random()<dt*90)burst(p.x,p.y,TEAL,1,40)}else{p.x+=inp.x*p.speed*dt;p.y+=inp.y*p.speed*dt}p.x=clamp(p.x,-1740,1740);p.y=clamp(p.y,-1740,1740);
+function update(dt){if(!S)return;if(trainingMode){updateTraining(dt);return;}S.t+=dt;const freezeActive=S.timeStopTimer>0;S.timeStopTimer=Math.max(0,S.timeStopTimer-dt);S.spawn-=freezeActive?0:dt;S.rageTimer=Math.max(0,S.rageTimer-dt);S.invulnTimer=Math.max(0,S.invulnTimer-dt);S.magnetTimer=Math.max(0,S.magnetTimer-dt);S.powerupClock-=dt;if(S.powerupClock<=0){spawnPowerup();S.powerupClock=rand(60,85)}S.player.inv=Math.max(0,S.player.inv-dt);S.player.hit=Math.max(0,S.player.hit-dt);S.player.dashCd=Math.max(0,S.player.dashCd-dt);S.player.dashTime=Math.max(0,S.player.dashTime-dt);let p=S.player,inp=getInput(),mag=hypot(inp.x,inp.y);p.moving=Math.abs(inp.x)+Math.abs(inp.y)>.12;if(p.moving){p.dx=inp.x/mag;p.dy=inp.y/mag}if(p.dashTime>0){p.x+=p.dx*900*dt;p.y+=p.dy*900*dt;if(Math.random()<dt*90)burst(p.x,p.y,TEAL,1,40)}else{p.x+=inp.x*p.speed*dt;p.y+=inp.y*p.speed*dt}p.x=clamp(p.x,-1740,1740);p.y=clamp(p.y,-1740,1740);
  if(S.player.regen){S.player.hp=Math.min(S.player.maxHp,S.player.hp+S.player.regen*dt)}
  S.cam.x=lerp(S.cam.x,p.x,Math.min(1,dt*5));S.cam.y=lerp(S.cam.y,p.y,Math.min(1,dt*5));
   const phase=Math.min(4,Math.floor(S.t/180));
