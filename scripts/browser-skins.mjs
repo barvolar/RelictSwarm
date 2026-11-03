@@ -27,7 +27,7 @@ try{
  let chromeError='';chrome.stderr.on('data',chunk=>{chromeError+=chunk.toString().slice(0,1500);});chrome.on('error',error=>{chromeError+=' SPAWN '+String(error);});
  console.log('Browser executable:',chromePath);
  const waitHttp=async url=>{
-  for(let i=0;i<120;i++){try{const r=await fetch(url);if(r.ok)return await r.json();}catch{}await sleep(100);}
+  for(let i=0;i<450;i++){try{const r=await fetch(url);if(r.ok)return await r.json();}catch{}await sleep(100);}
   throw Error('Chrome debugging server not ready: '+url+'; process '+chrome?.exitCode+'; chrome log: '+chromeError.slice(-1800));
  };
  await waitHttp('http://127.0.0.1:43174/json/list');
