@@ -1,4 +1,4 @@
-function skinSvg(id){
+function skinSvgFallback(id){
  const s=SKINS[id]||SKINS.relict,rank=SKIN_RARITY_RANK[s.rarity]||0;
  const wing=rank?[-1,1].map(side=>{
   const shift=side<0?0:120,transform=side<0?'':'translate(120 0) scale(-1 1)';
@@ -25,6 +25,36 @@ function skinSvg(id){
  '<path d="M47 69 60 53 73 69 67 86 53 86Z" fill="'+s.coreDark+'" stroke="'+s.light+'" stroke-width="2.3"/>'+
  '<path d="M60 60 68 70 64 80 56 80 52 70Z" fill="'+s.core+'"/><circle cx="60" cy="68" r="3" fill="'+s.light+'"/>'+
  '</g>'+halo+'</svg>';
+}
+// A preview is a real screenshot of the same Canvas robot renderer used in combat.
+// The old hand-drawn SVG is a fallback for non-Canvas/test environments only.
+const SKIN_PREVIEW_CACHE=new Map();
+function skinSvg(id){
+ const key=SKINS[id]?id:'relict';
+ const skin=SKINS[key];
+ if(typeof document==='undefined'||typeof cx==='undefined'||!document.createElement)return skinSvgFallback(key);
+ let png=SKIN_PREVIEW_CACHE.get(key);
+ if(!png){
+  const canvas=document.createElement('canvas');
+  canvas.width=320;canvas.height=360; // 2x the 160x180 logical preview
+  const previewCtx=canvas.getContext('2d',{alpha:true});
+  if(!previewCtx)return skinSvgFallback(key);
+  const liveCtx=cx,liveOverride=skinVisualOverride;
+  try{
+   cx=previewCtx;skinVisualOverride=skin;
+   previewCtx.setTransform(2,0,0,2,0,0);
+   previewCtx.translate(80,90);
+   previewCtx.scale(1.65,1.65);
+   drawRobot({x:0,y:0,dx:0,dy:-1,inv:0},true);
+   png=canvas.toDataURL('image/png');
+   SKIN_PREVIEW_CACHE.set(key,png);
+  }catch(error){
+   console.error('[Relict Swarm] Skin preview render failed:',key,error);
+  }finally{
+   cx=liveCtx;skinVisualOverride=liveOverride;
+  }
+ }
+ return png?'<img class="skin-art skin-canvas-preview" src="'+png+'" width="160" height="180" alt="'+skin.name+'">':skinSvgFallback(key);
 }
 function menu(){
  setMode('menu');

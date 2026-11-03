@@ -1,4 +1,4 @@
-function drawRobot(p,menu=false){const skin=skinVisualOverride||equippedSkin();cx.save();cx.translate(p.x,p.y);let a=Math.atan2(p.dy??-1,p.dx??0)+Math.PI/2;cx.rotate(a);const t=ambient,inv=p.inv>0;if(inv&&Math.floor(t*22)%2===0){cx.globalAlpha=.55}glow(0,0,62,S.rageTimer>0?AMBER:skin.core,.24);if(S.invulnTimer>0){ring(0,0,40+Math.sin(ambient*9)*3,'#ddc1ff',4);glow(0,0,68,'#c0b2ff',.27);}else if(S.rageTimer>0)ring(0,0,35,'#ffae51',3);cx.save();cx.scale(1,.52);ring(0,13,30,skin.core+'58',3);cx.restore();
+function drawRobot(p,menu=false){const skin=skinVisualOverride||equippedSkin();cx.save();cx.translate(p.x,p.y);let a=Math.atan2(p.dy??-1,p.dx??0)+Math.PI/2;cx.rotate(a);const t=ambient,inv=p.inv>0;const rage=(S?.rageTimer||0),invulnerable=(S?.invulnTimer||0);if(inv&&Math.floor(t*22)%2===0){cx.globalAlpha=.55}glow(0,0,62,rage>0?AMBER:skin.core,.24);if(invulnerable>0){ring(0,0,40+Math.sin(ambient*9)*3,'#ddc1ff',4);glow(0,0,68,'#c0b2ff',.27);}else if(rage>0)ring(0,0,35,'#ffae51',3);cx.save();cx.scale(1,.52);ring(0,13,30,skin.core+'58',3);cx.restore();
 
  // Compact cosmetic wings are drawn behind the common collision body.
  drawSkinDecor(skin,0);
