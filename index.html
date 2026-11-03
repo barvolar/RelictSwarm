@@ -180,6 +180,19 @@ button.forge-card:hover{filter:brightness(1.25)}.forge-card.is-done{border-color
 .graphics-hint{font-size:10px;color:#a1b8c5;line-height:1.6;margin:0}
 .graphics-hint b{color:#d5f7f0}
 @media(max-width:480px){.graphics-settings{padding:10px}.graphics-presets{gap:6px}.graphics-preset{min-height:84px;padding:9px}.graphics-preset b{font-size:10px}.graphics-preset small{font-size:9px}}
+
+/* Tier labels and restrained ornamental motion for 32 approved shells. */
+.skin-rarity-label{font-size:9px;letter-spacing:1.4px;font-weight:900;color:#9cbdc9}
+.skin-rarity-label[data-rarity="uncommon"]{color:#8ae69b}
+.skin-rarity-label[data-rarity="rare"]{color:#7bd0ff}
+.skin-rarity-label[data-rarity="epic"]{color:#cf9aff}
+.skin-rarity-label[data-rarity="legendary"]{color:#ffd68d}
+.skin-card:has([data-rarity="legendary"]){border-color:#8f7150}
+.skin-card:has([data-rarity="epic"]){border-color:#58427b}
+.skin-card:has([data-rarity="rare"]){border-color:#386a85}
+.skin-rotator{animation:skin-preview-orbit 8s linear infinite;transform-box:view-box;transform-origin:60px 70px}
+@keyframes skin-preview-orbit{to{transform:rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){.skin-rotator{animation:none}}
 /* v0.10.8: one cohesive compact mobile HUD; the loadout is a REAL grid,
    not two independently positioned overlapping fixed elements. */
 .hud-dock,.hud-loadout{display:contents}
