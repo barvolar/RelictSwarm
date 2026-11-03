@@ -1,5 +1,5 @@
 function droneUpdate(dt){
- const haste=S.haste||1;
+ const haste=(S.haste||1)*(S.tacticHasteUntil>S.t?1.25:1);
  for(let i=0;i<S.drones.length;i++){
   const d=S.drones[i],meta=DRONES[d.id],rank=d.lvl;
   const pos=getDronePos(d,i),linked=S.hybrids.some(h=>HYBRIDS[h.id].a===d.id||HYBRIDS[h.id].b===d.id);
@@ -53,6 +53,7 @@ function droneUpdate(dt){
   // Preserve the .19-second firing floor; excess attack speed becomes extra damage.
   const {cooldown,attackOverflow}=calculateWeaponCooldown(meta.base,haste,wm(d,'rate'),rank);
   d.cd=cooldown;
+  tacticWeaponFired(d,pos,target,baseDmg);
   if(d.id==='fusion_ion'){
    const n=Math.min(5,1+wm(d,'beams'));
    for(let j=0;j<n;j++){

@@ -2,6 +2,7 @@ function closest(x,y,max=360,except=null){let best=null,bestD=max*max;for(let e 
 // Ranged weapons favor a reachable boss, but switch to immediate threats when surrounded.
 // The nearest target still governs flame, saws, mines and short-range defensive effects.
 function chooseCombatTarget(x,y,max=550,weapon='pulse'){
+ if(!trainingMode&&tacticLv('hunter')&&S.tacticBossLockUntil>S.t){const boss=S.bosses.find(e=>e.hp>0&&Math.hypot(e.x-x,e.y-y)<=max);if(boss&& !['saw','flame','mine','gravity'].includes(weapon))return boss;}
  return selectCombatTarget(closest(x,y,max),S.bosses,x,y,max,weapon,trainingMode);
 }
 function damageArea(x,y,r,dmg,options={}){for(const e of S.enemy){if(e.hp<=0)continue;let dx=e.x-x,dy=e.y-y;if(dx*dx+dy*dy<(r+e.r)**2){hurtEnemy(e,dmg,options)}}S.fx.push({type:'ring',x,y,r,life:.32,max:.32,col:options.color||AMBER});burst(x,y,options.color||AMBER,19,r*2)}
