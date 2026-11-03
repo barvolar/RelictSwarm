@@ -6,6 +6,7 @@
   "src/modules/10-data/world/enemies.js",
   "src/modules/10-data/world/fusions.js",
   "src/modules/10-data/world/progression.js",
+  "src/modules/10-data/world/challenges.js",
   "src/modules/10-data/world/waves.js",
   "src/modules/20-core/state/training.js",
   "src/modules/20-core/state/skins.js",
