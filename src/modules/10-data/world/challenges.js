@@ -1,56 +1,68 @@
 // Permanent milestones and one selectable challenge per run.
 // Awards are cosmetic or research currency. No weapon stat bonuses.
 const ACHIEVEMENTS=[
- {id:'first_blood',glyph:'✦',name:'Первый контакт',desc:'Уничтожить 1 врага за забег',reward:20},
- {id:'swarm_100',glyph:'⚔',name:'Охотник на рой',desc:'Уничтожить 100 врагов за забег',reward:45},
- {id:'swarm_350',glyph:'⚔',name:'Штормовая зачистка',desc:'Уничтожить 350 врагов за забег',reward:95},
- {id:'survive_5',glyph:'◷',name:'Пять минут',desc:'Продержаться 5 минут',reward:40},
- {id:'survive_10',glyph:'◷',name:'Последний рубеж',desc:'Продержаться 10 минут',reward:90},
- {id:'first_fusion',glyph:'◈',name:'Преобразование',desc:'Создать первый синтез',reward:65},
- {id:'two_fusions',glyph:'◈',name:'Арсенал архитектора',desc:'Создать 2 синтеза за забег',reward:120},
- {id:'synth_guardian',glyph:'⬡',name:'Хранитель повержен',desc:'Победить Хранителя ядра',reward:70},
- {id:'boss_hunter',glyph:'✹',name:'Истребитель гигантов',desc:'Уничтожить 3 боссов за забег',reward:110},
- {id:'first_victory',glyph:'★',name:'Омега побеждена',desc:'Завершить забег победой',reward:150},
- {id:'three_victories',glyph:'★',name:'Ветеран',desc:'Одержать 3 победы',reward:180},
- {id:'hard_victory',glyph:'◇',name:'Стальной протокол',desc:'Победить на угрозе III или выше',reward:220},
- {id:'no_hit_5',glyph:'✧',name:'Без единой царапины',desc:'Первые 5 минут без полученного урона',reward:120},
- {id:'challenge_master',glyph:'✥',name:'Испытатель',desc:'Завершить 4 разных испытания',reward:180}
+ {id:'first_blood',glyph:'✦',name:'Первый контакт',desc:'Уничтожить 1 врага за забег',reward:120},
+ {id:'swarm_100',glyph:'⚔',name:'Охотник на рой',desc:'Уничтожить 100 врагов за забег',reward:240},
+ {id:'swarm_350',glyph:'⚔',name:'Штормовая зачистка',desc:'Уничтожить 350 врагов за забег',reward:440},
+ {id:'survive_5',glyph:'◷',name:'Пять минут',desc:'Продержаться 5 минут',reward:200},
+ {id:'survive_10',glyph:'◷',name:'Последний рубеж',desc:'Продержаться 10 минут',reward:450},
+ {id:'first_fusion',glyph:'◈',name:'Преобразование',desc:'Создать первый синтез',reward:360},
+ {id:'two_fusions',glyph:'◈',name:'Арсенал архитектора',desc:'Создать 2 синтеза за забег',reward:650},
+ {id:'synth_guardian',glyph:'⬡',name:'Хранитель повержен',desc:'Победить Хранителя ядра',reward:380},
+ {id:'boss_hunter',glyph:'✹',name:'Истребитель гигантов',desc:'Уничтожить 3 боссов за забег',reward:660},
+ {id:'first_victory',glyph:'★',name:'Омега побеждена',desc:'Завершить забег победой',reward:950},
+ {id:'three_victories',glyph:'★',name:'Ветеран',desc:'Одержать 3 победы',reward:1150},
+ {id:'hard_victory',glyph:'◇',name:'Стальной протокол',desc:'Победить на угрозе III или выше',reward:1350},
+ {id:'no_hit_5',glyph:'✧',name:'Без единой царапины',desc:'Первые 5 минут без полученного урона',reward:650},
+ {id:'challenge_master',glyph:'✥',name:'Испытатель',desc:'Завершить 4 разных испытания',reward:1100}
 ];
 const CHALLENGES=[
- {id:'swarm',glyph:'⚔',name:'Охота на рой',desc:'Уничтожить 350 врагов за один забег',reward:130},
- {id:'core_hunter',glyph:'◈',name:'Добытчик ядер',desc:'Подобрать 2 ядра синтеза за забег',reward:140},
- {id:'master_fuser',glyph:'✦',name:'Алхимия оружия',desc:'Создать 2 синтеза за один забег',reward:160},
- {id:'boss_hunt',glyph:'⬡',name:'Охота на титанов',desc:'Уничтожить 3 боссов за забег',reward:170},
- {id:'no_hit',glyph:'✧',name:'Чистый манёвр',desc:'Первые 5 минут без полученного урона',reward:175},
- {id:'minimalist',glyph:'◇',name:'Три слота',desc:'Победить, ни разу не используя больше 3 оружий одновременно',reward:240},
- {id:'no_repairs',glyph:'♥',name:'Без ремонта',desc:'Победить без аптечек и карточек лечения',reward:230},
- {id:'threat_three',glyph:'◇',name:'Высшая готовность',desc:'Победить на угрозе III или выше',reward:260}
+ {id:'no_hit',glyph:'✧',name:'Чистый манёвр',desc:'Первые 5 минут без единого попадания',reward:550},
+ {id:'iron_soul',glyph:'◈',name:'Железная воля',desc:'Победить на угрозе II+ с не более чем 3 попаданиями за весь забег',reward:1600},
+ {id:'minimalist_v2',glyph:'◇',name:'Тесный арсенал',desc:'Победить на угрозе II+, ни разу не заняв более 3 слотов оружия',reward:1400},
+ {id:'no_repairs_v2',glyph:'♥',name:'Сухая сборка',desc:'Победить на угрозе III+ без аптечек и карточек ремонта',reward:1600},
+ {id:'double_fusion_v2',glyph:'✦',name:'Двойной синтез',desc:'Победить на угрозе II+ с двумя разными синтезами',reward:1250},
+ {id:'gauntlet_v2',glyph:'⬡',name:'Турнир титанов',desc:'На угрозе III+ победить всех 3 боссов синтеза и Омегу за один забег',reward:1700},
+ {id:'rapid_omega_v2',glyph:'ϟ',name:'Молниеносная Омега',desc:'Победить на угрозе II+, уничтожив Омегу за 90 секунд с её появления',reward:2100},
+ {id:'no_powerups_v2',glyph:'◉',name:'Один против роя',desc:'Победить на угрозе II+ без подбора временных бонусов',reward:1500}
 ];
 let selectedChallengeId='';
-function challengeRunDefaults(){return{damageTaken:0,hitBeforeFive:false,manualHeals:0,coresCollected:0,bossesKilled:0,bossIds:[],maxWeapons:1};}
+function completedChallengeCount(){return CHALLENGES.filter(c=>save.challenges?.[c.id]).length;}
+function challengeBonusRerolls(){const n=completedChallengeCount();return n>=8?2:n>=4?1:0;}
+function challengeRunDefaults(){return{
+ damageTaken:0,hitsTaken:0,hitBeforeFive:false,manualHeals:0,powerupsTaken:0,
+ coresCollected:0,bossesKilled:0,bossIds:[],maxWeapons:1,omegaSpawnAt:null
+};}
 function challengeValue(id,s=S,won=false){
  if(!s)return 0;
- const c=s.challengeStats||{};
+ const c=s.challengeStats||{},bosses=c.bossIds||[];
  switch(id){
-  case'swarm':return s.kills||0;
-  case'core_hunter':return c.coresCollected||0;
-  case'master_fuser':return s.hybrids?.length||0;
-  case'boss_hunt':return c.bossesKilled||0;
   case'no_hit':return s.t>=300&&!c.hitBeforeFive?1:0;
-  case'minimalist':return won&&(c.maxWeapons||1)<=3?1:0;
-  case'no_repairs':return won&&c.manualHeals===0?1:0;
-  case'threat_three':return won&&s.threat>=3?1:0;
+  case'iron_soul':return won&&s.threat>=2&&(c.hitsTaken||0)<=3?1:0;
+  case'minimalist_v2':return won&&s.threat>=2&&(c.maxWeapons||1)<=3?1:0;
+  case'no_repairs_v2':return won&&s.threat>=3&&(c.manualHeals||0)===0?1:0;
+  case'double_fusion_v2':return won&&s.threat>=2&&new Set((s.hybrids||[]).map(h=>h.id)).size>=2?1:0;
+  case'gauntlet_v2':return won&&s.threat>=3&&['synth1','synth2','synth3','omega'].every(id=>bosses.includes(id))?1:0;
+  case'rapid_omega_v2':return won&&s.threat>=2&&Number.isFinite(c.omegaSpawnAt)&&s.t-c.omegaSpawnAt<=90?1:0;
+  case'no_powerups_v2':return won&&s.threat>=2&&(c.powerupsTaken||0)===0?1:0;
   default:return 0;
  }
 }
-function challengeTarget(id){return {swarm:350,core_hunter:2,master_fuser:2,boss_hunt:3,no_hit:1,minimalist:1,no_repairs:1,threat_three:1}[id]||1;}
+function challengeTarget(id){return 1;}
 function challengeProgressLabel(id,s=S,won=false){
- const value=challengeValue(id,s,won),total=challengeTarget(id);
- if(id==='minimalist')return (s?.challengeStats?.maxWeapons||1)+'/3 слота · нужна победа';
- if(id==='no_repairs')return (s?.challengeStats?.manualHeals||0)+' использований ремонта · победа обязательна';
- if(id==='no_hit')return s?.challengeStats?.hitBeforeFive?'Попадание до 5:00, условие нарушено':(s?.t>=300?'Выполнено':formatTime(s?.t||0)+' / 05:00');
- if(id==='threat_three')return 'Протокол '+(s?.threat||1)+' · нужна победа на III+';
- return value+' / '+total;
+ const c=s?.challengeStats||{},n=challengeValue(id,s,won);
+ const tier=' · нужен протокол '+((id==='no_repairs_v2'||id==='gauntlet_v2')?'III+':'II+');
+ switch(id){
+  case'no_hit':return c.hitBeforeFive?'ПРОВАЛЕНО: попадание до 5:00':s.t>=300?'ВЫПОЛНЕНО':formatTime(s.t)+' / 05:00 · без попаданий';
+  case'iron_soul':return (c.hitsTaken||0)+'/3 попадания'+tier+((c.hitsTaken||0)>3?' · ПРОВАЛЕНО':'');
+  case'minimalist_v2':return (c.maxWeapons||1)+'/3 максимальных слота'+tier+((c.maxWeapons||1)>3?' · ПРОВАЛЕНО':'');
+  case'no_repairs_v2':return (c.manualHeals||0)+' ремонтов'+tier+((c.manualHeals||0)>0?' · ПРОВАЛЕНО':'');
+  case'double_fusion_v2':return new Set((s.hybrids||[]).map(h=>h.id)).size+'/2 синтеза'+tier;
+  case'gauntlet_v2':return ['synth1','synth2','synth3','omega'].filter(id=>(c.bossIds||[]).includes(id)).length+'/4 босса'+tier;
+  case'rapid_omega_v2':return c.omegaSpawnAt==null?'Ожидание Омеги'+tier:Math.floor(Math.max(0,s.t-c.omegaSpawnAt))+'/90 сек. до победы'+tier;
+  case'no_powerups_v2':return (c.powerupsTaken||0)+' бонусов подобрано'+tier+((c.powerupsTaken||0)>0?' · ПРОВАЛЕНО':'');
+  default:return n?'Выполнено':'Не выполнено';
+ }
 }
 function achievementCompleted(id,s,won){
  const c=s.challengeStats||{},bosses=c.bossIds||[];
@@ -68,14 +80,14 @@ function achievementCompleted(id,s,won){
   case'three_victories':return save.wins>=3;
   case'hard_victory':return won&&s.threat>=3;
   case'no_hit_5':return s.t>=300&&!c.hitBeforeFive;
-  case'challenge_master':return Object.keys(save.challenges||{}).filter(k=>save.challenges[k]).length>=4;
+  case'challenge_master':return completedChallengeCount()>=4;
   default:return false;
  }
 }
 function evaluateRunRewards(s,won,giveup){
  const granted=[],completedChallenge=null;
  // A voluntary exit never yields achievement bonuses.
- if(giveup)return {achievements:granted,challenge:null,bonus:0,skins:[]};
+ if(giveup||s.qaModified)return {achievements:granted,challenge:null,bonus:0,skins:[]};
  let bonus=0;
  const chosen=CHALLENGES.find(c=>c.id===s.challengeId);
  let challenge=null;
@@ -91,9 +103,12 @@ function evaluateRunRewards(s,won,giveup){
  if(Object.values(save.achievements).filter(Boolean).length>=8&&!save.skins.includes('nova')){
   save.skins.push('nova');unlocked.push('НОВА');
  }
- if(Object.values(save.challenges).filter(Boolean).length>=4&&!save.skins.includes('sentinel')){
+ if(completedChallengeCount()>=4&&!save.skins.includes('sentinel')){
   save.skins.push('sentinel');unlocked.push('СТРАЖ');
  }
- save.shards+=bonus;
+ if(completedChallengeCount()>=8&&!save.skins.includes('chronos')){
+  save.skins.push('chronos');unlocked.push('ХРОНОС');
+ }
+  save.shards+=bonus;
  return {achievements:granted,challenge,bonus,skins:unlocked};
 }
