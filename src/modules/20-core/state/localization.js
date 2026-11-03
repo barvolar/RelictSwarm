@@ -1995,6 +1995,10 @@ const I18N_PAIRS=[
  [
   "Количество: ",
   "Count: "
+ ],
+ [
+  "БОСС ПОВЕРЖЕН",
+  "BOSS DEFEATED"
  ]
 ];
 I18N_PAIRS.sort((a,b)=>b[0].length-a[0].length);
