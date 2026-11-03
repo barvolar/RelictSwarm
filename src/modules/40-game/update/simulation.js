@@ -11,7 +11,7 @@ function update(dt){if(!S)return;if(trainingMode){updateTraining(dt);return;}S.t
    if(S.t>400)pool.push('phantom','brute','sentry','hive');
    if(S.t>650)pool.push('hunter','phantom','brute','sentry','hive');
    for(let i=0;i<n;i++)spawnEnemy(pool[Math.floor(Math.random()*pool.length)]);
-   S.spawn=diff*rand(.78,1.24);S.spawnCount++;
+   S.spawn=diff*.86*rand(.78,1.24);S.spawnCount++;
   }
   RAID_EVENTS.forEach((event,i)=>{if(S.t>=event.t&&!S.raidFlags[i]){S.raidFlags[i]=true;executeRaid(event);}});
    // Never stack scheduled bosses. Old encounters finish first, followed by a short respite.
