@@ -8,4 +8,4 @@ const RAID_EVENTS=[
  {t:835,name:'ПОСЛЕДНИЙ РУБЕЖ РОЯ',units:[['hive',4],['brute',7],['sentry',9]]}
 ];
 const BOSS_EVENTS=[{t:180,id:'boss1'},{t:420,id:'boss2'},{t:660,id:'boss3'},{t:900,id:'omega'}];
-const SYNTH_EVENTS=[{t:365,id:'synth1'},{t:550,id:'synth2'},{t:765,id:'synth3'}];
+const SYNTH_EVENTS=[{t:265,id:'synth1'},{t:550,id:'synth2'},{t:765,id:'synth3'}];

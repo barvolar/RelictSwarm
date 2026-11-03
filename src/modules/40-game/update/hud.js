@@ -17,7 +17,7 @@ function updateHUD(){
    return `<div class="mobile-weapon-slot ${linked?'is-linked':''}" style="--c:${meta.color}" title="${meta.name}, уровень ${d.lvl}" aria-label="${meta.name}, уровень ${d.lvl}"><span class="weapon-glyph">${meta.glyph}</span><span class="weapon-name">${meta.name}</span><span class="weapon-level">УР. ${d.lvl}${linked?' ✦':''}</span></div>`;
   }).join('');
  }
- const active=[S.rageTimer>0?`ϟ ЯРОСТЬ ${Math.ceil(S.rageTimer)}с`:'',S.invulnTimer>0?`⬡ ЩИТ ${Math.ceil(S.invulnTimer)}с`:'',S.magnetTimer>0?`◎ МАГНИТ ${Math.ceil(S.magnetTimer)}с`:''].filter(Boolean);
+ const active=[S.rageTimer>0?`ϟ ЯРОСТЬ +45% АТК. ${Math.ceil(S.rageTimer)}с`:'',S.invulnTimer>0?`⬡ ЩИТ ${Math.ceil(S.invulnTimer)}с`:'',S.magnetTimer>0?`◎ МАГНИТ ${Math.ceil(S.magnetTimer)}с`:'',S.timeStopTimer>0?`❄ СТАЗИС ${Math.ceil(S.timeStopTimer)}с`:''].filter(Boolean);
  $('buffs').textContent=active.join('  ·  ');$('buffs').classList.toggle('hidden',!active.length);
  $('dashCool').style.transform=`scaleY(${clamp(p.dashCd/(S.dashCooldown||3.6),0,1)})`;$('dashBtn').style.opacity=p.dashCd>.1?.65:1;
 }

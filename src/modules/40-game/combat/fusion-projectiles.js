@@ -7,7 +7,7 @@ function fusionLine(pos,target,width,damage,length,opts={}){
 }
 function fusionField(x,y,r,damage,life,col,opts={}){
  if(S.effects.length>64)S.effects.shift();
- S.effects.push({x,y,r,life,clock:0,damage,col,fire:!!opts.fire});
+ S.effects.push({x,y,r,life,clock:0,damage,col,fire:!!opts.fire,ice:!!opts.ice,chill:opts.chill||0,chain:opts.chain||0});
  S.fx.push({type:'ring',x,y,r,life:.48,max:.48,col});
 }
 function fusionRocket(pos,target,dmg,col,variant,blast,n=1){
@@ -20,10 +20,25 @@ function fusionBoomer(pos,target,d,damage,col,n,variant){
  const a=aimGeometry(pos,target);
  for(let k=0;k<Math.min(6,n);k++){
   const angle=Math.atan2(a.dy,a.dx)+(k-(n-1)/2)*.15,source=weaponMuzzle(pos,target,(k-(n-1)/2)*8,20);
-  S.bullets.push({type:'boomer',x:source.x,y:source.y,vx:Math.cos(angle)*505,vy:Math.sin(angle)*505,spd:505,travel:0,range:Math.min(800,260+wm(d,'range')*35),returning:false,owner:d,damage,life:3.7,col,r:15,hitIds:new Set(),pierce:999,fireDisc:variant==='fire',trailClock:0,specialDisc:variant});
+  S.bullets.push({type:'boomer',x:source.x,y:source.y,vx:Math.cos(angle)*505,vy:Math.sin(angle)*505,spd:505,travel:0,range:Math.min(800,260+wm(d,'range')*35),returning:false,owner:d,damage,life:3.7,col,r:15,hitIds:new Set(),pierce:999,fireDisc:variant==='fire',trailClock:0,specialDisc:variant,mineBlast:58+wm(d,'blast')*16});
  }
 }
-function fusionMine(x,y,damage,col,r,variant){
- S.mines.push({x,y,r:13,blast:r,damage,life:17,arm:.35,col,gravityMine:false,specialMine:variant});
+function fusionMine(x,y,damage,col,r,variant,freezeStrength=0){
+ S.mines.push({x,y,r:13,blast:r,damage,life:17,arm:.35,col,gravityMine:false,specialMine:variant,freezeStrength});
  if(S.mines.length>48)S.mines.splice(0,S.mines.length-48);
+}
+
+// Shattering adds a short-range explosion to an already frozen target.
+// A lock stops overlapping beams and orbit blades from triggering it every frame.
+function shatterFrozen(e,damage,r=62){
+ if(!e||e.hp<=0||e.frost<=0||(e.shatterLock||0)>S.t)return false;
+ // Dense packs used to trigger one full-area explosion per frozen enemy in the same frame.
+ // A short shared quota preserves shattering but avoids quadratic damage spikes.
+ if(S.t-(S.shatterQuotaAt??-999)>=.25){S.shatterQuotaAt=S.t;S.shatterQuotaCount=0;}
+ if((S.shatterQuotaCount||0)>=3)return false;
+ S.shatterQuotaCount=(S.shatterQuotaCount||0)+1;
+ e.frost=0;e.shatterLock=S.t+1.15;
+ damageArea(e.x,e.y,r,damage,{color:'#b9edff',slow:.55});
+ burst(e.x,e.y,'#cbf7ff',12,85);
+ return true;
 }

@@ -1,0 +1,32 @@
+name: QA weapon balance audit
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - release/fusion-qa-2026-11-01
+    paths:
+      - 'scripts/weapon-balance.mjs'
+      - 'scripts/build.mjs'
+      - 'src/**'
+      - 'package.json'
+      - '.github/workflows/balance-audit.yml'
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Run controlled 36-weapon simulations
+        run: npm run balance
+      - name: Upload machine-readable and human-readable balance reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: RelictSwarm-weapon-balance
+          path: |
+            dist/balance-report*.json
+            dist/balance-report*.md
+          if-no-files-found: error

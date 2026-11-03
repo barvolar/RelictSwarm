@@ -26,7 +26,11 @@ const template=read('src/index.template.html');
 if ((template.match(/%%RELICT_STYLE%%/g)||[]).length!==1 || (template.match(/%%RELICT_MAIN_SCRIPT%%/g)||[]).length!==1) throw Error('Invalid build template');
 const styles=JSON.parse(read('src/style-order.json')).map(read).join('');
 const platformCode=read('src/platform/platform-bridge.js');
-const base=template.replace('%%RELICT_STYLE%%',styles)
+// QA artifact embeds the optional telemetry scripts too; one HTML file runs from disk.
+const base=template
+  .replace('<script src="./telemetry-config.js"></script>','<script>'+read('telemetry-config.js')+'</script>')
+  .replace('<script src="./telemetry-client.js"></script>','<!-- telemetry-client.js embedded for standalone QA --><script>'+read('telemetry-client.js')+'</script>')
+  .replace('%%RELICT_STYLE%%',styles)
   .replace('%%RELICT_MAIN_SCRIPT%%',js)
   .replace('%%RELICT_PLATFORM_BRIDGE%%',platformCode);
 const html=base.replace('%%RELICT_SDK_LOADER%%','');
