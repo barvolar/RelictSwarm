@@ -2783,6 +2783,70 @@ const I18N_PAIRS=[
  [
   "ПРОТОКОЛ V",
   "PROTOCOL V"
+ ],
+ [
+  "ДОБАВИТЬ ОРУЖИЕ (11 ТИПОВ)",
+  "ADD WEAPON (11 TYPES)"
+ ],
+ [
+  "+ ДОБАВИТЬ",
+  "+ ADD"
+ ],
+ [
+  "Арсенал пуст. Добавь оружие из списка.",
+  "Arsenal empty. Add a weapon from the list."
+ ],
+ [
+  "Арсенал пуст. Добавь оружие",
+  "Arsenal empty. Add a weapon"
+ ],
+ [
+  "УБРАТЬ",
+  "REMOVE"
+ ],
+ [
+  "УЛУЧШЕНИЕ ПАРАМЕТРОВ",
+  "STAT UPGRADES"
+ ],
+ [
+  "КАРТОЧКА УЛУЧШЕНИЯ (+1 УР. ОРУЖИЯ)",
+  "UPGRADE CARD (+1 WEAPON LEVEL)"
+ ],
+ [
+  "КАРТОЧКА УЛУЧШЕНИЯ (+1",
+  "UPGRADE CARD (+1"
+ ],
+ [
+  "БЕЗ КАМНЕЙ И УРОВНЕЙ",
+  "WITHOUT CORES OR LEVEL REQUIREMENTS"
+ ],
+ [
+  "ИСПЫТАТЬ",
+  "TRY"
+ ],
+ [
+  "Это уже синтезированное оружие",
+  "This is already a fused weapon"
+ ],
+ [
+  "НЕТ СВОБОДНОГО СЛОТА",
+  "NO FREE SLOT"
+ ],
+ [
+  "ПОЛИГОН ОРУЖИЯ",
+  "WEAPON RANGE"
+ ],
+ [
+  "В ГЛАВНОЕ МЕНЮ",
+  "BACK TO MAIN MENU"
+ ],
+ [
+  "ТАКТИЧЕСКИЕ МОДУЛИ",
+  "TACTICAL MODULES"
+ ],
+ [
+  "ЦЕЛЬ",
+  "TARGET"
  ]
 ];
 I18N_PAIRS.sort((a,b)=>b[0].length-a[0].length);
