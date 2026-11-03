@@ -1142,6 +1142,102 @@ const THREAT_MODES=[
  {name:'ПРОТОКОЛ V',hint:'Высшая угроза. Проверка сборки, мобильности и выживания.',hp:1.94,speed:1.17,damage:1.6,score:2.5,reward:2.5}
 ];
 let selectedThreat=1;
+// Permanent milestones and one selectable challenge per run.
+// Awards are cosmetic or research currency. No weapon stat bonuses.
+const ACHIEVEMENTS=[
+ {id:'first_blood',glyph:'✦',name:'Первый контакт',desc:'Уничтожить 1 врага за забег',reward:20},
+ {id:'swarm_100',glyph:'⚔',name:'Охотник на рой',desc:'Уничтожить 100 врагов за забег',reward:45},
+ {id:'swarm_350',glyph:'⚔',name:'Штормовая зачистка',desc:'Уничтожить 350 врагов за забег',reward:95},
+ {id:'survive_5',glyph:'◷',name:'Пять минут',desc:'Продержаться 5 минут',reward:40},
+ {id:'survive_10',glyph:'◷',name:'Последний рубеж',desc:'Продержаться 10 минут',reward:90},
+ {id:'first_fusion',glyph:'◈',name:'Преобразование',desc:'Создать первый синтез',reward:65},
+ {id:'two_fusions',glyph:'◈',name:'Арсенал архитектора',desc:'Создать 2 синтеза за забег',reward:120},
+ {id:'synth_guardian',glyph:'⬡',name:'Хранитель повержен',desc:'Победить Хранителя ядра',reward:70},
+ {id:'boss_hunter',glyph:'✹',name:'Истребитель гигантов',desc:'Уничтожить 3 боссов за забег',reward:110},
+ {id:'first_victory',glyph:'★',name:'Омега побеждена',desc:'Завершить забег победой',reward:150},
+ {id:'three_victories',glyph:'★',name:'Ветеран',desc:'Одержать 3 победы',reward:180},
+ {id:'hard_victory',glyph:'◇',name:'Стальной протокол',desc:'Победить на угрозе III или выше',reward:220},
+ {id:'no_hit_5',glyph:'✧',name:'Без единой царапины',desc:'Первые 5 минут без полученного урона',reward:120},
+ {id:'challenge_master',glyph:'✥',name:'Испытатель',desc:'Завершить 4 разных испытания',reward:180}
+];
+const CHALLENGES=[
+ {id:'swarm',glyph:'⚔',name:'Охота на рой',desc:'Уничтожить 350 врагов за один забег',reward:130},
+ {id:'core_hunter',glyph:'◈',name:'Добытчик ядер',desc:'Подобрать 2 ядра синтеза за забег',reward:140},
+ {id:'master_fuser',glyph:'✦',name:'Алхимия оружия',desc:'Создать 2 синтеза за один забег',reward:160},
+ {id:'boss_hunt',glyph:'⬡',name:'Охота на титанов',desc:'Уничтожить 3 боссов за забег',reward:170},
+ {id:'no_hit',glyph:'✧',name:'Чистый манёвр',desc:'Первые 5 минут без полученного урона',reward:175},
+ {id:'no_repairs',glyph:'♥',name:'Без ремонта',desc:'Победить без аптечек и карточек лечения',reward:230},
+ {id:'threat_three',glyph:'◇',name:'Высшая готовность',desc:'Победить на угрозе III или выше',reward:260}
+];
+let selectedChallengeId='';
+function challengeRunDefaults(){return{damageTaken:0,hitBeforeFive:false,manualHeals:0,coresCollected:0,bossesKilled:0,bossIds:[],maxWeapons:1};}
+function challengeValue(id,s=S,won=false){
+ if(!s)return 0;
+ const c=s.challengeStats||{};
+ switch(id){
+  case'swarm':return s.kills||0;
+  case'core_hunter':return c.coresCollected||0;
+  case'master_fuser':return s.hybrids?.length||0;
+  case'boss_hunt':return c.bossesKilled||0;
+  case'no_hit':return s.t>=300&&!c.hitBeforeFive?1:0;
+  case'no_repairs':return won&&c.manualHeals===0?1:0;
+  case'threat_three':return won&&s.threat>=3?1:0;
+  default:return 0;
+ }
+}
+function challengeTarget(id){return {swarm:350,core_hunter:2,master_fuser:2,boss_hunt:3,no_hit:1,no_repairs:1,threat_three:1}[id]||1;}
+function challengeProgressLabel(id,s=S,won=false){
+ const value=challengeValue(id,s,won),total=challengeTarget(id);
+ if(id==='no_repairs')return (s?.challengeStats?.manualHeals||0)+' использований ремонта · победа обязательна';
+ if(id==='no_hit')return s?.challengeStats?.hitBeforeFive?'Попадание до 5:00, условие нарушено':(s?.t>=300?'Выполнено':formatTime(s?.t||0)+' / 05:00');
+ if(id==='threat_three')return 'Протокол '+(s?.threat||1)+' · нужна победа на III+';
+ return value+' / '+total;
+}
+function achievementCompleted(id,s,won){
+ const c=s.challengeStats||{},bosses=c.bossIds||[];
+ switch(id){
+  case'first_blood':return s.kills>=1;
+  case'swarm_100':return s.kills>=100;
+  case'swarm_350':return s.kills>=350;
+  case'survive_5':return s.t>=300;
+  case'survive_10':return s.t>=600;
+  case'first_fusion':return s.hybrids.length>=1;
+  case'two_fusions':return s.hybrids.length>=2;
+  case'synth_guardian':return bosses.includes('synth1');
+  case'boss_hunter':return c.bossesKilled>=3;
+  case'first_victory':return won;
+  case'three_victories':return save.wins>=3;
+  case'hard_victory':return won&&s.threat>=3;
+  case'no_hit_5':return s.t>=300&&!c.hitBeforeFive;
+  case'challenge_master':return Object.keys(save.challenges||{}).filter(k=>save.challenges[k]).length>=4;
+  default:return false;
+ }
+}
+function evaluateRunRewards(s,won,giveup){
+ const granted=[],completedChallenge=null;
+ // A voluntary exit never yields achievement bonuses.
+ if(giveup)return {achievements:granted,challenge:null,bonus:0,skins:[]};
+ let bonus=0;
+ const chosen=CHALLENGES.find(c=>c.id===s.challengeId);
+ let challenge=null;
+ if(chosen&&!save.challenges[chosen.id]&&challengeValue(chosen.id,s,won)>=challengeTarget(chosen.id)){
+  save.challenges[chosen.id]=true;bonus+=chosen.reward;challenge=chosen;
+ }
+ for(const a of ACHIEVEMENTS){
+  if(!save.achievements[a.id]&&achievementCompleted(a.id,s,won)){
+   save.achievements[a.id]=true;granted.push(a);bonus+=a.reward;
+  }
+ }
+ const unlocked=[];
+ if(Object.values(save.achievements).filter(Boolean).length>=8&&!save.skins.includes('nova')){
+  save.skins.push('nova');unlocked.push('НОВА');
+ }
+ if(Object.values(save.challenges).filter(Boolean).length>=4&&!save.skins.includes('sentinel')){
+  save.skins.push('sentinel');unlocked.push('СТРАЖ');
+ }
+ save.shards+=bonus;
+ return {achievements:granted,challenge,bonus,skins:unlocked};
+}
 const RAID_EVENTS=[
  {t:90,name:'ОХОТА: ФЛАНГОВЫЙ ЗАХВАТ',units:[['hunter',10],['scarab',6]]},
  {t:210,name:'ОСАДА: ТАРАНЫ И СТРЕЛКИ',units:[['brute',5],['sentry',8]]},
@@ -1159,12 +1255,14 @@ const SKINS={
  relict:{name:'РЕЛИКТ',detail:'Исходная боевая оболочка',cost:0,free:true,body:'#12263a',plate:'#7a9fac',edge:'#5c94a3',shell:'#21394f',back:'#2f5366',trim:'#d59a54',core:'#50f2db',coreDark:'#1b9a9e',light:'#d8ffff',variant:'classic'},
  ghost:{name:'КОБАЛЬТОВЫЙ ПРИЗРАК',detail:'Синие эмиттеры и боковые крылья',cost:0,free:true,body:'#10274c',plate:'#79aaf0',edge:'#a1d9ff',shell:'#1e3d63',back:'#264775',trim:'#bddaff',core:'#5caaff',coreDark:'#3364c6',light:'#e8f7ff',variant:'ghost'},
  ember:{name:'ПЕПЕЛЬНЫЙ ОХОТНИК',detail:'Броня цвета лавы и огненные рога',cost:100,free:false,body:'#432524',plate:'#c86d48',edge:'#ffae76',shell:'#512c28',back:'#67392d',trim:'#ffd187',core:'#ff773d',coreDark:'#bc4428',light:'#fff0c2',variant:'ember'},
+ nova:{name:'НОВА',detail:'Награда за 8 достижений. Сияющая оболочка исследователя.',cost:0,achievementOnly:true,body:'#172a42',plate:'#95dbec',edge:'#b0ffff',shell:'#285d70',back:'#184966',trim:'#f3e6ba',core:'#b6fff1',coreDark:'#54bdc2',light:'#ffffff',variant:'ghost'},
+ sentinel:{name:'СТРАЖ РОЯ',detail:'Награда за 4 завершённых испытания. Оболочка ветерана.',cost:0,achievementOnly:true,body:'#252336',plate:'#a58a74',edge:'#ffe1a0',shell:'#453f56',back:'#554351',trim:'#ffdc93',core:'#ffca6c',coreDark:'#b7823b',light:'#fff3de',variant:'void'},
  void:{name:'ТЁМНЫЙ ПРОТОКОЛ',detail:'Чёрная броня и фиолетовые шипы',cost:250,free:false,body:'#1b172d',plate:'#72608e',edge:'#bda6ff',shell:'#2a2448',back:'#3f345b',trim:'#e1c6ff',core:'#bd7aff',coreDark:'#7640ae',light:'#f8eaff',variant:'void'}
 };
 function ownedSkins(raw){const list=Array.isArray(raw)?raw:[];return [...new Set(['relict','ghost',...list.filter(id=>SKINS[id])])];}
 function equippedSkin(){return SKINS[save.skin]||SKINS.relict;}
 let save=readSave(),mode='menu',S=null,W=innerWidth,H=innerHeight,scale=Math.min(devicePixelRatio||1,2),frame=0,last=0,ambient=0,shake=0,runId=0,menuStars=[],audio=null,mute=false,showToastUntil=0,showBannerUntil=0;
-function readSave(){try{let v=JSON.parse(localStorage.getItem(saveKey)||'null');if(v && typeof v==='object')return {shards:Math.max(0,+v.shards||0),best:+v.best||0,runs:+v.runs||0,wins:+v.wins||0,meta:Object.fromEntries(META.map(m=>[m.id,Math.min(m.max,Math.max(0,Math.floor(Number(v.meta?.[m.id])||0)))])),recipes:{...v.recipes},skins:ownedSkins(v.skins),skin:ownedSkins(v.skins).includes(v.skin)?v.skin:'relict',threatUnlocked:Math.max(1,Math.min(5,Math.floor(v.threatUnlocked||1))),records:Array.isArray(v.records)?v.records.filter(r=>r&&Number.isFinite(+r.score)).slice(0,20):[]}}catch{}return {shards:0,best:0,runs:0,wins:0,meta:Object.fromEntries(META.map(m=>[m.id,0])),recipes:{},skins:['relict','ghost'],skin:'relict',threatUnlocked:1,records:[]}}
+function readSave(){try{let v=JSON.parse(localStorage.getItem(saveKey)||'null');if(v && typeof v==='object')return {shards:Math.max(0,+v.shards||0),best:+v.best||0,runs:+v.runs||0,wins:+v.wins||0,meta:Object.fromEntries(META.map(m=>[m.id,Math.min(m.max,Math.max(0,Math.floor(Number(v.meta?.[m.id])||0)))])),recipes:{...v.recipes},achievements:{...v.achievements},challenges:{...v.challenges},skins:ownedSkins(v.skins),skin:ownedSkins(v.skins).includes(v.skin)?v.skin:'relict',threatUnlocked:Math.max(1,Math.min(5,Math.floor(v.threatUnlocked||1))),records:Array.isArray(v.records)?v.records.filter(r=>r&&Number.isFinite(+r.score)).slice(0,20):[]}}catch{}return {shards:0,best:0,runs:0,wins:0,meta:Object.fromEntries(META.map(m=>[m.id,0])),recipes:{},achievements:{},challenges:{},skins:['relict','ghost'],skin:'relict',threatUnlocked:1,records:[]}}
 function persist(){try{localStorage.setItem(saveKey,JSON.stringify(save))}catch{}}
 function rand(a,b){return a+Math.random()*(b-a)}function rint(a,b){return Math.floor(rand(a,b+1))}const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));function dist(a,b){return Math.hypot(a.x-b.x,a.y-b.y)}function hypot(x,y){return Math.hypot(x,y)||1}const TAU=Math.PI*2;function lerp(a,b,t){return a+(b-a)*t}
 // v0.10.12 A/B graphics test: only backing-canvas resolution changes. World zoom and gameplay stay identical.
@@ -1619,13 +1717,13 @@ function renderSkins(){
  const el=$('skinsGrid');if(!el)return;
  el.innerHTML=Object.entries(SKINS).map(([id,s])=>{
   const owned=save.skins.includes(id),active=save.skin===id;
-  const label=active?'✓ ВЫБРАН':owned?'ВЫБРАТЬ':'✧ '+s.cost;
-  return `<div class="skin-card ${active?'selected':''}" style="--skin-color:${s.core}"><div class="skin-preview">${skinSvg(id)}</div><div class="skin-copy"><strong>${s.name}</strong><p>${s.detail}</p><small>${owned?'В КОЛЛЕКЦИИ':'ЦЕНА: '+s.cost+' ✧'}</small></div><button class="btn ${active?'ghost':'primary'}" type="button" data-skin="${id}" ${active||(!owned&&save.shards<s.cost)?'disabled':''}>${label}</button></div>`;
+  const label=active?'✓ ВЫБРАН':owned?'ВЫБРАТЬ':s.achievementOnly?'🔒 НАГРАДА':'✧ '+s.cost;
+  return `<div class="skin-card ${active?'selected':''}" style="--skin-color:${s.core}"><div class="skin-preview">${skinSvg(id)}</div><div class="skin-copy"><strong>${s.name}</strong><p>${s.detail}</p><small>${owned?'В КОЛЛЕКЦИИ':s.achievementOnly?'ОТКРЫВАЕТСЯ ДОСТИЖЕНИЯМИ':'ЦЕНА: '+s.cost+' ✧'}</small></div><button class="btn ${active?'ghost':'primary'}" type="button" data-skin="${id}" ${active||(!owned&&(s.achievementOnly||save.shards<s.cost))?'disabled':''}>${label}</button></div>`;
  }).join('');
  el.querySelectorAll('[data-skin]').forEach(b=>b.onclick=()=>{
   const id=b.dataset.skin,s=SKINS[id];if(!s)return;
   if(!save.skins.includes(id)){
-   if(save.shards<s.cost)return;
+   if(s.achievementOnly||save.shards<s.cost)return;
    save.shards-=s.cost;save.skins.push(id);
   }
   save.skin=id;persist();clickSound();$('wallet').textContent=save.shards;renderSkins();
@@ -1812,7 +1910,7 @@ function balFinalize(won,giveup){
   remainingBosses:S.bosses.filter(e=>e.hp>0).map(e=>({id:e.id,hpPct:balR(100*e.hp/e.maxHp)}))};
  bal.events.push({t:balR(S.t),what:'run_end',result:bal.result.status});balStore();window.SwarmTelemetry?.finish?.(balReport(),perf.samples);
 }
-function start(){perfReset();trainingMode=false;runId++;selectedThreat=Math.max(1,Math.min(save.threatUnlocked,selectedThreat));S={threat:selectedThreat,t:0,elapsed:0,player:{x:0,y:0,hp:120+metaBonus('hull'),maxHp:120+metaBonus('hull'),speed:225*(1+metaBonus('speed')),rad:17,inv:1,hit:0,dx:0,dy:-1,dashCd:0,dashTime:0,regen:metaBonus('regen')},cam:{x:0,y:0},lvl:1,xp:0,xpNeed:19,playerDmg:1+metaBonus('power'),magnet:100+metaBonus('magnet'),haste:1+metaBonus('haste'),armor:metaBonus('armor'),healBonus:metaBonus('repair'),critChance:metaBonus('critChance'),critMultiplier:1.5+metaBonus('critDamage'),xpBonus:metaBonus('xp'),buffDuration:1+metaBonus('duration'),dashCooldown:3.6*(1-metaBonus('dash')),score:0,kills:0,shards:0,enemy:[],bullets:[],enemyBullets:[],pickups:[],parts:[],fx:[],floaters:[],drones:[{id:'pulse',lvl:1,cd:0,hitCd:0,mods:{}}],mines:[],gravityWells:[],effects:[],chains:[],hazards:[],hybrids:[],fusionCores:0,synthFlags:[false,false,false],powerupClock:25,rageTimer:0,invulnTimer:0,magnetTimer:0,dead:false,wins:false,spawn:0,spawnCount:0,raidFlags:RAID_EVENTS.map(()=>false),upgrades:[],pendingUp:0,rerollsRemaining:1,rerollsUsed:0,bossFlags:BOSS_EVENTS.map(()=>false),bosses:[],clock:0,regenT:0};balInit();$('bossWrap').classList.add('hidden');$('wavebanner').classList.add('hidden');$('toast').classList.add('hidden');setMode('playing');toast('СИСТЕМА АКТИВИРОВАНА // СОБИРАЙ ДАННЫЕ');sfx('level',.75);for(let i=0;i<9;i++)spawnEnemy('scarab',i*TAU/9,rand(235,340));updateHUD()}
+function start(){perfReset();trainingMode=false;runId++;selectedThreat=Math.max(1,Math.min(save.threatUnlocked,selectedThreat));S={threat:selectedThreat,challengeId:selectedChallengeId,challengeStats:challengeRunDefaults(),t:0,elapsed:0,player:{x:0,y:0,hp:120+metaBonus('hull'),maxHp:120+metaBonus('hull'),speed:225*(1+metaBonus('speed')),rad:17,inv:1,hit:0,dx:0,dy:-1,dashCd:0,dashTime:0,regen:metaBonus('regen')},cam:{x:0,y:0},lvl:1,xp:0,xpNeed:19,playerDmg:1+metaBonus('power'),magnet:100+metaBonus('magnet'),haste:1+metaBonus('haste'),armor:metaBonus('armor'),healBonus:metaBonus('repair'),critChance:metaBonus('critChance'),critMultiplier:1.5+metaBonus('critDamage'),xpBonus:metaBonus('xp'),buffDuration:1+metaBonus('duration'),dashCooldown:3.6*(1-metaBonus('dash')),score:0,kills:0,shards:0,enemy:[],bullets:[],enemyBullets:[],pickups:[],parts:[],fx:[],floaters:[],drones:[{id:'pulse',lvl:1,cd:0,hitCd:0,mods:{}}],mines:[],gravityWells:[],effects:[],chains:[],hazards:[],hybrids:[],fusionCores:0,synthFlags:[false,false,false],powerupClock:25,rageTimer:0,invulnTimer:0,magnetTimer:0,dead:false,wins:false,spawn:0,spawnCount:0,raidFlags:RAID_EVENTS.map(()=>false),upgrades:[],pendingUp:0,rerollsRemaining:1,rerollsUsed:0,bossFlags:BOSS_EVENTS.map(()=>false),bosses:[],clock:0,regenT:0};balInit();$('bossWrap').classList.add('hidden');$('wavebanner').classList.add('hidden');$('toast').classList.add('hidden');setMode('playing');toast('СИСТЕМА АКТИВИРОВАНА // СОБИРАЙ ДАННЫЕ');sfx('level',.75);for(let i=0;i<12;i++)spawnEnemy('scarab',i*TAU/12,rand(235,340));updateHUD()}
 function weaponSummary(){return `<div class="line"></div><div class="label">КОНФИГУРАЦИЯ ОРУЖИЯ</div><div class="tiny" style="margin:10px 0;line-height:1.9">${S.drones.map(d=>`<b style="color:${DRONES[d.id].color}">${DRONES[d.id].name} ур. ${d.lvl}</b>: ${weaponBranches(d.id).filter(m=>wm(d,m[0])>0).map(m=>m[1]+' '+wm(d,m[0])).join(', ')||'Без модулей'}`).join('<br>')}</div>`}
 // Isolated gameplay QA build only: debug controls appear during ordinary pause.
 let qaWeapon='pulse',qaEnemy='scarab',qaSlot='new',qaCount=12,qaLevel=1;
