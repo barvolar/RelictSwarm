@@ -90,6 +90,30 @@ button.forge-card:hover{filter:brightness(1.25)}.forge-card.is-done{border-color
 @media(max-height:600px){#trainingPanel{top:85px;max-height:calc(100vh - 105px)}}
 .tp-preview{margin:9px 0;padding:9px 10px;border:1px solid #315875;background:#0b2334;display:grid;gap:5px;font-size:10px;color:#b7d6e2}.tp-preview>b{font-size:9px;color:#7fe0cb;letter-spacing:1px}.tp-preview small{font-size:9px;color:#7497a8;line-height:1.35}
 
+
+
+/* Only bundled in the isolated QA build: pause-time gameplay inspection tools. */
+.qa-pause{margin:16px 0;padding:12px;border:1px solid #4c949a;background:#081e2af0;border-radius:7px;color:#cbeef0}
+.qa-pause summary{font-weight:900;color:#8ef4e4;cursor:pointer;font-size:12px;letter-spacing:.4px}
+.qa-pause p,.qa-pause small{color:#9fb8c4;font-size:11px;line-height:1.55}
+.qa-pause label{display:grid;gap:4px;min-width:0;font-size:11px;color:#99dacc;margin:8px 0}
+.qa-pause input,.qa-pause select,.qa-pause button{box-sizing:border-box;min-height:36px;font:700 12px inherit;background:#123246;color:#eefcff;border:1px solid #457080;border-radius:5px;padding:7px;max-width:100%}
+.qa-pause select{width:100%;font-family:inherit}
+.qa-pause input{width:100%;font-family:inherit}
+.qa-pause button{font-family:inherit;cursor:pointer;flex:1;min-width:0;white-space:normal}
+.qa-pause button:hover{background:#1a4656;border-color:#8ef4e4}
+.qa-row{display:flex;align-items:end;gap:8px;margin:8px 0}
+.qa-row label,.qa-row select{flex:1;min-width:0}
+.qa-row label{margin:0}
+.qa-inventory{display:flex;flex-wrap:wrap;gap:5px;margin:8px 0}
+.qa-inventory span{font-size:10px;padding:5px 7px;border:1px solid #2d5965;background:#112b3c}
+@media(max-width:480px){.qa-pause{padding:9px}.qa-row{gap:5px}.qa-pause button{font-size:10px}}
+
+/* Expand the tester's pause menu instead of wasting vertical space on the title. */
+#modal:has(#qaPause) .menu-head{display:none}
+#modal:has(#qaPause) .modal-panel{width:min(760px,100%);max-height:calc(100dvh - 26px);padding:16px 22px;overflow-y:auto}
+#modal:has(#qaPause) .qa-pause{margin:12px 0}
+@media(max-width:700px){#modal:has(#qaPause) .modal-panel{padding:10px!important;max-height:calc(100dvh - 16px)}}
 /* v0.9.2 embedded original soundtrack and effect samples. */
 .audio-mixer{margin-top:12px;padding:13px 14px;border:1px solid #31556b;background:linear-gradient(110deg,#0c2331,#0a1727);border-radius:5px;display:grid;gap:10px}
 .audio-mixer-head{display:flex;align-items:center;justify-content:space-between;gap:8px;font-weight:900;letter-spacing:1.3px;color:#79ddce;font-size:10px}
@@ -519,7 +543,7 @@ button.forge-card:hover{filter:brightness(1.25)}.forge-card.is-done{border-color
  <button class="dash" id="dashBtn"><span>⚡</span><small>РЫВОК</small><span class="dash-cool" id="dashCool"></span></button>
 </div>
 <div id="modal" class="modal">
- <div class="menu-head"><div class="eyebrow">[ 10.15: ONLINE TEST ]</div><div class="menu-logo"><span>РЕЛИКТОВЫЙ</span><strong>РОЙ</strong></div><div class="subtitle">НУЛЕВОЙ ПРОТОКОЛ <i></i> 10 // ПЯТНАДЦАТЬ МИНУТ</div></div>
+ <div class="menu-head"><div class="eyebrow">[ 10.15: ONLINE TEST ]</div><div class="menu-logo"><span>РЕЛИКТОВЫЙ</span><strong>РОЙ</strong></div><div class="subtitle">ZERO PROTOCOL <i></i> 10 // FIFTEEN MINUTES</div></div>
  <div class="modal-panel" id="modalContent"></div>
  <div class="footer-note" id="menuFoot">© 2026 · Оригинальная векторная графика · Без внешних загрузок</div>
 </div>
@@ -708,23 +732,36 @@ function calculateWeaponCooldown(base, haste, rateLevels, rank) {
  };
 }
 
-// Build a fused weapon without changing the two source weapons or the game state.
+// Fusion must preserve progression paid for by BOTH consumed weapons.
+// Matched modifiers keep their full points, unmatched branches are converted
+// into universal power / attack tempo instead of vanishing.
 function createFusionWeapon(id, a, b, branches) {
- const mods={};
- for(const [key] of branches)mods[key]=Math.floor(((a.mods?.[key]||0)+(b.mods?.[key]||0))*.65);
- const level=Math.max(1,Math.floor((a.lvl+b.lvl)/2));
- return {id:'fusion_'+id,lvl:level,mods,cd:.2,hitCd:0};
+ const keys=branches.map(([key])=>key);
+ const mods=Object.fromEntries(keys.map(key=>[key,Math.max(0,(a.mods?.[key]||0)+(b.mods?.[key]||0))]));
+ const sourcePoints=[a,b].reduce((n,d)=>n+Object.values(d.mods||{}).reduce((s,v)=>s+Math.max(0,v||0),0),0);
+ const retained=Object.values(mods).reduce((s,v)=>s+v,0);
+ const extra=Math.max(0,sourcePoints-retained);
+ const power=keys.includes('power')?'power':keys[0];
+ const tempo=keys.includes('rate')?'rate':power;
+ if(power===tempo)mods[power]=(mods[power]||0)+extra;
+ else{
+  mods[power]=(mods[power]||0)+Math.ceil(extra*.65);
+  mods[tempo]=(mods[tempo]||0)+Math.floor(extra*.35);
+ }
+ // The two paid weapon levels now survive the merge.
+ const lvl=Math.max(1,Math.floor(a.lvl||1)+Math.floor(b.lvl||1)-1);
+ return {id:'fusion_'+id,lvl,mods,cd:.2,hitCd:0};
 }
 
 const DRONES={
  fusion_glacier:{name:'КРИОРЕЛЬСОТРОН',color:'#b8ecff',glyph:'❅',desc:'Пробивной ледяной луч замораживает всех врагов на линии огня.',base:2.6},
  fusion_singularity:{name:'СИНГУЛЯРНАЯ МИНА',color:'#c5a6ff',glyph:'◉',desc:'Мины затягивают врагов перед мощным гравитационным взрывом.',base:2.7},
  fusion_inferno:{name:'ПЛАМЕННЫЙ ЦИКЛОН',color:'#ff9b62',glyph:'⟲',desc:'Возвратные пылающие диски режут врагов и оставляют огненные следы.',base:1.3},
- fusion_ion:{name:'ИОННЫЙ ШТОРМ',color:'#cba3ff',glyph:'Ϟ',desc:'Пробивной луч вызывает цепные разряды.',base:.9},
+ fusion_ion:{name:'ИОННАЯ СЕТЬ',color:'#cba3ff',glyph:'Ϟ',desc:'Пробивной луч вызывает цепные разряды.',base:.9},
  fusion_thermal:{name:'ТЕРМОПИЛА',color:'#ffae57',glyph:'✹',desc:'Огненные орбитальные лезвия оставляют пылающий след.',base:.25},
  fusion_starfall:{name:'ЗВЁЗДНЫЙ ДОЖДЬ',color:'#8edbff',glyph:'✧',desc:'Ракеты раскрываются плазменными штормами.',base:1.5},
- fusion_predator:{name:'ХИЩНИК',color:'#ff7d97',glyph:'◈',desc:'Метка лазера наводит хищные самонаводящиеся ракеты.',base:1.15},
- fusion_tesla:{name:'ТЕСЛА-РАЗРЫВ',color:'#ffe29d',glyph:'ϟ',desc:'Электропилы искажают пространство цепями молний.',base:.32},
+ fusion_predator:{name:'СИСТЕМА «ХИЩНИК»',color:'#ff7d97',glyph:'◈',desc:'Метка лазера наводит хищные самонаводящиеся ракеты.',base:1.15},
+ fusion_tesla:{name:'КАТУШКА ТЕСЛЫ',color:'#ffe29d',glyph:'ϟ',desc:'Электропилы искажают пространство цепями молний.',base:.32},
 
  fusion_spear:{name:'ИОННОЕ КОПЬЁ',color:'#f8dea0',glyph:'⟐',desc:'Узкий ускоренный пробивной импульс. Дополнительные лазеры поражают цели рядом с линией.',base:2.0},
  fusion_polar:{name:'ПОЛЯРНЫЙ ЛУЧ',color:'#a6f4ff',glyph:'❄',desc:'Лазер накладывает лёд, оставляя морозную полосу и раскалывая замороженных врагов.',base:2.0},
@@ -767,11 +804,11 @@ const WEAPON_MODS={
  fusion_predator:[['power','МОЩЬ ОХОТНИКА','+20% урон',0,'ϟ'],['beams','ЧИСЛО МЕТОК','+1 луч',0,'⌁'],['salvo','ЧИСЛО РАКЕТ','+1 ракета',0,'➤'],['rate','СЛЕЖЕНИЕ','+15% темп',0,'◈']],
  fusion_tesla:[['power','ЭНЕРГИЯ КАТУШКИ','+20% урон',0,'ϟ'],['count','РАЗРЯДНЫЕ ПИЛЫ','+1 электропила',0,'◉'],['radius','ОРБИТА ТЕСЛЫ','+18 радиус',0,'◎'],['jumps','ДУГИ ТЕСЛЫ','+1 перескок',0,'⤳']],
 
- fusion_spear:[["power","УРОН","+20% к урону",0,"ϟ"],["rate","ПЕРЕЗАРЯДКА","+16% темп",0,"⌁"],["pierce","ПРОБИТИЕ","+1 дополнительная цель",0,"↗"],["beams","РАСЩЕПЛЕНИЕ","+1 луч",0,"✦"]],
+ fusion_spear:[["power","УРОН","+20% к урону",0,"ϟ"],["rate","ПЕРЕЗАРЯДКА","+16% темп",0,"⌁"],["pierce","ПРОБИТИЕ","+3 к ширине пробивного луча",0,"↗"],["beams","РАСЩЕПЛЕНИЕ","+1 луч",0,"✦"]],
  fusion_polar:[["power","УРОН","+20% к урону",0,"ϟ"],["rate","ПЕРЕЗАРЯДКА","+16% темп",0,"⌁"],["freeze","ОБЛЕДЕНЕНИЕ","+0.13с холода",0,"❅"],["beams","РАСЩЕПЛЕНИЕ","+1 луч",0,"✦"]],
  fusion_prism:[["power","УРОН","+20% к урону",0,"ϟ"],["rate","ПЕРЕЗАРЯДКА","+16% темп",0,"⌁"],["radius","РАДИУС","+18 к радиусу",0,"◎"],["beams","РАСЩЕПЛЕНИЕ","+1 луч",0,"✦"]],
- fusion_siege:[["power","УРОН","+20% к урону",0,"ϟ"],["rate","ПЕРЕЗАРЯДКА","+16% темп",0,"⌁"],["pierce","ПРОБИТИЕ","+1 дополнительная цель",0,"↗"],["blast","ВЗРЫВНАЯ ВОЛНА","+16 к радиусу",0,"✹"]],
- fusion_thunder:[["power","УРОН","+20% к урону",0,"ϟ"],["rate","ПЕРЕЗАРЯДКА","+16% темп",0,"⌁"],["pierce","ПРОБИТИЕ","+1 дополнительная цель",0,"↗"],["jumps","ЦЕПЬ","+1 скачок",0,"ϟ"]],
+ fusion_siege:[["power","УРОН","+20% к урону",0,"ϟ"],["rate","ПЕРЕЗАРЯДКА","+16% темп",0,"⌁"],["pierce","ПРОБИТИЕ","+90 дальности и 1 вторичный взрыв",0,"↗"],["blast","ВЗРЫВНАЯ ВОЛНА","+16 к радиусу",0,"✹"]],
+ fusion_thunder:[["power","УРОН","+20% к урону",0,"ϟ"],["rate","ПЕРЕЗАРЯДКА","+16% темп",0,"⌁"],["pierce","ПРОБИТИЕ","+80 дальности и дополнительный источник цепи",0,"↗"],["jumps","ЦЕПЬ","+1 скачок",0,"ϟ"]],
  fusion_overload:[["power","УРОН","+20% к урону",0,"ϟ"],["rate","ПЕРЕЗАРЯДКА","+16% темп",0,"⌁"],["radius","РАДИУС","+18 к радиусу",0,"◎"],["jumps","ЦЕПЬ","+1 скачок",0,"ϟ"]],
  fusion_frostwell:[["power","УРОН","+20% к урону",0,"ϟ"],["rate","ПЕРЕЗАРЯДКА","+16% темп",0,"⌁"],["radius","РАДИУС","+18 к радиусу",0,"◎"],["freeze","ОБЛЕДЕНЕНИЕ","+0.13с холода",0,"❅"]],
  fusion_thermoshock:[["power","УРОН","+20% к урону",0,"ϟ"],["rate","ПЕРЕЗАРЯДКА","+16% темп",0,"⌁"],["range","ДАЛЬНОСТЬ","+30 дальности",0,"↗"],["angle","ШИРИНА АТАКИ","+8°",0,"◁"]],
@@ -782,7 +819,7 @@ const WEAPON_MODS={
  fusion_sunheart:[["power","УРОН","+20% к урону",0,"ϟ"],["rate","ПЕРЕЗАРЯДКА","+16% темп",0,"⌁"],["radius","РАДИУС","+18 к радиусу",0,"◎"],["force","ПРИТЯЖЕНИЕ","+22% сила",0,"↘"]],
  fusion_frostmine:[["power","УРОН","+20% к урону",0,"ϟ"],["count","КОЛИЧЕСТВО","+1 устройство",0,"◉"],["blast","ВЗРЫВНАЯ ВОЛНА","+16 к радиусу",0,"✹"],["freeze","ОБЛЕДЕНЕНИЕ","+0.13с холода",0,"❅"]],
  fusion_plasmamelt:[["power","УРОН","+20% к урону",0,"ϟ"],["rate","ПЕРЕЗАРЯДКА","+16% темп",0,"⌁"],["range","ДАЛЬНОСТЬ","+30 дальности",0,"↗"],["angle","ШИРИНА АТАКИ","+8°",0,"◁"]],
- fusion_railplasma:[["power","УРОН","+20% к урону",0,"ϟ"],["rate","ПЕРЕЗАРЯДКА","+16% темп",0,"⌁"],["width","ШИРИНА КАНАЛА","+6 единиц",0,"⇶"],["pierce","ПРОБИТИЕ","+1 дополнительная цель",0,"↗"]],
+ fusion_railplasma:[["power","УРОН","+20% к урону",0,"ϟ"],["rate","ПЕРЕЗАРЯДКА","+16% темп",0,"⌁"],["width","ШИРИНА КАНАЛА","+6 единиц",0,"⇶"],["pierce","ПРОБИТИЕ","+1 плазменная зона после попадания",0,"↗"]],
  fusion_magnetblade:[["power","УРОН","+20% к урону",0,"ϟ"],["count","КОЛИЧЕСТВО","+1 устройство",0,"◉"],["radius","РАДИУС","+18 к радиусу",0,"◎"],["force","ПРИТЯЖЕНИЕ","+22% сила",0,"↘"]],
  pulse:[['power','УРОН ЛУЧА','+23% к урону',0,'ϟ'],['rate','ЧАСТОТА ВЫСТРЕЛОВ','+18% к темпу',0,'⌁'],['beams','ЛАЗЕРНЫЕ СТВОЛЫ','+1 луч одновременно',0,'✦'],['pierce','ПРОБИВАНИЕ','+1 противник насквозь',0,'➤']],
  arc:[['power','МОЩНОСТЬ РАЗРЯДА','+22% к урону',0,'ϟ'],['jumps','ПЕРЕСКОКИ','+1 цель в цепи',0,'⤳'],['range','РАДИУС ПЕРЕСКОКА','дальность цепи растёт с убывающей отдачей',0,'↗'],['rate','СКОРОСТЬ АТАКИ','быстрее с убывающей отдачей',0,'⌁']],
@@ -897,11 +934,11 @@ const RARITIES=[{id:'common',name:'ОБЫЧНАЯ',steps:1,col:'#8baebd',chance:
 const saveKey='relictSwarm_v01_save';
 const RUN_DURATION=900;
 const THREAT_MODES=[
- {name:'ПРОТОКОЛ I',hint:'Обычная сложность. Базовые волны и механики.',hp:1,speed:1,damage:1,score:1,reward:1},
- {name:'ПРОТОКОЛ II',hint:'Больше охотников и элиты, враги опаснее.',hp:1.18,speed:1.04,damage:1.13,score:1.3,reward:1.3},
- {name:'ПРОТОКОЛ III',hint:'Сложные смешанные группы, усиленные боссы.',hp:1.39,speed:1.08,damage:1.26,score:1.6,reward:1.6},
- {name:'ПРОТОКОЛ IV',hint:'Плотные тактические волны, опасные прорывы.',hp:1.64,speed:1.12,damage:1.42,score:2,reward:2},
- {name:'ПРОТОКОЛ V',hint:'Высшая угроза. Проверка сборки, мобильности и выживания.',hp:1.94,speed:1.17,damage:1.6,score:2.5,reward:2.5}
+ {name:'PROTOCOL I',hint:'Обычная сложность. Базовые волны и механики.',hp:1,speed:1,damage:1,score:1,reward:1},
+ {name:'PROTOCOL II',hint:'Больше охотников и элиты, враги опаснее.',hp:1.18,speed:1.04,damage:1.13,score:1.3,reward:1.3},
+ {name:'PROTOCOL III',hint:'Сложные смешанные группы, усиленные боссы.',hp:1.39,speed:1.08,damage:1.26,score:1.6,reward:1.6},
+ {name:'PROTOCOL IV',hint:'Плотные тактические волны, опасные прорывы.',hp:1.64,speed:1.12,damage:1.42,score:2,reward:2},
+ {name:'PROTOCOL V',hint:'Высшая угроза. Проверка сборки, мобильности и выживания.',hp:1.94,speed:1.17,damage:1.6,score:2.5,reward:2.5}
 ];
 let selectedThreat=1;
 const RAID_EVENTS=[
@@ -3719,17 +3756,471 @@ const I18N_PAIRS=[
  [
   "+25% к урону горения в течение 4 секунд",
   "+25% burn damage over 4 seconds"
+ ],
+ [
+  "НУЛЕВОЙ ПРОТОКОЛ",
+  "ZERO PROTOCOL"
+ ],
+ [
+  "ПЯТНАДЦАТЬ МИНУТ",
+  "FIFTEEN MINUTES"
+ ],
+ [
+  "ПРОТОКОЛ",
+  "PROTOCOL"
+ ],
+ [
+  "Игровое поле Реликтовый рой",
+  "Relict Swarm game arena"
+ ],
+ [
+  "Звук вкл/выкл",
+  "Toggle audio"
+ ],
+ [
+  "Пауза",
+  "Pause"
+ ],
+ [
+  "Оружие и синтез",
+  "Weapons and fusions"
+ ],
+ [
+  "Текущее вооружение",
+  "Current weapon loadout"
+ ],
+ [
+  "Все пять слотов оружия",
+  "All five weapon slots"
+ ],
+ [
+  "Лаборатория синтеза",
+  "Fusion Lab"
+ ],
+ [
+  "Полигон оружия",
+  "Weapon training range"
+ ],
+ [
+  "ЖНЕЦ",
+  "REAPER"
+ ],
+ [
+  "ВООРУЖЕНИЕ",
+  "ARMAMENT"
+ ],
+ [
+  "СИСТЕМЫ",
+  "SYSTEMS"
+ ],
+ [
+  "ИССЛЕДОВАНИЯ",
+  "RESEARCH"
+ ],
+ [
+  "ФАНТОМ",
+  "PHANTOM"
+ ],
+ [
+  "Изучено ",
+  "Researched "
+ ],
+ [
+  " из ",
+  " of "
+ ],
+ [
+  " готов к синтезу",
+  " ready for fusion"
+ ],
+ [
+  "не получен",
+  "not acquired"
+ ],
+ [
+  "+22% к урону",
+  "+22% damage"
+ ],
+ [
+  "Свободный слот",
+  "Empty slot"
+ ],
+ [
+  "ТЕСТОВАЯ ПАНЕЛЬ: ОРУЖИЕ И ВРАГИ",
+  "QA PANEL: WEAPONS AND ENEMIES"
+ ],
+ [
+  "Меняй арсенал и создавай врагов прямо во время паузы. Текущий опубликованный билд не затрагивается.",
+  "Modify weapons and spawn enemies while paused. Normal saved progress is unaffected."
+ ],
+ [
+  "Оружия нет",
+  "No weapons"
+ ],
+ [
+  "Оружие",
+  "Weapon"
+ ],
+ [
+  "Слот",
+  "Slot"
+ ],
+ [
+  "Уровень",
+  "Level"
+ ],
+ [
+  "ДОБАВИТЬ / ЗАМЕНИТЬ",
+  "ADD / REPLACE"
+ ],
+ [
+  "+5 УЛУЧШЕНИЙ",
+  "+5 UPGRADES"
+ ],
+ [
+  "УБРАТЬ СЛОТ",
+  "REMOVE SLOT"
+ ],
+ [
+  "ОЧИСТИТЬ АРСЕНАЛ",
+  "CLEAR LOADOUT"
+ ],
+ [
+  "Тип врага",
+  "Enemy type"
+ ],
+ [
+  "Количество",
+  "Count"
+ ],
+ [
+  "СОЗДАТЬ ВРАГОВ",
+  "SPAWN ENEMIES"
+ ],
+ [
+  "УБРАТЬ ВРАГОВ",
+  "CLEAR ENEMIES"
+ ],
+ [
+  "+1 ЯДРО",
+  "+1 CORE"
+ ],
+ [
+  "ОСТАНОВКА ВРЕМЕНИ",
+  "TIME STOP"
+ ],
+ [
+  "2-Я ФАЗА",
+  "PHASE TWO"
+ ],
+ [
+  "СЛЕДУЮЩАЯ АТАКА",
+  "NEXT ATTACK"
+ ],
+ [
+  "УБРАТЬ УГРОЗЫ",
+  "CLEAR HAZARDS"
+ ],
+ [
+  "ВЫБЕРИ СЛОТ ДЛЯ ЗАМЕНЫ",
+  "SELECT A SLOT TO REPLACE"
+ ],
+ [
+  "СНАЧАЛА СОЗДАЙ БОССА",
+  "SPAWN A BOSS FIRST"
+ ],
+ [
+  "СЛЕДУЮЩИЙ ПАТТЕРН АТАКИ ПОСЛЕ ПАУЗЫ",
+  "NEXT BOSS ATTACK AFTER PAUSE"
+ ],
+ [
+  "ВТОРАЯ ФАЗА",
+  "SECOND PHASE"
+ ],
+ [
+  "Боссы создаются по одному; обычные враги ограничены лимитом игры. После настройки нажми «Продолжить».",
+  "Bosses spawn one at a time; regular enemies obey game limits. Press Resume when ready."
+ ],
+ [
+  "с между атаками",
+  "s between attacks"
+ ],
+ [
+  "Перескоков:",
+  "Jumps:"
+ ],
+ [
+  "Радиус между целями:",
+  "Jump distance:"
+ ],
+ [
+  "Дальность:",
+  "Range:"
+ ],
+ [
+  "Ракет в залпе:",
+  "Rockets per salvo:"
+ ],
+ [
+  "Длина струи:",
+  "Stream length:"
+ ],
+ [
+  "Угол веера: 60° (фиксирован)",
+  "Fan angle: 60° (fixed)"
+ ],
+ [
+  "Охлаждение за попадание:",
+  "Chill per hit:"
+ ],
+ [
+  "Поджог:",
+  "Ignition:"
+ ],
+ [
+  "урона/сек",
+  "damage/s"
+ ],
+ [
+  "сек",
+  "s"
+ ],
+ [
+  "Длительность:",
+  "Duration:"
+ ],
+ [
+  "Снаряд летит от турели к цели",
+  "Projectile flies from turret to target"
+ ],
+ [
+  "Дисков:",
+  "Discs:"
+ ],
+ [
+  "Дальность броска:",
+  "Throw range:"
+ ],
+ [
+  "ФАКТИЧЕСКИЕ ПОКАЗАТЕЛИ",
+  "ACTUAL STATS"
+ ],
+ [
+  "Число активных объектов может ограничиваться производительностью; избыток улучшений усиливает урон.",
+  "Active objects may be limited for performance. Excess upgrades increase damage."
+ ],
+ [
+  "ИСПЫТАТЕЛЬНЫЙ ПОЛИГОН",
+  "TRAINING RANGE"
+ ],
+ [
+  "Свернуть панель",
+  "Collapse panel"
+ ],
+ [
+  "В главное меню",
+  "Main menu"
+ ],
+ [
+  "ЦЕЛИ ОБНОВЛЕНЫ",
+  "TARGETS REFRESHED"
+ ],
+ [
+  "ДОСТИГНУТО 5 СЛОТОВ — УДАЛИ ОРУЖИЕ",
+  "ALL FIVE SLOTS FILLED — REMOVE A WEAPON"
+ ],
+ [
+  "ИСПЫТАНИЯ",
+  "TRIALS"
+ ],
+ [
+  "ИСПЫТАТЕЛЬНЫЙ СЕКТОР",
+  "TRAINING SECTOR"
+ ],
+ [
+  "Испытание приостановлено",
+  "Training paused"
+ ],
+ [
+  "Изменения оружия здесь не сохраняются в обычный забег.",
+  "Training modifications do not carry into normal runs."
+ ],
+ [
+  "1 за забег",
+  "1 per run"
+ ],
+ [
+  "за забег",
+  "per run"
+ ],
+ [
+  "уровень",
+  "level"
+ ],
+ [
+  "ур.",
+  "lv."
+ ],
+ [
+  "ЭХО РЫВКА",
+  "DASH ECHO"
+ ],
+ [
+  "ГРАВИТАЦИОННЫЙ СЛЕД",
+  "GRAVITY TRAIL"
+ ],
+ [
+  "ФАЗОВЫЙ ПЕРЕХВАТ",
+  "PHASE INTERCEPT"
+ ],
+ [
+  "РЕЗОНАНС ОРУЖИЯ",
+  "WEAPON RESONANCE"
+ ],
+ [
+  "ОСКОЛОЧНЫЙ КАСКАД",
+  "SHRAPNEL CASCADE"
+ ],
+ [
+  "ПРОТОКОЛ ОХОТНИКА",
+  "HUNTER PROTOCOL"
+ ],
+ [
+  "МЕТКА РАЗРУШЕНИЯ",
+  "FRACTURE MARK"
+ ],
+ [
+  "АВАРИЙНЫЙ БАРЬЕР",
+  "EMERGENCY BARRIER"
+ ],
+ [
+  "БОЕВЫЕ НАНИТЫ",
+  "COMBAT NANITES"
+ ],
+ [
+  "КОНТУР ВОЗМЕЗДИЯ",
+  "RETALIATION CIRCUIT"
+ ],
+ [
+  "КРИОИМПУЛЬС",
+  "CRYO PULSE"
+ ],
+ [
+  "ЦЕПНАЯ РЕАКЦИЯ",
+  "CHAIN REACTION"
+ ],
+ [
+  "Выбери один тактический модуль. Он действует до конца забега и не занимает слот оружия.",
+  "Choose one tactical module for this run. It uses no weapon slot."
+ ],
+ [
+  "ТАКТИЧЕСКАЯ НАГРАДА",
+  "TACTICAL REWARD"
+ ],
+ [
+  "НОВЫЙ МОДУЛЬ",
+  "NEW MODULE"
+ ],
+ [
+  "ЭВОЛЮЦИЯ",
+  "EVOLUTION"
+ ],
+ [
+  "МОДУЛЬ АКТИВИРОВАН:",
+  "MODULE ACTIVATED:"
+ ],
+ [
+  "ВЕСЬ ОПЫТ НА КАРТЕ!",
+  "COLLECT ALL XP!"
+ ],
+ [
+  "УРОН ×2.1 И +45% СКОРОСТИ АТАК НА 13 СЕКУНД",
+  "DAMAGE ×2.1 AND +45% ATTACK SPEED FOR 13 SECONDS"
+ ],
+ [
+  "ВРАГИ И ИХ СНАРЯДЫ ЗАМЕРЛИ",
+  "ENEMIES AND PROJECTILES FROZEN"
+ ],
+ [
+  "НЕУЯЗВИМОСТЬ: 8 СЕКУНД",
+  "INVULNERABILITY: 8 SECONDS"
+ ],
+ [
+  "РЕМОНТ КОРПУСА",
+  "HULL REPAIR"
+ ],
+ [
+  "ОСТАНОВКА ВРЕМЕНИ:",
+  "TIME STOP:"
+ ],
+ [
+  "ГРАНИЦА СЕКТОРА",
+  "SECTOR BOUNDARY"
+ ],
+ [
+  "ИСПЫТАТЕЛЬНЫЙ СЕКТОР // 08",
+  "TRAINING SECTOR // 08"
+ ],
+ [
+  "СБОЙ ИГРОВОГО ЦИКЛА",
+  "GAME LOOP ERROR"
+ ],
+ [
+  "Забег приостановлен",
+  "Run paused"
+ ],
+ [
+  "Произошла ошибка обновления игры. Время больше не зависнет молча. Можно продолжить или вернуться в ангар.",
+  "A game update error occurred. You can resume or return to the hangar."
+ ],
+ [
+  "РЕЖИМ РАЗРАБОТЧИКА · ТЕСТ ЗВУКА",
+  "DEVELOPER MODE · SOUND TEST"
+ ],
+ [
+  "МУЗЫКА МЕНЮ",
+  "MENU MUSIC"
+ ],
+ [
+  "МУЗЫКА БОЯ",
+  "COMBAT MUSIC"
+ ],
+ [
+  "ВЫСТРЕЛ + ВЗРЫВ",
+  "SHOT + EXPLOSION"
+ ],
+ [
+  "ПРОВЕРКА",
+  "TEST"
+ ],
+ [
+  "ТЕСТ ЗВУКОВ ОРУЖИЯ",
+  "WEAPON SOUND TEST"
+ ],
+ [
+  "ПРОТОКОЛ I",
+  "PROTOCOL I"
+ ],
+ [
+  "ПРОТОКОЛ II",
+  "PROTOCOL II"
+ ],
+ [
+  "ПРОТОКОЛ III",
+  "PROTOCOL III"
+ ],
+ [
+  "ПРОТОКОЛ IV",
+  "PROTOCOL IV"
+ ],
+ [
+  "ПРОТОКОЛ V",
+  "PROTOCOL V"
  ]
 ];
 I18N_PAIRS.sort((a,b)=>b[0].length-a[0].length);
-const localeKey='relictswarm_ui_locale_v1';
-let locale='en';
-try{const stored=localStorage.getItem(localeKey);
- const systemLang=(typeof navigator!=='undefined'?navigator.language:'')||'';
- locale=stored==='en'||stored==='ru'?stored:
-  (typeof window!=='undefined'&&window.RelicPlatform?.provider==='crazygames')?'en':
-  /^ru(?:-|$)/i.test(systemLang)?'ru':'en';
-}catch{locale='en';}
+// English-only release: disregard old RU preferences and SDK language hints.
+const locale='en';
 const i18nTextCache=new WeakMap(),i18nAttrsCache=new WeakMap();
 function localizedText(raw){
  if(locale!=='en'||typeof raw!=='string'||!/[А-Яа-яЁё]/.test(raw))return raw;
@@ -3741,7 +4232,7 @@ function localizeTextNode(node){
  const v=node.nodeValue;
  let info=i18nTextCache.get(node);
  if(!info||(v!==info.ru&&v!==info.last))info={ru:v,last:v};
- const translated=locale==='ru'?info.ru:localizedText(info.ru);
+ const translated=localizedText(info.ru);
  if(v!==translated)node.nodeValue=translated;
  info.last=translated;i18nTextCache.set(node,info);
 }
@@ -3752,7 +4243,7 @@ function localizeAttrs(element){
   if(!element.hasAttribute?.(key))continue;
   const raw=element.getAttribute(key),old=originals[key];
   if(!old||old.ru!==raw&&old.last!==raw)originals[key]={ru:raw,last:raw};
-  const saved=originals[key],next=locale==='en'?localizedText(saved.ru):saved.ru;
+  const saved=originals[key],next=localizedText(saved.ru);
   if(raw!==next)element.setAttribute(key,next);
   saved.last=next;
  }
@@ -3765,26 +4256,11 @@ function localizeTree(root){
  const walker=document.createTreeWalker(root,NodeFilter.SHOW_ELEMENT|NodeFilter.SHOW_TEXT);
  while(walker.nextNode()){const n=walker.currentNode;if(n.nodeType===3)localizeTextNode(n);else localizeAttrs(n);}
 }
-if(typeof window!=='undefined')window.RelicOnPlatformLocale=function(value){
- let stored=null;try{stored=localStorage.getItem(localeKey);}catch{}
- if(stored==='ru'||stored==='en')return;
- const next=/^ru(?:-|$)/i.test(String(value||''))?'ru':'en';
- if(next===locale)return;
- locale=next;document.documentElement.lang=locale;localizeTree(document.body);
- if(typeof mode!=='undefined'&&mode==='menu')menu();
-};
-function changeLocale(next){
- if(next!=='en'&&next!=='ru')return;
- locale=next;
- try{localStorage.setItem(localeKey,locale);}catch{}
- document.documentElement.lang=locale;
- document.title=locale==='en'?'RELICT SWARM | HTML5 Roguelite':'РЕЛИКТОВЫЙ РОЙ | HTML5 Roguelite';
- localizeTree(document.body);
- if(mode==='menu')showSettings();
-}
+// SDK and obsolete RU settings cannot override English in this release.
+if(typeof window!=='undefined')window.RelicOnPlatformLocale=()=>{};
 if(typeof MutationObserver!=='undefined'&&typeof document!=='undefined'&&document.body){
  document.documentElement.lang=locale;
- document.title=locale==='en'?'RELICT SWARM | HTML5 Roguelite':'РЕЛИКТОВЫЙ РОЙ | HTML5 Roguelite';
+ document.title='RELICT SWARM | HTML5 Roguelite';
  localizeTree(document.body);
  const observer=new MutationObserver(records=>{
   for(const record of records){
@@ -4254,9 +4730,9 @@ function renderSkins(){
 }
 function showSettings(){
  setMode('menu');
- $('modalContent').innerHTML=`<div class="section-top"><div><div class="label">[ СИСТЕМА ]</div><div class="panel-title">Настройки</div></div><button id="backHome" class="btn ghost small-back">◂ НАЗАД</button></div><div class="settings-action"><button id="soundBtn" class="btn">${mute?'♪ ВКЛЮЧИТЬ ЗВУК':'♫ ВЫКЛЮЧИТЬ ЗВУК'}</button><button id="howBtn" class="btn ghost">? КАК ИГРАТЬ</button></div><div class="settings-action"><label for="langBtn">ЯЗЫК / LANGUAGE</label><button id="langBtn" type="button" class="btn">RU / EN · ${locale.toUpperCase()}</button></div>${audioMixerHTML()}${renderQualityControls()}${window.SwarmTelemetry?.settingsHTML?.()||''}`;
+ $('modalContent').innerHTML=`<div class="section-top"><div><div class="label">[ СИСТЕМА ]</div><div class="panel-title">Настройки</div></div><button id="backHome" class="btn ghost small-back">◂ НАЗАД</button></div><div class="settings-action"><button id="soundBtn" class="btn">${mute?'♪ ВКЛЮЧИТЬ ЗВУК':'♫ ВЫКЛЮЧИТЬ ЗВУК'}</button><button id="howBtn" class="btn ghost">? КАК ИГРАТЬ</button></div>${audioMixerHTML()}${renderQualityControls()}${window.SwarmTelemetry?.settingsHTML?.()||''}`;
  $('backHome').onclick=menu;$('soundBtn').onclick=soundToggle;
- $('howBtn').onclick=showHow;$('langBtn').onclick=()=>changeLocale(locale==='ru'?'en':'ru');bindAudioMixer();
+ $('howBtn').onclick=showHow;bindAudioMixer();
 }
 let activeMetaTab='hull';
 function renderShop(){
@@ -4299,7 +4775,7 @@ function renderLab(){
  const sh=$('lab');if(!sh)return;
  sh.innerHTML=Object.entries(HYBRIDS).map(([id,h])=>`<div class="lab-entry ${save.recipes?.[id]?'found':''}"><span style="color:${h.color}">${h.glyph}</span><div><b>${h.name}</b><small>${DRONES[h.a].name} + ${DRONES[h.b].name} · ядро особого босса</small></div><em>${save.recipes?.[id]?'ОТКРЫТО':'НЕ ИЗУЧЕНО'}</em></div>`).join('');
 }
-function showHow(){setMode('menu');$('modalContent').innerHTML=`<div class="label">ИНСТРУКЦИЯ</div><div class="panel-title">СОБИРАЙ НЕПОВТОРИМЫЙ БИЛД</div><p class="panel-desc">Каждая карточка оружия увеличивает его уровень на +1. Обычная улучшает один параметр, необычная два, редкая три, эпическая все четыре. Верхнего предела уровней нет. Два разных оружия любого уровня и камень сильного босса синтеза превращаются в одно совершенно новое оружие. Его тоже можно прокачивать бесконечно.</p><div class="howto"><span>WASD / стрелки</span><span>Пробел — рывок</span><span>F — синтез</span><span>ESC — пауза</span><span>Телефон: джойстик и ⚡</span></div><p class="panel-desc">Бонусы на арене: ✚ ремонт, ◎ магнит всех данных, ϟ ярость и ⬡ неуязвимость. Особые боссы синтеза появляются в 6:05, 9:10 и 12:45. Обычные боссы дают тактические модули, а не ядра.</p><button class="btn primary" id="backFromHow">ПОНЯТНО</button>`;$('backFromHow').onclick=showSettings}
+function showHow(){setMode('menu');$('modalContent').innerHTML=`<div class="label">INSTRUCTIONS</div><div class="panel-title">BUILD A UNIQUE LOADOUT</div><p class="panel-desc">Each weapon card increases weapon level by one. Common upgrades one stat, Uncommon two, Rare three, Epic all four. There is no weapon level cap. Combine two different weapons at any level with a fusion core from a synthesis boss to create an entirely new weapon.</p><div class="howto"><span>WASD / arrows: move</span><span>SPACE: dash</span><span>F: fuse</span><span>ESC: pause</span><span>Mobile: joystick and dash button</span></div><p class="panel-desc">Arena pickups: ✚ repair, ◎ magnet, ϟ Rage (×2.1 damage and +45% attack speed), ❄ Time Stop (freezes enemies and hostile projectiles for 4.5 seconds), and ⬡ invulnerability. Fusion bosses are scheduled at 6:05, 9:10 and 12:45. Regular bosses grant tactical modules, not fusion cores.</p><button class="btn primary" id="backFromHow">GOT IT</button>`;$('backFromHow').onclick=showSettings}
 // v0.10.15: Local balance telemetry. No network requests, identifiers, or gameplay changes.
 const BAL_STORE='relictSwarm_last_balance_report_v1';
 let bal=null,balLast=null;
@@ -4433,20 +4909,100 @@ function balFinalize(won,giveup){
   remainingBosses:S.bosses.filter(e=>e.hp>0).map(e=>({id:e.id,hpPct:balR(100*e.hp/e.maxHp)}))};
  bal.events.push({t:balR(S.t),what:'run_end',result:bal.result.status});balStore();window.SwarmTelemetry?.finish?.(balReport(),perf.samples);
 }
-function start(){perfReset();trainingMode=false;runId++;selectedThreat=Math.max(1,Math.min(save.threatUnlocked,selectedThreat));S={threat:selectedThreat,t:0,elapsed:0,player:{x:0,y:0,hp:120+metaBonus('hull'),maxHp:120+metaBonus('hull'),speed:225*(1+metaBonus('speed')),rad:17,inv:1,hit:0,dx:0,dy:-1,dashCd:0,dashTime:0,regen:metaBonus('regen')},cam:{x:0,y:0},lvl:1,xp:0,xpNeed:19,playerDmg:1+metaBonus('power'),magnet:100+metaBonus('magnet'),haste:1+metaBonus('haste'),armor:metaBonus('armor'),healBonus:metaBonus('repair'),critChance:metaBonus('critChance'),critMultiplier:1.5+metaBonus('critDamage'),xpBonus:metaBonus('xp'),buffDuration:1+metaBonus('duration'),dashCooldown:3.6*(1-metaBonus('dash')),score:0,kills:0,shards:0,enemy:[],bullets:[],enemyBullets:[],pickups:[],parts:[],fx:[],floaters:[],drones:[{id:'pulse',lvl:1,cd:0,hitCd:0,mods:{}}],mines:[],gravityWells:[],effects:[],chains:[],hazards:[],hybrids:[],fusionCores:0,bossOrder:shuffledBosses('boss'),synthOrder:shuffledBosses('synth'),tactics:{},tacticChoices:[],tacticFiredCount:0,tacticNaniteKills:0,tacticArmor:0,tacticShieldReady:false,tacticShieldAt:0,tacticLastNanoAt:-1000,tacticLastShrapnelAt:-1000,tacticLastChainAt:-1000,tacticLastRetaliationAt:-1000,tacticNextCryoAt:14,tacticFields:[],synthFlags:[false,false,false],powerupClock:25,rageTimer:0,invulnTimer:0,magnetTimer:0,dead:false,wins:false,spawn:0,spawnCount:0,raidFlags:RAID_EVENTS.map(()=>false),upgrades:[],pendingUp:0,rerollsRemaining:1,rerollsUsed:0,bossFlags:BOSS_EVENTS.map(()=>false),bosses:[],clock:0,regenT:0};balInit();$('bossWrap').classList.add('hidden');$('wavebanner').classList.add('hidden');$('toast').classList.add('hidden');setMode('playing');toast('СИСТЕМА АКТИВИРОВАНА // СОБИРАЙ ДАННЫЕ');sfx('level',.75);for(let i=0;i<9;i++)spawnEnemy('scarab',i*TAU/9,rand(235,340));updateHUD()}
+function start(){perfReset();trainingMode=false;runId++;selectedThreat=Math.max(1,Math.min(save.threatUnlocked,selectedThreat));S={threat:selectedThreat,t:0,elapsed:0,player:{x:0,y:0,hp:120+metaBonus('hull'),maxHp:120+metaBonus('hull'),speed:225*(1+metaBonus('speed')),rad:17,inv:1,hit:0,dx:0,dy:-1,dashCd:0,dashTime:0,regen:metaBonus('regen')},cam:{x:0,y:0},lvl:1,xp:0,xpNeed:19,playerDmg:1+metaBonus('power'),magnet:100+metaBonus('magnet'),haste:1+metaBonus('haste'),armor:metaBonus('armor'),healBonus:metaBonus('repair'),critChance:metaBonus('critChance'),critMultiplier:1.5+metaBonus('critDamage'),xpBonus:metaBonus('xp'),buffDuration:1+metaBonus('duration'),dashCooldown:3.6*(1-metaBonus('dash')),score:0,kills:0,shards:0,enemy:[],bullets:[],enemyBullets:[],pickups:[],parts:[],fx:[],floaters:[],drones:[{id:'pulse',lvl:1,cd:0,hitCd:0,mods:{}}],mines:[],gravityWells:[],effects:[],chains:[],hazards:[],hybrids:[],fusionCores:0,bossOrder:shuffledBosses('boss'),synthOrder:shuffledBosses('synth'),tactics:{},tacticChoices:[],tacticFiredCount:0,tacticNaniteKills:0,tacticArmor:0,tacticShieldReady:false,tacticShieldAt:0,tacticLastNanoAt:-1000,tacticLastShrapnelAt:-1000,tacticLastChainAt:-1000,tacticLastRetaliationAt:-1000,tacticNextCryoAt:14,tacticFields:[],synthFlags:[false,false,false],powerupClock:rand(45,60),rageTimer:0,timeStopTimer:0,invulnTimer:0,magnetTimer:0,dead:false,wins:false,spawn:0,spawnCount:0,raidFlags:RAID_EVENTS.map(()=>false),upgrades:[],pendingUp:0,rerollsRemaining:1,rerollsUsed:0,bossFlags:BOSS_EVENTS.map(()=>false),bosses:[],clock:0,regenT:0};balInit();$('bossWrap').classList.add('hidden');$('wavebanner').classList.add('hidden');$('toast').classList.add('hidden');setMode('playing');toast('СИСТЕМА АКТИВИРОВАНА // СОБИРАЙ ДАННЫЕ');sfx('level',.75);for(let i=0;i<9;i++)spawnEnemy('scarab',i*TAU/9,rand(235,340));updateHUD()}
 function weaponSummary(){const owned=Object.entries(S.tactics||{}).filter(([,level])=>level>0).map(([id,level])=>{const m=TACTICS.find(a=>a.id===id);return m?'<span style="white-space:nowrap">'+m.glyph+' '+tacticLanguage(m.en,m.name)+' '+tacticLanguage('LV.','УР.')+level+'</span>':''}).filter(Boolean).join(' · ');return `<div class="line"></div><div class="label">КОНФИГУРАЦИЯ ОРУЖИЯ</div><div class="tiny" style="margin:10px 0;line-height:1.9">${S.drones.map(d=>`<b style="color:${DRONES[d.id].color}">${DRONES[d.id].name} ур. ${d.lvl}</b>: ${weaponBranches(d.id).filter(m=>wm(d,m[0])>0).map(m=>m[1]+' '+wm(d,m[0])).join(', ')||'Без модулей'}`).join('<br>')}</div>${owned?'<div class="line"></div><div class="label">'+tacticLanguage('TACTICAL MODULES','ТАКТИЧЕСКИЕ МОДУЛИ')+'</div><div class="tiny" style="line-height:1.9">'+owned+'</div>':''}`}
-function pause(){if(mode!=='playing')return;if(trainingMode){setMode('paused');$('modalContent').innerHTML=`<div class="label">[ ПОЛИГОН ]</div><div class="panel-title">Испытание приостановлено</div><p class="panel-desc">Изменения оружия здесь не сохраняются в обычный забег.</p><div class="button-row"><button class="btn primary" id="resumeBtn">▶ ПРОДОЛЖИТЬ</button><button class="btn ghost" id="quitBtn">◂ В ГЛАВНОЕ МЕНЮ</button></div>`;$('resumeBtn').onclick=resume;$('quitBtn').onclick=leaveTraining;return;}setMode('paused');$('modalContent').innerHTML=`<div class="label">[ ПАУЗА ]</div><div class="panel-title" style="margin-top:9px">Система ожидает</div><p class="panel-desc">На поле уже ${S.kills} обломков. Машины терпеливо дождутся твоего возвращения.</p>${weaponSummary()}${renderQualityControls()}<div class="button-row"><button id="resumeBtn" class="btn primary">▶ ПРОДОЛЖИТЬ</button><button id="quitBtn" class="btn ghost">ЗАВЕРШИТЬ ЗАБЕГ</button></div>`;$('resumeBtn').onclick=resume;$('quitBtn').onclick=()=>finish(false,true)}
+// Opt-in QA sandbox: append ?qa=1. Test runs cannot grant persistent rewards.
+function qaDebugEnabled(){return typeof location!=='undefined'&&new URLSearchParams(location.search).get('qa')==='1';}
+let qaWeapon='pulse',qaEnemy='scarab',qaSlot='new',qaCount=12,qaLevel=1;
+function qaPauseHTML(){
+ const opts=(map,picked)=>Object.entries(map).map(([id,v])=>'<option value="'+id+'"'+(id===picked?' selected':'')+'>'+v.name+'</option>').join('');
+ const slots='<option value="new">Свободный слот</option>'+S.drones.map((d,i)=>'<option value="'+i+'"'+(qaSlot===String(i)?' selected':'')+'>'+(i+1)+': '+DRONES[d.id].name+'</option>').join('');
+ const active=S.drones[Number(qaSlot)];
+ const mods=active?weaponBranches(active.id).map(([key,name])=>'<option value="'+key+'">'+name+' +'+wm(active,key)+'</option>').join(''):'';
+ return '<details class="qa-pause" id="qaPause" open><summary>⚙ ТЕСТОВАЯ ПАНЕЛЬ: ОРУЖИЕ И ВРАГИ</summary>'+
+ '<p>Меняй арсенал и создавай врагов прямо во время паузы. Текущий опубликованный билд не затрагивается.</p>'+
+ '<div class="qa-inventory">'+(S.drones.map((d,i)=>'<span>'+(i+1)+'. '+DRONES[d.id].name+' ур.'+d.lvl+'</span>').join('')||'Оружия нет')+'</div>'+
+ '<label>Оружие<select id="qaWeapon">'+opts(DRONES,qaWeapon)+'</select></label>'+
+ '<label>Слот<select id="qaSlot">'+slots+'</select></label>'+
+ '<div class="qa-row"><label>Уровень<input id="qaLevel" type="number" min="1" max="150" value="'+qaLevel+'"></label><button id="qaEquip" type="button">ДОБАВИТЬ / ЗАМЕНИТЬ</button></div>'+
+ (active?'<div class="qa-row"><select id="qaMod">'+mods+'</select><button id="qaBoost" type="button">+5 УЛУЧШЕНИЙ</button></div>':'')+
+ '<div class="qa-row"><button id="qaRemove" type="button">УБРАТЬ СЛОТ</button><button id="qaEmpty" type="button">ОЧИСТИТЬ АРСЕНАЛ</button></div>'+
+ '<label>Тип врага<select id="qaEnemy">'+opts(ENEMY,qaEnemy)+'</select></label>'+
+ '<div class="qa-row"><label>Количество<input id="qaCount" type="number" min="1" max="40" value="'+qaCount+'"></label><button id="qaSpawn" type="button">СОЗДАТЬ ВРАГОВ</button></div>'+
+ '<div class="qa-row"><button id="qaKill" type="button">УБРАТЬ ВРАГОВ</button><button id="qaCore" type="button">+1 ЯДРО</button></div>'+ 
+ '<div class="qa-row"><button type="button" id="qaRage">ϟ ЯРОСТЬ</button><button type="button" id="qaTimeStop">❄ ОСТАНОВКА ВРЕМЕНИ</button></div>'+
+ '<div class="qa-row"><button id="qaBossPhase" type="button">БОСС: 2-Я ФАЗА</button><button id="qaNextBossAttack" type="button">СЛЕДУЮЩАЯ АТАКА</button></div>'+
+ '<div class="qa-row"><button id="qaClearHazards" type="button">УБРАТЬ УГРОЗЫ</button></div>'+
+ '<small>Боссы создаются по одному; обычные враги ограничены лимитом игры. После настройки нажми «Продолжить».</small></details>';
+}
+
+function qaWirePause(){
+ const el=id=>document.getElementById(id);
+ const refresh=()=>{el('qaPause').outerHTML=qaPauseHTML();qaWirePause();updateHUD();};
+ el('qaWeapon').onchange=()=>qaWeapon=el('qaWeapon').value;
+ el('qaEnemy').onchange=()=>qaEnemy=el('qaEnemy').value;
+ el('qaSlot').onchange=()=>{qaSlot=el('qaSlot').value;refresh();};
+ el('qaLevel').onchange=()=>qaLevel=Math.max(1,Math.min(150,+el('qaLevel').value||1));
+ el('qaCount').onchange=()=>qaCount=Math.max(1,Math.min(40,+el('qaCount').value||1));
+ el('qaEquip').onclick=()=>{S.qaModified=true;
+  qaLevel=Math.max(1,Math.min(150,+el('qaLevel').value||1));
+  if(qaSlot==='new'&&S.drones.length>=MAX_WEAPONS){toast('ВЫБЕРИ СЛОТ ДЛЯ ЗАМЕНЫ',2);return;}
+  const d={id:qaWeapon,lvl:qaLevel,mods:{},cd:0,hitCd:0};
+  if(qaSlot==='new')S.drones.push(d);else S.drones[+qaSlot]=d;
+  qaSlot=String(S.drones.indexOf(d));qaSyncFusions();refresh();
+ };
+ if(el('qaBoost'))el('qaBoost').onclick=()=>{S.qaModified=true;
+  const d=S.drones[+qaSlot],key=el('qaMod').value;if(!d||!key)return;
+  d.mods[key]=(d.mods[key]||0)+5;d.lvl+=5;refresh();
+ };
+ el('qaRemove').onclick=()=>{S.qaModified=true;if(qaSlot!=='new'&&S.drones[+qaSlot]){S.drones.splice(+qaSlot,1);qaSlot='new';qaSyncFusions();refresh();}};
+ el('qaEmpty').onclick=()=>{S.qaModified=true;S.drones=[];S.hybrids=[];qaSlot='new';refresh();};
+ el('qaSpawn').onclick=()=>{S.qaModified=true;
+  qaCount=Math.max(1,Math.min(40,+el('qaCount').value||1));
+  const boss=qaEnemy.startsWith('boss')||qaEnemy.startsWith('synth')||qaEnemy==='omega';
+  const n=boss?1:qaCount;
+  for(let i=0;i<n;i++)spawnEnemy(qaEnemy,TAU*(i+.5)/n,210+(i%4)*62);
+  refresh();
+ };
+ el('qaKill').onclick=()=>{S.qaModified=true;S.enemy=[];S.bosses=[];S.enemyBullets=[];S.hazards=[];S.chains=[];S.bullets=[];S.effects=[];S.mines=[];S.gravityWells=[];refresh();};
+ el('qaClearHazards').onclick=()=>{S.qaModified=true;S.enemyBullets=[];S.hazards=[];S.chains=[];refresh();};
+ el('qaNextBossAttack').onclick=()=>{
+  const boss=[...S.bosses].reverse().find(e=>e.hp>0);
+  if(!boss){toast('СНАЧАЛА СОЗДАЙ БОССА',2);return;}
+  S.qaModified=true;
+  S.hazards=S.hazards.filter(h=>h.owner!==boss);
+  S.enemyBullets=[];
+  boss.special=0;boss.bossDashWind=0;
+  toast('⚙ СЛЕДУЮЩИЙ ПАТТЕРН АТАКИ ПОСЛЕ ПАУЗЫ',2);
+  refresh();
+ };
+ el('qaBossPhase').onclick=()=>{S.qaModified=true;
+  const boss=[...S.bosses].reverse().find(e=>e.hp>0);
+  if(!boss){toast('СНАЧАЛА СОЗДАЙ БОССА',2);return;}
+  boss.hp=Math.min(boss.hp,boss.maxHp*.49);
+  boss.phase=1;boss.shield=0;boss.special=0;boss.bossCycle=0;boss.bossDashWind=0;
+  S.hazards=S.hazards.filter(h=>h.owner!==boss);
+  banner('⚠ QA: ВТОРАЯ ФАЗА '+ENEMY[boss.id].name,2);
+  refresh();
+ };
+ el('qaCore').onclick=()=>{S.qaModified=true;S.fusionCores++;refresh();};
+ el('qaRage').onclick=()=>{S.qaModified=true;applyPowerup({type:'rage'});refresh();};
+ el('qaTimeStop').onclick=()=>{S.qaModified=true;applyPowerup({type:'timeStop'});refresh();};
+}
+function qaSyncFusions(){
+ S.hybrids=S.drones.filter(d=>d.id.startsWith('fusion_')).map(d=>({id:d.id.slice(7)}));
+}
+function pause(){if(mode!=='playing')return;if(trainingMode){setMode('paused');$('modalContent').innerHTML=`<div class="label">[ ПОЛИГОН ]</div><div class="panel-title">Испытание приостановлено</div><p class="panel-desc">Изменения оружия здесь не сохраняются в обычный забег.</p><div class="button-row"><button class="btn primary" id="resumeBtn">▶ ПРОДОЛЖИТЬ</button><button class="btn ghost" id="quitBtn">◂ В ГЛАВНОЕ МЕНЮ</button></div>`;$('resumeBtn').onclick=resume;$('quitBtn').onclick=leaveTraining;return;}setMode('paused');$('modalContent').innerHTML=`<div class="label">[ ПАУЗА ]</div><div class="panel-title" style="margin-top:9px">Система ожидает</div><p class="panel-desc">На поле уже ${S.kills} обломков. Машины терпеливо дождутся твоего возвращения.</p>${weaponSummary()}${renderQualityControls()}${qaDebugEnabled()?qaPauseHTML():''}<div class="button-row"><button id="resumeBtn" class="btn primary">▶ ПРОДОЛЖИТЬ</button><button id="quitBtn" class="btn ghost">ЗАВЕРШИТЬ ЗАБЕГ</button></div>`;$('resumeBtn').onclick=resume;$('quitBtn').onclick=()=>finish(false,true);if(qaDebugEnabled())qaWirePause()}
 function resume(){if(mode!=='paused')return;setMode('playing');last=performance.now()}
 function toast(v,time=2.8){$('toast').textContent=v;$('toast').classList.remove('hidden');showToastUntil=(S?.t||0)+time}
 function banner(v,time=4.5){$('wavebanner').textContent=v;$('wavebanner').classList.remove('hidden');showBannerUntil=S.t+time;/* Баннер и toast показываются независимо: не дублируем одно событие. */if(/БОСС|УГРОЗ|ПРОРЫВ|ПЕРЕХВАТ|ОСАДА|ВТОРАЯ ФАЗА/.test(v))sfx('warning');else clickSound(360,.16,'triangle',.023)}
 function finish(won=false,giveup=false){
- if(!S||S.dead)return;S.dead=true;S.wins=won;balFinalize(won,giveup);
+ if(!S||S.dead)return;S.dead=true;S.wins=won;if(!S.qaModified)balFinalize(won,giveup);
  const modifier=THREAT_MODES[(S.threat||1)-1],rankedScore=Math.round(S.score*modifier.score*(1+metaBonus('score'))),earned=Math.round((S.shards+Math.floor(S.score/260)+(won?95:0))*modifier.reward*(1+metaBonus('shards')));
- save.shards+=earned;save.runs++;if(won){save.wins++;save.threatUnlocked=Math.min(5,Math.max(save.threatUnlocked,(S.threat||1)+1));}
- save.best=Math.max(save.best,rankedScore);
+ if(!S.qaModified){save.shards+=earned;save.runs++;}if(won&&!S.qaModified){save.wins++;save.threatUnlocked=Math.min(5,Math.max(save.threatUnlocked,(S.threat||1)+1));}
+ if(!S.qaModified)save.best=Math.max(save.best,rankedScore);
  const record={score:rankedScore,baseScore:S.score,seconds:Math.round(S.t),kills:S.kills,level:S.lvl,threat:S.threat||1,win:!!won,fusions:S.hybrids.map(h=>h.id),weapons:S.drones.map(d=>d.id),timestamp:Date.now()};
- save.records=[...(save.records||[]),record].sort((a,b)=>b.score-a.score||b.seconds-a.seconds).slice(0,20);
- persist();setMode('end');$('bossWrap').classList.add('hidden');
+ if(!S.qaModified){save.records=[...(save.records||[]),record].sort((a,b)=>b.score-a.score||b.seconds-a.seconds).slice(0,20);persist();}setMode('end');$('bossWrap').classList.add('hidden');
  $('modalContent').innerHTML=`<div class="label">${won?'ПРОТОКОЛ ВЫПОЛНЕН':'СИГНАЛ ПОТЕРЯН'}</div><div class="panel-title" style="margin-top:8px">${won?'Омега уничтожена':'Корпус выведен из строя'}</div><div class="result-badge">${won?'✦ ПОБЕДА':'✕ '+(giveup?'ЗАБЕГ ПРЕРВАН':'ПОРАЖЕНИЕ')}</div><p class="panel-desc">${won?'Угроза отражена. Открыт следующий протокол сложности.':'Запись сохранена в локальной истории. Усиль билд и попробуй снова.'}</p><div class="stats-three"><div class="statbox"><b>${formatTime(S.t)}</b><span>ВЫЖИВАНИЕ</span></div><div class="statbox"><b>${S.kills}</b><span>УБИЙСТВА</span></div><div class="statbox"><b>${rankedScore.toLocaleString('ru')}</b><span>СЧЁТ ×${modifier.score}</span></div></div><div class="stats-three"><div class="statbox"><b>${S.lvl}</b><span>УРОВЕНЬ</span></div><div class="statbox"><b>${S.drones.length} / ${S.hybrids.length}</b><span>ОРУЖИЕ / СИНТЕЗ</span></div><div class="statbox"><b>✧ ${earned}</b><span>КРИСТАЛЛЫ ×${modifier.reward}</span></div></div><p class="tiny">Угроза: ${modifier.name} · Результат сохранён только в этом браузере.</p><div class="button-row"><button id="againBtn" class="btn primary">↻ ЕЩЁ ОДИН ЗАБЕГ</button><button id="hangarBtn" class="btn ghost">◈ АНГАР</button></div>`;
  $('againBtn').onclick=start;$('hangarBtn').onclick=menu;sfx(won?'win':'lose');} 
 function formatTime(t){let s=Math.max(0,Math.ceil(t)),m=Math.floor(s/60);return `${String(m).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`}
@@ -4455,24 +5011,25 @@ function getInput(){let x=(input('KeyD')||input('ArrowRight')?1:0)-(input('KeyA'
 function getDronePos(d,i){if(['saw','fusion_thermal','fusion_tesla','fusion_frostblade','fusion_magnetblade'].includes(d.id))return sawPositions(d,i)[0];const a=S.t*.6+i*TAU/S.drones.length-Math.PI/2,r=57+(i%2)*15;return {x:S.player.x+Math.cos(a)*r,y:S.player.y+Math.sin(a)*r,a}}
 function spawnEnemy(id,a=null,dis=null,encounter=null){if(S.enemy.length>170&&!id.startsWith('boss')&&!id.startsWith('synth')&&id!=='omega'){if(bal&&!trainingMode)bal.totals.spawnBlocked++;return;}let p=S.player,ang=a??rand(0,TAU),d=dis??Math.max(360,Math.min(670,Math.max(W,H)*.55+90)),sp=ENEMY[id],factor=1+S.t/150+Math.max(0,S.lvl-18)*.012,elite=id.startsWith('boss')||id.startsWith('synth')||id==='omega';let x=clamp(p.x+Math.cos(ang)*d,-1760,1760),y=clamp(p.y+Math.sin(ang)*d,-1760,1760);const threat=THREAT_MODES[(S.threat||1)-1];const balanceId=encounter&&id!=='omega'?(encounter.kind==='synth'?SYNTH_EVENTS[encounter.slot]?.id:BOSS_EVENTS[encounter.slot]?.id):id;
 const stats=ENEMY[balanceId]||sp;
-let hp=(encounter&&id!=='omega'?stats.hp:sp.hp)*(elite?(1+Math.max(0,S.t-180)/390):factor)*threat.hp;const obj={id,x,y,vx:0,vy:0,hp,maxHp:hp,r:sp.rad,spd:sp.spd*(1+Math.min(.3,S.t/1600))*threat.speed,dmg:stats.dmg*(elite?1:1+S.t/580)*threat.damage,bossBalanceId:balanceId,t:rand(0,4),hit:0,shock:0,marked:0,attack:rand(.5,1.6),fire:rand(1,3),charge:0,slow:0,stun:0,burn:0,phase:0,special:elite?rand(1.6,3.5):0,summoned:false,seed:rand(0,500),elite,value:stats.value,rewardXp:stats.xp};if(!elite&&S.t>135&&Math.random()<Math.min(.21,.035+S.t/4800+(S.threat-1)*.023)){
+let hp=(encounter&&id!=='omega'?stats.hp:sp.hp)*(elite?(1+Math.max(0,S.t-180)/390):factor*1.14)*threat.hp;const obj={id,x,y,vx:0,vy:0,hp,maxHp:hp,r:sp.rad,spd:sp.spd*(1+Math.min(.3,S.t/1600))*threat.speed,dmg:stats.dmg*(elite?1:1+S.t/580)*threat.damage,bossBalanceId:balanceId,t:rand(0,4),hit:0,shock:0,marked:0,attack:rand(.5,1.6),fire:rand(1,3),charge:0,slow:0,stun:0,burn:0,phase:0,special:elite?rand(1.6,3.5):0,summoned:false,seed:rand(0,500),elite,value:stats.value,rewardXp:stats.xp};if(!elite&&S.t>135&&Math.random()<Math.min(.21,.035+S.t/4800+(S.threat-1)*.023)){
  obj.champion=true;obj.hp*=3.2;obj.maxHp=obj.hp;obj.spd*=1.10;obj.dmg*=1.65;obj.r*=1.19;obj.value*=3;
  }S.enemy.push(obj);balSpawn(obj);if(elite){S.bosses.push(obj);banner('⚠ '+sp.name+' // ВЫСОКАЯ УГРОЗА',5);$('bossWrap').classList.remove('hidden')}return obj}
 function burst(x,y,col,n=11,power=100){if(!S)return;for(let i=0;i<n&&S.parts.length<650;i++){let a=rand(0,TAU),v=rand(power*.15,power),life=rand(.25,.75);S.parts.push({x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v,life,max:life,size:rand(1.5,4),col})}}
 function floatNum(x,y,val,col){if(S.floaters.length>70)S.floaters.shift();S.floaters.push({x,y,t:.7,val:Math.round(val),col})}
 function heal(n){let p=S.player;p.hp=Math.min(p.maxHp,p.hp+n*(1+(S.healBonus||0)))}
-function spawnPowerup(x=null,y=null,type=null){if(!S)return;const types=['magnet','rage','invuln','heal'],choice=type||types[Math.floor(Math.random()*types.length)];
+function spawnPowerup(x=null,y=null,type=null){if(!S)return;const types=['magnet','rage','invuln','heal','timeStop'],choice=type||types[Math.floor(Math.random()*types.length)];
  const a=rand(0,TAU),r=rand(125,240),px=x??S.player.x+Math.cos(a)*r,py=y??S.player.y+Math.sin(a)*r;
  S.pickups.push({x:clamp(px,-1750,1750),y:clamp(py,-1750,1750),xp:38,r:14,life:28,type:choice});}
 function applyPowerup(o){
  switch(o.type){
  case 'core':S.fusionCores++;banner('◈ ЯДРО СИНТЕЗА ПОДОБРАНО!',4);break;
  case 'magnet':S.magnetTimer=4.5*(S.buffDuration||1);toast('◎ МАГНИТ: ВЕСЬ ОПЫТ НА КАРТЕ!',3);break;
- case 'rage':S.rageTimer=13*(S.buffDuration||1);toast('ϟ ЯРОСТЬ: УРОН ×2.1 НА 13 СЕКУНД',3);break;
+ case 'rage':S.rageTimer=13*(S.buffDuration||1);toast('ϟ ЯРОСТЬ: УРОН ×2.1 И +45% СКОРОСТИ АТАК НА 13 СЕКУНД',3);break;
+ case 'timeStop':S.timeStopTimer=4.5*(S.buffDuration||1);toast('❄ ОСТАНОВКА ВРЕМЕНИ: ВРАГИ И ИХ СНАРЯДЫ ЗАМЕРЛИ',3.3);break;
  case 'invuln':S.invulnTimer=8*(S.buffDuration||1);S.player.inv=Math.max(S.player.inv,S.invulnTimer);toast('⬡ НЕУЯЗВИМОСТЬ: 8 СЕКУНД',3);break;
  case 'heal':heal(38);toast('✚ РЕМОНТ КОРПУСА',2);break;
  }
- sfx('pickup');burst(S.player.x,S.player.y,o.type==='rage'?AMBER:o.type==='invuln'?BLUE:TEAL,35,150);
+ sfx('pickup');burst(S.player.x,S.player.y,o.type==='rage'?AMBER:o.type==='invuln'||o.type==='timeStop'?BLUE:TEAL,35,150);
 }
 function applyChill(e,amount){
  if(e.hp<=0)return;
@@ -4505,11 +5062,11 @@ function hurtEnemy(e,n,opts={}){if(e.hp<=0||!Number.isFinite(n))return;
  const before=e.hp;balDamage(e,before,n);e.hp-=n;if(typeof tacticOnEnemyHit==='function')tacticOnEnemyHit(e,n,opts);
  if(n>0&&!opts.burn&&!opts.silentHit&&Math.random()<.16)sfx('hit',.7);
  if(e.elite&&e.hp>0&&before/e.maxHp>.52&&e.hp/e.maxHp<=.52){e.phase=1;e.shield=2.0;e.special=Math.max(e.special||0,1.5);e.bossDashWind=0;S.hazards=S.hazards.filter(h=>h.owner!==e);burst(e.x,e.y,ENEMY[e.id].col,45,220);banner('⚠ ВТОРАЯ ФАЗА: '+ENEMY[e.id].name,3.5);sfx('bossPhase');shake=14;}
- e.hit=.11;if(opts.slow)e.slow=Math.max(e.slow,opts.slow);if(opts.stun)e.stun=Math.max(e.stun,e.elite?Math.min(.14,opts.stun):opts.stun);if(opts.burn){e.burn=Math.max(e.burn,opts.burn);e.burnStrength=Math.max(e.burnStrength||0,opts.burnPower||16*S.playerDmg*(1+S.t/500));e.burnClock??=0;}if(opts.knock){let m=hypot(e.x-S.player.x,e.y-S.player.y);e.x+=(e.x-S.player.x)/m*opts.knock;e.y+=(e.y-S.player.y)/m*opts.knock}if(e.trainingDummy){
+ e.hit=.11;if(opts.slow)e.slow=Math.max(e.slow,opts.slow);if(opts.stun)e.stun=Math.max(e.stun,e.elite?Math.min(.14,opts.stun):opts.stun);if(opts.burn){e.burn=Math.max(e.burn,opts.burn);e.burnStrength=Math.max(e.burnStrength||0,opts.burnPower||16*S.playerDmg*(1+S.t/500));e.burnClock??=0;}if(opts.knock&&!(S.timeStopTimer>0)){let m=hypot(e.x-S.player.x,e.y-S.player.y);e.x+=(e.x-S.player.x)/m*opts.knock;e.y+=(e.y-S.player.y)/m*opts.knock}if(e.trainingDummy){
   e.displayDamage=(e.displayDamage||0)+n;
   if(S.t-(e.lastDamageDisplay||-1)>=.22){floatNum(e.x+rand(-5,5),e.y-25,e.displayDamage,'#ffebae');e.lastDamageDisplay=S.t;e.displayDamage=0;}
  }else if(n>8&&Math.random()<.38)floatNum(e.x+rand(-8,8),e.y-25,n,(critical||opts.crit)?AMBER:'#dbffff');if(e.hp<=0)killEnemy(e)}
-function killEnemy(e){if(e.hp>0)return;if(trainingMode){S.kills++;burst(e.x,e.y,ENEMY[e.id].col,12,100);return;}const z=ENEMY[e.id];S.kills++;tacticOnEnemyDeath(e);balKill(e);if(!e.elite&&Math.random()<.13)sfx('kill',.65);S.score+=(e.value??z.value);burst(e.x,e.y,z.col,e.elite?55:10,e.elite?260:110);S.fx.push({type:'ring',x:e.x,y:e.y,r:e.r,life:.4,max:.4,col:z.col});S.pickups.push({x:e.x+rand(-6,6),y:e.y+rand(-6,6),xp:e.rewardXp??z.xp,r:7,life:30,type:'xp'});if(Math.random()<(e.elite?1:e.champion?.35:.025)){S.pickups.push({x:e.x+rand(-10,10),y:e.y+rand(-10,10),xp:e.elite?28:1,r:9,life:30,type:'shard'})}if(Math.random()<.025){S.pickups.push({x:e.x,y:e.y+12,xp:32,r:8,life:40,type:'heal'})}if(e.champion&&Math.random()<.21)spawnPowerup(e.x,e.y);if(e.id==='hive'){for(let i=0;i<2;i++)spawnEnemyNear('scarab',e.x,e.y)}if(e.elite){sfx('heavyExplosion',1,true);sfx('bossDown');S.bosses=S.bosses.filter(z=>z!==e);S.lastBossDefeatAt=S.t;$('bossWrap').classList.toggle('hidden',S.bosses.length===0);if(e.id==='omega'){finish(true);return}if(e.id.startsWith('synth')){S.pickups.push({x:e.x,y:e.y,xp:1,r:17,life:120,type:'core'});burst(e.x,e.y,AMBER,65,290);banner('◈ БОСС ПАЛ! ПОДБЕРИ ЯДРО СИНТЕЗА!',5)}else {banner('✦ БОСС ПОВЕРЖЕН!',2.8);if(e.id!=='omega')showTacticChoices();}}if(Math.random()<.10)clickSound(100+Math.random()*90,.07,'triangle',.012)}
+function killEnemy(e){if(e.hp>0)return;if(trainingMode){S.kills++;burst(e.x,e.y,ENEMY[e.id].col,12,100);return;}const z=ENEMY[e.id];S.kills++;tacticOnEnemyDeath(e);balKill(e);if(!e.elite&&Math.random()<.13)sfx('kill',.65);S.score+=(e.value??z.value);burst(e.x,e.y,z.col,e.elite?55:10,e.elite?260:110);S.fx.push({type:'ring',x:e.x,y:e.y,r:e.r,life:.4,max:.4,col:z.col});S.pickups.push({x:e.x+rand(-6,6),y:e.y+rand(-6,6),xp:e.rewardXp??z.xp,r:7,life:30,type:'xp'});if(Math.random()<(e.elite?1:e.champion?.35:.025)){S.pickups.push({x:e.x+rand(-10,10),y:e.y+rand(-10,10),xp:e.elite?28:1,r:9,life:30,type:'shard'})}if(Math.random()<.007){S.pickups.push({x:e.x,y:e.y+12,xp:32,r:8,life:40,type:'heal'})}if(e.champion&&Math.random()<.065)spawnPowerup(e.x,e.y);if(e.id==='hive'){for(let i=0;i<2;i++)spawnEnemyNear('scarab',e.x,e.y)}if(e.elite){sfx('heavyExplosion',1,true);sfx('bossDown');S.bosses=S.bosses.filter(z=>z!==e);S.lastBossDefeatAt=S.t;$('bossWrap').classList.toggle('hidden',S.bosses.length===0);if(e.id==='omega'){finish(true);return}if(e.id.startsWith('synth')){S.pickups.push({x:e.x,y:e.y,xp:1,r:17,life:120,type:'core'});burst(e.x,e.y,AMBER,65,290);banner('◈ БОСС ПАЛ! ПОДБЕРИ ЯДРО СИНТЕЗА!',5)}else {banner('✦ БОСС ПОВЕРЖЕН!',2.8);if(e.id!=='omega')showTacticChoices();}}if(Math.random()<.10)clickSound(100+Math.random()*90,.07,'triangle',.012)}
 function spawnEnemyNear(id,x,y){const e=spawnEnemy(id,rand(0,TAU),280);if(e){e.x=x+rand(-22,22);e.y=y+rand(-22,22)}}
 function hitPlayer(dmg,x,y){if(trainingMode)return;const p=S.player;if(p.inv>0||S.dead)return;if(tacticAbsorbHit())return;dmg=Math.max(0,dmg*(1-(S.armor||0)));const absorbed=Math.min(dmg,S.tacticArmor||0);S.tacticArmor=Math.max(0,(S.tacticArmor||0)-absorbed);dmg-=absorbed;if(dmg<=0)return;balPlayerHit(Math.min(p.hp,dmg));p.hp-=dmg;p.inv=.62;p.hit=.32;shake=Math.max(shake,7);burst(p.x,p.y,RED,18,160);floatNum(p.x,p.y-35,dmg,RED);sfx('damage');tacticPlayerDamaged();if(p.hp<=0){p.hp=0;finish(false)}}
 function gainXP(n){if(trainingMode)return;S.xp+=n*(1+(S.xpBonus||0));while(S.xp>=S.xpNeed){S.xp-=S.xpNeed;S.lvl++;S.xpNeed=Math.floor(17+S.lvl*11+Math.pow(S.lvl,1.26)*2.8);S.pendingUp++;heal(4)}if(S.pendingUp>0&&mode==='playing')showUpgrades()}
@@ -4561,7 +5118,7 @@ const TACTICS=[
  {id:'chain',name:'ЦЕПНАЯ РЕАКЦИЯ',en:'CHAIN REACTION',glyph:'Ϟ',one:'Оглушение врага передаёт разряд одному соседнему врагу. Откат 2 секунды.',enOne:'Stunning an enemy arcs electricity to a neighbor. 2-second cooldown.',two:'Разряд может дополнительно перейти на ещё одного врага.',enTwo:'The discharge can jump to one additional enemy.'}
 ];
 function tacticLv(id){return S?.tactics?.[id]||0;}
-function tacticLanguage(en,ru){return typeof locale==='string'&&locale==='en'?en:ru;}
+function tacticLanguage(en,ru){return en;}
 function tacticOptions(){
  const pool=TACTICS.filter(a=>tacticLv(a.id)<2),upgrades=pool.filter(a=>tacticLv(a.id)===1),picked=[];
  if(upgrades.length)picked.push(upgrades[Math.floor(Math.random()*upgrades.length)]);
@@ -4865,10 +5422,10 @@ function closest(x,y,max=360,except=null){let best=null,bestD=max*max;for(let e 
 // Ranged weapons favor a reachable boss, but switch to immediate threats when surrounded.
 // The nearest target still governs flame, saws, mines and short-range defensive effects.
 function chooseCombatTarget(x,y,max=550,weapon='pulse'){
- if(!trainingMode&&tacticLv('hunter')&&S.tacticBossLockUntil>S.t){const boss=S.bosses.find(e=>e.hp>0&&Math.hypot(e.x-x,e.y-y)<=max);if(boss&& !['saw','flame','mine','gravity'].includes(weapon))return boss;}
+ if(!trainingMode&&tacticLv('hunter')&&S.tacticBossLockUntil>S.t){const boss=S.bosses.find(e=>e.hp>0&&Math.hypot(e.x-x,e.y-y)<=max);if(boss&&!['saw','flame','mine','gravity'].includes(weapon))return boss;}
  return selectCombatTarget(closest(x,y,max),S.bosses,x,y,max,weapon,trainingMode);
 }
-function damageArea(x,y,r,dmg,options={}){for(const e of S.enemy){if(e.hp<=0)continue;let dx=e.x-x,dy=e.y-y;if(dx*dx+dy*dy<(r+e.r)**2){hurtEnemy(e,dmg,options)}}S.fx.push({type:'ring',x,y,r,life:.32,max:.32,col:options.color||AMBER});burst(x,y,options.color||AMBER,19,r*2)}
+function damageArea(x,y,r,dmg,options={}){for(const e of S.enemy){if(e.hp<=0)continue;let dx=e.x-x,dy=e.y-y;if(dx*dx+dy*dy<(r+e.r)**2){hurtEnemy(e,dmg*(options.markedMultiplier&&e.marked>0?options.markedMultiplier:1),options)}}S.fx.push({type:'ring',x,y,r,life:.32,max:.32,col:options.color||AMBER});burst(x,y,options.color||AMBER,19,r*2)}
 // Shared firing geometry. The illustrated muzzle is on the drone's local -Y axis.
 // World-space weapon muzzles MUST use this same direction as the displayed drone.
 function aimGeometry(pos,target){
@@ -4880,9 +5437,9 @@ function weaponMuzzle(pos,target,lateral=0,forward=24){
  return {x:pos.x+a.dx*forward+a.rx*lateral,y:pos.y+a.dy*forward+a.ry*lateral};
 }
 function launchBullet(x,y,e,d,id,pierce=0){const m=hypot(e.x-x,e.y-y);S.bullets.push({x,y,vx:(e.x-x)/m*590,vy:(e.y-y)/m*590,r:4.5,life:1.2,dmg:d,col:DRONES[id]?.color||TEAL,type:id,hits:0,pierce,hitIds:new Set()})}
-function scheduleChain(from,target,jumps,damage,radius=220,color=PURPLE,stun=.16){
+function scheduleChain(from,target,jumps,damage,radius=220,color=PURPLE,stun=.16,falloff=.82){
  if(!target||S.chains.length>(touching?15:28))return;
- S.chains.push({from:{x:from.x,y:from.y},target,remaining:jumps,damage,radius,color,stun,visited:new Set(),delay:0});
+ S.chains.push({from:{x:from.x,y:from.y},target,remaining:jumps,damage,radius,color,stun,falloff,visited:new Set(),delay:0});
 }
 function updateChains(dt){
  // Each jump arrives on a different frame. Never inspect an unrelated FX object for its endpoint.
@@ -4900,7 +5457,7 @@ function updateChains(dt){
   S.fx.push({type:'lightning',a:{...c.from},b:end,life:.32,max:.32,col:c.color,width:3.5,seed:rand(0,1000)});
   e.shock=.19;sfx('arc',c.visited.size>1?.42:.8);hurtEnemy(e,c.damage,{stun:c.stun});
   burst(end.x,end.y,c.color,5,65);
-  c.from=end;c.remaining--;c.damage*=.82;c.delay=.095;
+  c.from=end;c.remaining--;c.damage*=c.falloff??.82;c.delay=.095;
   if(c.remaining<=0)S.chains.splice(i,1);
  }
 }
@@ -4916,7 +5473,7 @@ function fusionLine(pos,target,width,damage,length,opts={}){
 }
 function fusionField(x,y,r,damage,life,col,opts={}){
  if(S.effects.length>64)S.effects.shift();
- S.effects.push({x,y,r,life,clock:0,damage,col,fire:!!opts.fire});
+ S.effects.push({x,y,r,life,clock:0,damage,col,fire:!!opts.fire,ice:!!opts.ice,chill:opts.chill||0,chain:opts.chain||0});
  S.fx.push({type:'ring',x,y,r,life:.48,max:.48,col});
 }
 function fusionRocket(pos,target,dmg,col,variant,blast,n=1){
@@ -4929,12 +5486,27 @@ function fusionBoomer(pos,target,d,damage,col,n,variant){
  const a=aimGeometry(pos,target);
  for(let k=0;k<Math.min(6,n);k++){
   const angle=Math.atan2(a.dy,a.dx)+(k-(n-1)/2)*.15,source=weaponMuzzle(pos,target,(k-(n-1)/2)*8,20);
-  S.bullets.push({type:'boomer',x:source.x,y:source.y,vx:Math.cos(angle)*505,vy:Math.sin(angle)*505,spd:505,travel:0,range:Math.min(800,260+wm(d,'range')*35),returning:false,owner:d,damage,life:3.7,col,r:15,hitIds:new Set(),pierce:999,fireDisc:variant==='fire',trailClock:0,specialDisc:variant});
+  S.bullets.push({type:'boomer',x:source.x,y:source.y,vx:Math.cos(angle)*505,vy:Math.sin(angle)*505,spd:505,travel:0,range:Math.min(800,260+wm(d,'range')*35),returning:false,owner:d,damage,life:3.7,col,r:15,hitIds:new Set(),pierce:999,fireDisc:variant==='fire',trailClock:0,specialDisc:variant,mineBlast:58+wm(d,'blast')*16});
  }
 }
-function fusionMine(x,y,damage,col,r,variant){
- S.mines.push({x,y,r:13,blast:r,damage,life:17,arm:.35,col,gravityMine:false,specialMine:variant});
+function fusionMine(x,y,damage,col,r,variant,freezeStrength=0){
+ S.mines.push({x,y,r:13,blast:r,damage,life:17,arm:.35,col,gravityMine:false,specialMine:variant,freezeStrength});
  if(S.mines.length>48)S.mines.splice(0,S.mines.length-48);
+}
+
+// Shattering adds a short-range explosion to an already frozen target.
+// A lock stops overlapping beams and orbit blades from triggering it every frame.
+function shatterFrozen(e,damage,r=62){
+ if(!e||e.hp<=0||e.frost<=0||(e.shatterLock||0)>S.t)return false;
+ // Dense packs used to trigger one full-area explosion per frozen enemy in the same frame.
+ // A short shared quota preserves shattering but avoids quadratic damage spikes.
+ if(S.t-(S.shatterQuotaAt??-999)>=.25){S.shatterQuotaAt=S.t;S.shatterQuotaCount=0;}
+ if((S.shatterQuotaCount||0)>=3)return false;
+ S.shatterQuotaCount=(S.shatterQuotaCount||0)+1;
+ e.frost=0;e.shatterLock=S.t+1.15;
+ damageArea(e.x,e.y,r,damage,{color:'#b9edff',slow:.55});
+ burst(e.x,e.y,'#cbf7ff',12,85);
+ return true;
 }
 function fireFusionSpecial(d,pos,target,base,rank){
  const type=d.id.slice(7),col=DRONES[d.id].color,damage=base*(32+Math.sqrt(rank)*7),rate=wm(d,'rate'),radius=wm(d,'radius');
@@ -4944,7 +5516,7 @@ function fireFusionSpecial(d,pos,target,base,rank){
   const count=Math.min(5,1+wm(d,'beams')),rayDamage=damage/(1+.38*(count-1));
   for(let j=0;j<count;j++){
    const offset=(j-(count-1)/2)*30;
-   const shot=fusionLine(pos,target,15+wm(d,'pierce')*3,rayDamage*2.9,900,{color:col,knock:16,offset});
+   const shot=fusionLine(pos,target,15+wm(d,'pierce')*3,rayDamage*4.0,900,{color:col,knock:16,offset});
    for(const e of shot.hits.slice(0,5)){
     const next=closest(e.x+40,e.y+40,130,e);
     if(next){launchBullet(e.x,e.y,next,rayDamage*.75,d.id,1);S.fx.push({type:'beam',a:{x:e.x,y:e.y},b:{x:next.x,y:next.y},life:.24,max:.24,col,width:2.5});}
@@ -4956,40 +5528,40 @@ function fireFusionSpecial(d,pos,target,base,rank){
   const count=Math.min(5,1+wm(d,'beams')),rayDamage=damage/(1+.38*(count-1));
   for(let j=0;j<count;j++){
    const offset=(j-(count-1)/2)*30;
-   const shot=fusionLine(pos,target,13,rayDamage*1.35,740,{color:col,slow:2.3,stun:.25+wm(d,'freeze')*.12,offset});
-   for(const e of shot.hits)e.frost=2.4;
-   for(let k=1;k<5;k++)fusionField(shot.origin.x+shot.a.dx*k*110,shot.origin.y+shot.a.dy*k*110,23,rayDamage*.11,1.2,'#b9efff');
+   const shot=fusionLine(pos,target,13,rayDamage*2.25,740,{color:col,slow:2.3,stun:.25+wm(d,'freeze')*.12,offset});
+   for(const e of shot.hits){if(e.hp<=0)continue;shatterFrozen(e,rayDamage*.3,64);e.frost=2.4;applyChill(e,18+wm(d,'freeze')*6);}
+   for(let k=1;k<5;k++)fusionField(shot.origin.x+shot.a.dx*k*110,shot.origin.y+shot.a.dy*k*110,23,rayDamage*.11,1.2,'#b9efff',{ice:true,chill:12+wm(d,'freeze')*3});
   }
   return true;
  }
  if(type==='prism'){
-  const r=Math.min(210,100+radius*16);S.gravityWells.push({x:target.x,y:target.y,r,force:160,damage:damage*.12,life:2.0,clock:.05,col});
+  const r=Math.min(210,100+radius*16);S.gravityWells.push({x:target.x,y:target.y,r,force:160,damage:damage*.19,life:2.8,clock:.05,col});
   for(const e of S.enemy.filter(e=>e.hp>0).sort((a,b)=>(a.x-target.x)**2+(a.y-target.y)**2-(b.x-target.x)**2-(b.y-target.y)**2).slice(0,Math.min(7,3+wm(d,'beams')))){
-   if(Math.hypot(e.x-target.x,e.y-target.y)<r*1.7){S.fx.push({type:'beam',a:{x:target.x,y:target.y},b:{x:e.x,y:e.y},life:.32,max:.32,col,width:3});hurtEnemy(e,damage*.9,{slow:.3});}
-  }burst(target.x,target.y,col,13,100);return true;
+   if(Math.hypot(e.x-target.x,e.y-target.y)<r*1.7){S.fx.push({type:'beam',a:{x:target.x,y:target.y},b:{x:e.x,y:e.y},life:.32,max:.32,col,width:3});hurtEnemy(e,damage*2.0,{slow:.3});}
+  }fusionField(target.x,target.y,r*.65,damage*.18,2,col);burst(target.x,target.y,col,13,100);return true;
  }
  if(type==='siege'){
-  const shot=fusionLine(pos,target,18,damage*2.0,750,{color:col,knock:18});damageArea(target.x,target.y,85+wm(d,'blast')*13,damage*1.15,{color:col,knock:14});
+  const shot=fusionLine(pos,target,18,damage*2.0,Math.min(1300,750+wm(d,'pierce')*90),{color:col,knock:18});damageArea(target.x,target.y,85+wm(d,'blast')*13,damage*1.15,{color:col,knock:14});for(const e of shot.hits.slice(1,1+Math.min(5,wm(d,'pierce'))))if(e.hp>0)damageArea(e.x,e.y,35,damage*.26,{color:col});
   S.fx.push({type:'ring',x:target.x,y:target.y,r:85,life:.5,max:.5,col});return true;
  }
  if(type==='thunder'){
-  const shot=fusionLine(pos,target,11,damage*1.6,780,{color:col,stun:.2});
-  for(const e of shot.hits.slice(0,4))scheduleChain({x:e.x,y:e.y},closest(e.x+25,e.y+25,220,e),3+Math.min(8,wm(d,'jumps')),damage*.5,225,'#d7c4ff',.22);return true;
+  const shot=fusionLine(pos,target,11,damage*2.25,Math.min(1250,780+wm(d,'pierce')*80),{color:col,stun:.2});
+  for(const e of shot.hits.slice(0,Math.min(8,4+wm(d,'pierce'))))scheduleChain({x:e.x,y:e.y},closest(e.x+25,e.y+25,220,e),3+Math.min(8,wm(d,'jumps')),damage*.5,225,'#d7c4ff',.22);return true;
  }
  if(type==='overload'){
-  fusionField(target.x,target.y,88+radius*15,damage*.2,2.5,'#ab87ff');
+  fusionField(target.x,target.y,88+radius*15,damage*.29,3,'#ab87ff',{chain:3+Math.min(5,wm(d,'jumps'))});
   scheduleChain(pos,target,4+wm(d,'jumps'),damage*.8,240,'#d6b5ff',.3);return true;
  }
  if(type==='frostwell'){
-  const r=Math.min(255,125+radius*18);S.gravityWells.push({x:target.x,y:target.y,r,force:170,damage:damage*.16,life:3,clock:.04,col});
+  const r=Math.min(255,125+radius*18);S.gravityWells.push({x:target.x,y:target.y,r,force:170,damage:damage*.16,life:3,clock:.04,col,coldCollapse:damage*.88});
   damageArea(target.x,target.y,r,damage*.7,{color:col,slow:2.5,stun:.4+wm(d,'freeze')*.13});for(const e of S.enemy)if(e.hp>0&&Math.hypot(e.x-target.x,e.y-target.y)<r)e.frost=2.5;return true;
  }
  if(type==='thermoshock'){
-  const a=aimGeometry(pos,target),length=Math.min(500,205+wm(d,'range')*25),half=(39+wm(d,'angle')*8)*Math.PI/360;
-  const hot=(d.shockCycle=(d.shockCycle||0)+1)%2===0;
+  const a=aimGeometry(pos,target),length=Math.min(540,340+wm(d,'range')*25),half=(39+wm(d,'angle')*8)*Math.PI/360;
+  const hot=(d.shockCycle=(d.shockCycle||0)+1)%2===0;let triggered=0;
   for(const e of S.enemy){if(e.hp<=0)continue;const dx=e.x-pos.x,dy=e.y-pos.y,r=Math.hypot(dx,dy);if(r>length+e.r||Math.atan2(Math.abs(a.dx*dy-a.dy*dx),a.dx*dx+a.dy*dy)>half)continue;
-   if((hot&&e.frost>0)||(!hot&&e.burn>0))damageArea(e.x,e.y,45,damage*1.2,{color:col});
-   hurtEnemy(e,damage*.56,hot?{burn:3}:{stun:.23,slow:2});if(!hot)e.frost=2.2;
+   if(triggered<3&&((hot&&e.frost>0)||(!hot&&e.burn>0))){triggered++;damageArea(e.x,e.y,45,damage*1.2,{color:col});}
+   hurtEnemy(e,damage*1.24,hot?{burn:3}:{stun:.23,slow:2});if(!hot)e.frost=2.2;
   }
   S.fx.push({type:hot?'flame':'cryo',x:pos.x,y:pos.y,ang:Math.atan2(a.dy,a.dx),length,half,life:.38,max:.38});return true;
  }
@@ -5003,49 +5575,78 @@ function fireFusionSpecial(d,pos,target,base,rank){
   fusionBoomer(pos,target,d,damage*.85,col,2+wm(d,'count'),'mine');return true;
  }
  if(type==='sunheart'){
-  const r=Math.min(260,130+radius*18);S.gravityWells.push({x:target.x,y:target.y,r,force:175+wm(d,'force')*24,damage:damage*.15,life:3,clock:.04,col});fusionField(target.x,target.y,r*.7,damage*.22,2.6,'#ff9450',{fire:true});return true;
+  const r=Math.min(260,130+radius*18);S.gravityWells.push({x:target.x,y:target.y,r,force:175+wm(d,'force')*24,damage:damage*.15,life:3,clock:.04,col});fusionField(target.x,target.y,r*.7,damage*.28,2.6,'#ff9450',{fire:true});return true;
  }
  if(type==='frostmine'){
-  for(let k=0;k<Math.min(6,2+wm(d,'count'));k++){const a=S.t*1.7+k*TAU/Math.max(2,2+wm(d,'count'));fusionMine(S.player.x+Math.cos(a)*60,S.player.y+Math.sin(a)*60,damage,col,86+wm(d,'blast')*13,'ice');}return true;
+  for(let k=0;k<Math.min(6,2+wm(d,'count'));k++){const a=S.t*1.7+k*TAU/Math.max(2,2+wm(d,'count'));fusionMine(target.x+Math.cos(a)*(8+(k%2)*10),target.y+Math.sin(a)*(8+(k%2)*10),damage*1.2,col,86+wm(d,'blast')*13,'ice',wm(d,'freeze'));}return true;
  }
  if(type==='plasmamelt'){
-  const a=aimGeometry(pos,target),length=Math.min(460,205+wm(d,'range')*23),half=(33+wm(d,'angle')*8)*Math.PI/360;
-  for(const e of S.enemy){if(e.hp<=0)continue;const dx=e.x-pos.x,dy=e.y-pos.y,rr=Math.hypot(dx,dy);if(rr<length+e.r&&Math.atan2(Math.abs(a.dx*dy-a.dy*dx),a.dx*dx+a.dy*dy)<half){hurtEnemy(e,damage*.76,{burn:4});}}
-  fusionField(target.x,target.y,75,damage*.22,2.3,'#ff99bb',{fire:true});S.fx.push({type:'flame',x:pos.x,y:pos.y,ang:Math.atan2(a.dy,a.dx),length,half,life:.39,max:.39});return true;
+  const a=aimGeometry(pos,target),length=Math.min(540,340+wm(d,'range')*23),half=(33+wm(d,'angle')*8)*Math.PI/360;
+  for(const e of S.enemy){if(e.hp<=0)continue;const dx=e.x-pos.x,dy=e.y-pos.y,rr=Math.hypot(dx,dy);if(rr<length+e.r&&Math.atan2(Math.abs(a.dx*dy-a.dy*dx),a.dx*dx+a.dy*dy)<half){hurtEnemy(e,damage*1.68,{burn:4});}}
+  for(let k=1;k<=3;k++)fusionField(pos.x+a.dx*length*k/4,pos.y+a.dy*length*k/4,52+wm(d,'angle')*3,damage*.30,2.3,'#ff99bb',{fire:true});S.fx.push({type:'flame',x:pos.x,y:pos.y,ang:Math.atan2(a.dy,a.dx),length,half,life:.39,max:.39});return true;
  }
  if(type==='railplasma'){
-  const shot=fusionLine(pos,target,16+wm(d,'width')*4,damage*1.65,820,{color:col,knock:7});
-  for(const e of shot.hits.slice(0,7))fusionField(e.x,e.y,50,damage*.2,2.3,col);return true;
+  const shot=fusionLine(pos,target,16+wm(d,'width')*4,damage*1.95,820,{color:col,knock:7});
+  for(const e of shot.hits.slice(0,Math.min(15,5+wm(d,'pierce'))))fusionField(e.x,e.y,50,damage*.2,2.3,col,{fire:true});return true;
  }
  return false;
 }
 
 function droneUpdate(dt){
- const haste=(S.haste||1)*(S.tacticHasteUntil>S.t?1.25:1);
+ const haste=(S.haste||1)*(S.rageTimer>0?1.45:1)*(S.tacticHasteUntil>S.t?1.25:1);
  for(let i=0;i<S.drones.length;i++){
   const d=S.drones[i],meta=DRONES[d.id],rank=d.lvl;
   const pos=getDronePos(d,i),linked=S.hybrids.some(h=>HYBRIDS[h.id].a===d.id||HYBRIDS[h.id].b===d.id);
-  d.cd-=dt;d.hitCd-=dt;d.flash=Math.max(0,(d.flash||0)-dt);
+  d.cd-=dt;d.hitCd-=dt*(S.rageTimer>0?1.45:1);d.flash=Math.max(0,(d.flash||0)-dt);
   const baseDmg=calculateWeaponDamage(S.playerDmg,rank,wm(d,'power'),S.rageTimer>0);
   if(['saw','fusion_thermal','fusion_tesla','fusion_frostblade','fusion_magnetblade'].includes(d.id)){
    const positions=sawPositions(d,i),thermal=d.id==='fusion_thermal',tesla=d.id==='fusion_tesla',frost=d.id==='fusion_frostblade',magnet=d.id==='fusion_magnetblade';
-   if(tesla){d.zapCd=(d.zapCd||0)-dt;if(d.zapCd<=0){const near=closest(S.player.x,S.player.y,365);if(near){scheduleChain(pos,near,3+Math.min(12,wm(d,'jumps')),22*baseDmg,260,'#ffe5a6',.22);d.zapCd=.95/(S.haste||1)}}}
-   if(magnet){for(const pp of positions)for(const e of S.enemy){if(e.hp<=0||e.elite)continue;const dx=pp.x-e.x,dy=pp.y-e.y,dd=Math.hypot(dx,dy);if(dd>30&&dd<130+wm(d,'radius')*8){let pull=(90+wm(d,'force')*28)*dt;e.x+=dx/dd*pull;e.y+=dy/dd*pull;}}}
+   if(tesla){d.zapCd=(d.zapCd||0)-dt*(S.rageTimer>0?1.45:1);if(d.zapCd<=0){const near=closest(S.player.x,S.player.y,365);if(near){scheduleChain(pos,near,3+Math.min(12,wm(d,'jumps')),22*baseDmg,260,'#ffe5a6',.22);d.zapCd=.95/(S.haste||1)}}}
+   if(magnet&&!(S.timeStopTimer>0)){for(const pp of positions)for(const e of S.enemy){if(e.hp<=0||e.elite)continue;const dx=pp.x-e.x,dy=pp.y-e.y,dd=Math.hypot(dx,dy);if(dd>30&&dd<130+wm(d,'radius')*8){let pull=(90+wm(d,'force')*28)*dt;e.x+=dx/dd*pull;e.y+=dy/dd*pull;}}}
    const speedBoost=1+Math.log1p(wm(d,'spin'))*.25,overflow=1+Math.max(0,wm(d,'count')-9)*.14+Math.max(0,wm(d,'radius')-13)*.08;
    if(d.hitCd<=0){let found=0;
     for(const pp of positions){for(const e of S.enemy){
       if(e.hp>0&&Math.hypot(e.x-pp.x,e.y-pp.y)<e.r+(26+Math.min(12,Math.sqrt(rank)*2))){
-       hurtEnemy(e,(16+Math.sqrt(rank)*4)*baseDmg*speedBoost*overflow,{knock:rank>=7?8:4,burn:thermal?1.3:0,stun:tesla?.08:frost?.35:0,slow:frost?2:0});if(frost)e.frost=Math.max(e.frost||0,1.8);found++;
+       if(frost&&e.frost>0)shatterFrozen(e,18*baseDmg,56);
+       if(e.hp<=0)continue;
+       hurtEnemy(e,(16+Math.sqrt(rank)*4)*baseDmg*speedBoost*overflow*(magnet?1.18:1),{knock:rank>=7?8:4,burn:thermal?1.3:0,stun:tesla?.08:frost?.35:0,slow:frost?2:0});if(frost&&e.hp>0){e.frost=Math.max(e.frost||0,1.8);applyChill(e,15)}found++;
       }
     }}
     if(tesla&&found){const near=closest(pos.x,pos.y,280);if(near)scheduleChain(pos,near,2+Math.min(8,wm(d,'jumps')),22*baseDmg,235,'#ffe9a1',.20)}
     if(found){sfx('sawHit',.8);d.hitCd=Math.max(.13,(.36-Math.min(rank,12)*.007)/(speedBoost*(S.haste||1)));if(Math.random()<.15)burst(pos.x,pos.y,thermal?'#ff8a45':AMBER,3,65);}
    }
    // THERMOPILA is a *new persistent trail weapon*, not merely a colored ring.
-   if(thermal){d.trailTimer=(d.trailTimer||0)-dt;if(d.trailTimer<=0){d.trailTimer=.48;for(const pp of positions){
-    if(S.effects.filter(e=>e.thermalTrail).length<25)S.effects.push({x:pp.x,y:pp.y,r:19+Math.min(rank,12)*.7,life:1.8,clock:0,damage:17*baseDmg,col:'#ff8d43',fire:true,thermalTrail:true});
+   if(thermal){d.trailTimer=(d.trailTimer||0)-dt;if(d.trailTimer<=0){d.trailTimer=.38;for(const pp of positions){
+    if(S.effects.filter(e=>e.thermalTrail).length<25)S.effects.push({x:pp.x,y:pp.y,r:38+Math.min(rank,12)*.9,life:2.3,clock:0,damage:(rank<=4?115:45)*baseDmg,col:'#ff8d43',fire:true,thermalTrail:true});
     if(Math.random()<.13)burst(pp.x,pp.y,'#ff9d42',2,60);
    }}}
+   // Glacial blades leave compact cold wakes; this gives the fusion a real
+   // defensive zone instead of being only a weaker saw with a freeze colour.
+   if(frost){d.frostWakeTimer=(d.frostWakeTimer||0)-dt;if(d.frostWakeTimer<=0){
+    d.frostWakeTimer=.56;
+    for(const pp of positions){
+     if(S.effects.filter(e=>e.frostBladeWake).length<18)
+      S.effects.push({x:pp.x,y:pp.y,r:39,life:1.9,clock:0,
+       damage:34*baseDmg,col:'#abedff',ice:true,chill:16,frostBladeWake:true});
+    }
+   }}
+   // A fusion consumes two modules; orbital builds must not lose the
+   // ranged boss pressure supplied by their original cryo/plasma/gravity part.
+   // Distinct visual pulses preserve their primary orbit combat identity.
+   if(thermal||frost||magnet){
+    d.resonanceCd=(d.resonanceCd||0)-dt;
+    if(d.resonanceCd<=0){
+     const boss=S.bosses.find(e=>e.hp>0&&Math.hypot(e.x-pos.x,e.y-pos.y)<540);
+     if(boss){
+      const color=thermal?'#ff9959':frost?'#a5efff':'#c7a2ff';
+      const pulse=baseDmg*(thermal?140:frost?42:190);
+      hurtEnemy(boss,pulse,{burn:thermal?2.5:0,stun:frost?.22:0,slow:frost?1.5:0});
+      if(frost&&boss.hp>0)applyChill(boss,22);
+      S.fx.push({type:'beam',a:{x:pos.x,y:pos.y},b:{x:boss.x,y:boss.y},life:.30,max:.30,col:color,width:thermal?6:4});
+      d.resonanceCd=thermal?.85:frost?1.25:1.15;
+     }
+    }
+   }
    continue;
   }
   let target=chooseCombatTarget(pos.x,pos.y,d.id==='flame'?205+24*Math.sqrt(wm(d,'range'))+100:550,d.id);
@@ -5080,16 +5681,23 @@ function droneUpdate(dt){
    const n=Math.min(5,1+wm(d,'beams'));
    for(let j=0;j<n;j++){
     const off=(j-(n-1)/2)*16,source=weaponMuzzle(pos,target,off,30);
-    launchBullet(source.x,source.y,target,26*baseDmg,'fusion_ion',2+Math.floor(rank/8));
-    S.fx.push({type:'beam',a:source,b:{x:target.x,y:target.y},life:.28,max:.28,col:'#cc9bff',width:3.4});
+    launchBullet(source.x,source.y,target,42*baseDmg,'fusion_ion',2+Math.floor(rank/8));
+    const ionMuzzle=aimGeometry(source,target);S.fx.push({type:'beam',a:source,b:{x:source.x+ionMuzzle.dx*32,y:source.y+ionMuzzle.dy*32},life:.12,max:.12,col:'#cc9bff',width:3.4});
    }
-   scheduleChain(weaponMuzzle(pos,target,0,30),target,5+Math.min(10,wm(d,'jumps')),27*baseDmg,250,'#d5afff',.18);burst(target.x,target.y,'#b6dfff',16,135);continue;
+   target.marked=Math.max(target.marked||0,3.5);scheduleChain(weaponMuzzle(pos,target,0,30),target,5+Math.min(10,wm(d,'jumps')),35*baseDmg,250,'#d5afff',.18,1.08);burst(target.x,target.y,'#b6dfff',16,135);continue;
   }
   if(d.id==='fusion_starfall'||d.id==='fusion_predator'){
    const star=d.id==='fusion_starfall',n=Math.min(8,3+wm(d,'salvo'));
-   if(!star){S.fx.push({type:'beam',a:weaponMuzzle(pos,target,0,30),b:{x:target.x,y:target.y},life:.28,max:.28,col:RED,width:4});target.marked=4;}
+   let marks=[target];
+   if(!star){
+    const maxMarks=1+Math.min(4,wm(d,'beams'));
+    marks=S.enemy.filter(e=>e.hp>0&&Math.hypot(e.x-target.x,e.y-target.y)<260)
+     .sort((a,b)=>Math.hypot(a.x-target.x,a.y-target.y)-Math.hypot(b.x-target.x,b.y-target.y)).slice(0,maxMarks);
+    if(!marks.length)marks=[target];
+    for(const e of marks){e.marked=4;S.fx.push({type:'beam',a:weaponMuzzle(pos,e,0,30),b:{x:e.x,y:e.y},life:.28,max:.28,col:RED,width:4});}
+   }
    for(let j=0;j<n;j++){const angle=j*TAU/n+S.t;
-    S.bullets.push({type:'rocket',x:pos.x+Math.cos(angle)*14,y:pos.y+Math.sin(angle)*14,vx:Math.cos(angle)*90,vy:Math.sin(angle)*90,target,spd:390,life:4,r:7,dmg:(star?39:47)*baseDmg,col:star?BLUE:RED,blast:Math.min(175,74+wm(d,'blast')*19),hybrid:star?'starfall':'predator'});
+    S.bullets.push({type:'rocket',x:pos.x+Math.cos(angle)*14,y:pos.y+Math.sin(angle)*14,vx:Math.cos(angle)*90,vy:Math.sin(angle)*90,target:star?target:marks[j%marks.length],spd:390,life:4,r:7,dmg:(star?39:47)*baseDmg,col:star?BLUE:RED,blast:Math.min(175,74+wm(d,'blast')*19),hybrid:star?'starfall':'predator'});
    }continue;
   }
   // v0.7: each recipe below is a real alternative combat mechanism, not just a renamed drone.
@@ -5099,7 +5707,7 @@ function droneUpdate(dt){
    for(let j=0;j<total;j++){
     const offset=(j-(total-1)/2)*13,source=weaponMuzzle(pos,target,offset,24);
     launchBullet(source.x,source.y,target,(17+Math.sqrt(rank)*8)*baseDmg*(1+.14*Math.max(0,wm(d,'beams')-6))/(1+.18*(total-1)),'pulse',pierce);
-    S.fx.push({type:'beam',a:source,b:{x:target.x,y:target.y},life:.18,max:.18,col:TEAL,width:rank>=8?3.3:1.8});
+    const muzzleDir=aimGeometry(source,target);S.fx.push({type:'beam',a:source,b:{x:source.x+muzzleDir.dx*27,y:source.y+muzzleDir.dy*27},life:.10,max:.10,col:TEAL,width:rank>=8?3.3:1.8});
    }
   }
   if(d.id==='arc'){
@@ -5108,10 +5716,10 @@ function droneUpdate(dt){
   }
   if(d.id==='rail'||d.id==='fusion_glacier'){
    // Railgun: hits every enemy crossing a long, thick laser corridor. Charging flash is visible before the shot.
-   const isIce=d.id==='fusion_glacier',a=aimGeometry(pos,target),origin=weaponMuzzle(pos,target,0,27),length=Math.min(1500,640+55*Math.sqrt(wm(d,'pierce'))),width=(isIce?17:11)+6*Math.sqrt(wm(d,'width'));
+   const isIce=d.id==='fusion_glacier',a=aimGeometry(pos,target),origin=weaponMuzzle(pos,target,0,27),length=Math.min(1500,640+55*Math.sqrt(wm(d,'pierce'))),width=(isIce?21:11)+6*Math.sqrt(wm(d,'width'));
    const end={x:origin.x+a.dx*length,y:origin.y+a.dy*length};
    let hits=0;
-   for(const e of S.enemy){if(e.hp>0&&pointSegmentDist(e.x,e.y,origin.x,origin.y,end.x,end.y)<e.r+width/2){hurtEnemy(e,((isIce?84:100)*baseDmg+rank*7)*attackOverflow,{knock:isIce?8:20,stun:isIce?.9+wm(d,'freeze')*.13:.07,slow:isIce?2.2:0});hits++;}}
+   for(const e of S.enemy){if(e.hp>0&&pointSegmentDist(e.x,e.y,origin.x,origin.y,end.x,end.y)<e.r+width/2){if(isIce&&e.frost>0)shatterFrozen(e,20*baseDmg,60);if(e.hp<=0)continue;hurtEnemy(e,((isIce?155:100)*baseDmg+rank*7)*attackOverflow,{knock:isIce?8:20,stun:isIce?.9+wm(d,'freeze')*.13:.07,slow:isIce?2.2:0});if(isIce&&e.hp>0){e.frost=1.9;applyChill(e,21+wm(d,'freeze')*6);}hits++;}}
    S.fx.push({type:'rail',a:origin,b:end,life:.44,max:.44,col:isIce?'#a6edff':'#ffd886',width});
    burst(origin.x,origin.y,isIce?'#b6f4ff':'#ffecb9',21,120);if(hits)shake=Math.max(shake,4);continue;
   }
@@ -5133,7 +5741,7 @@ function droneUpdate(dt){
    const gravityMine=d.id==='fusion_singularity',n=Math.min(4,(gravityMine?2:1)+wm(d,'count'));
    // Mines accumulate strategically but there is a hard cap for mobile performance.
    for(let j=0;j<n;j++){const angle=S.t*1.7+j*TAU/n,offset=j===0?0:48+Math.min(j*22,64);
-    S.mines.push({x:S.player.x+Math.cos(angle)*offset,y:S.player.y+Math.sin(angle)*offset,r:12,blast:Math.min(200,(gravityMine?86:67)+wm(d,'blast')*17),damage:(gravityMine?80:54)*baseDmg*(1+.12*Math.max(0,wm(d,'count')-3)),life:gravityMine?18:15,arm:.45,col:gravityMine?'#c5a6ff':'#ffc36c',gravityMine,gravRadius:Math.min(280,155+wm(d,'blast')*15),force:Math.min(390,155*Math.pow(1.22,wm(d,'force')))});
+    S.mines.push({x:(gravityMine?target.x:S.player.x)+Math.cos(angle)*(gravityMine?Math.min(offset,20):offset),y:(gravityMine?target.y:S.player.y)+Math.sin(angle)*(gravityMine?Math.min(offset,20):offset),r:12,blast:Math.min(200,(gravityMine?86:67)+wm(d,'blast')*17),damage:(gravityMine?140:54)*baseDmg*(1+.12*Math.max(0,wm(d,'count')-3)),life:gravityMine?18:15,arm:.45,col:gravityMine?'#c5a6ff':'#ffc36c',gravityMine,gravRadius:Math.min(280,155+wm(d,'blast')*15),force:Math.min(390,155*Math.pow(1.22,wm(d,'force')))});
    }
    if(S.mines.length>48)S.mines.splice(0,S.mines.length-48);
    burst(pos.x,pos.y,'#ffc36c',6,70);continue;
@@ -5175,7 +5783,7 @@ function droneUpdate(dt){
   if(d.id==='plasma'){
    const radius=Math.min(240,61+Math.min(11,rank)*6+Math.min(9,wm(d,'radius'))*21);
    const duration=Math.min(9,2.1+Math.sqrt(rank)*.25+Math.min(14,wm(d,'duration'))*.65);
-   S.effects.push({x:target.x,y:target.y,r:radius,life:duration,clock:0,damage:(9+Math.sqrt(rank)*4)*baseDmg*(1+.07*Math.max(0,wm(d,'radius')-9)+.06*Math.max(0,wm(d,'duration')-14))/1.8,col:BLUE});
+   S.effects.push({x:target.x,y:target.y,r:radius,life:duration,clock:0,damage:(9+Math.sqrt(rank)*4)*baseDmg*(1+.07*Math.max(0,wm(d,'radius')-9)+.06*Math.max(0,wm(d,'duration')-14))/1.8,col:BLUE,fire:true});
    if(rank>=8)damageArea(target.x,target.y,radius*.48,14*baseDmg,{color:BLUE,slow:.45});
    burst(target.x,target.y,BLUE,7,95);
   }
@@ -5183,11 +5791,11 @@ function droneUpdate(dt){
 }
 function updateAreaWeapons(dt){
  for(const mine of S.mines){mine.life-=dt;mine.arm-=dt;if(mine.arm>0)continue;
-  if(mine.gravityMine)for(const e of S.enemy){if(e.hp<=0||e.elite)continue;const dx=mine.x-e.x,dy=mine.y-e.y,dd=Math.hypot(dx,dy);if(dd<mine.gravRadius&&dd>5){e.x+=dx/dd*mine.force*dt;e.y+=dy/dd*mine.force*dt;}}
-  const e=closest(mine.x,mine.y,28);if(e){sfx('explosion',mine.gravityMine?1:.7);damageArea(mine.x,mine.y,mine.blast,mine.damage,{color:mine.col,knock:16,burn:mine.specialMine==='ice'?0:.5,slow:mine.specialMine==='ice'?3:0,stun:mine.specialMine==='ice'?.5:0});if(mine.specialMine==='ice')fusionField(mine.x,mine.y,mine.blast*.8,mine.damage*.10,2.5,'#a3ebff');mine.life=-1;S.fx.push({type:'ring',x:mine.x,y:mine.y,r:mine.blast,life:.5,max:.5,col:mine.col});shake=Math.max(shake,3)}
+  if(mine.gravityMine&&!(S.timeStopTimer>0))for(const e of S.enemy){if(e.hp<=0||e.elite)continue;const dx=mine.x-e.x,dy=mine.y-e.y,dd=Math.hypot(dx,dy);if(dd<mine.gravRadius&&dd>5){e.x+=dx/dd*mine.force*dt;e.y+=dy/dd*mine.force*dt;}}
+  const e=closest(mine.x,mine.y,28);if(e){sfx('explosion',mine.gravityMine?1:.7);damageArea(mine.x,mine.y,mine.blast,mine.damage,{color:mine.col,knock:16,burn:mine.specialMine==='ice'?0:.5,slow:mine.specialMine==='ice'?3:0,stun:mine.specialMine==='ice'?.5+(mine.freezeStrength||0)*.13:0});if(mine.specialMine==='ice')fusionField(mine.x,mine.y,mine.blast*.8,mine.damage*.10,2.5,'#a3ebff',{ice:true,chill:12+(mine.freezeStrength||0)*5});mine.life=-1;S.fx.push({type:'ring',x:mine.x,y:mine.y,r:mine.blast,life:.5,max:.5,col:mine.col});shake=Math.max(shake,3)}
  }S.mines=S.mines.filter(m=>m.life>0);
- for(const g of S.gravityWells){g.life-=dt;g.clock-=dt;if(g.life<=0&&!g.collapsed){g.collapsed=true;sfx('gravityCollapse',.65)}
-  for(const e of S.enemy){if(e.hp<=0||e.elite)continue;const dx=g.x-e.x,dy=g.y-e.y,d=Math.hypot(dx,dy);if(d<g.r&&d>8){const force=g.force*(.45+.55*(1-d/g.r));e.x+=dx/d*force*dt;e.y+=dy/d*force*dt;e.slow=Math.max(e.slow,.12);}}
+ for(const g of S.gravityWells){g.life-=dt;g.clock-=dt;if(g.life<=0&&!g.collapsed){g.collapsed=true;sfx('gravityCollapse',.65);if(g.coldCollapse){damageArea(g.x,g.y,g.r,g.coldCollapse,{color:'#a9edff',slow:2,stun:.35});for(const foe of [...S.enemy])if(foe.hp>0&&Math.hypot(foe.x-g.x,foe.y-g.y)<g.r){shatterFrozen(foe,g.coldCollapse*.55,56);if(foe.hp>0)applyChill(foe,45);}}}
+  if(!(S.timeStopTimer>0))for(const e of S.enemy){if(e.hp<=0||e.elite)continue;const dx=g.x-e.x,dy=g.y-e.y,d=Math.hypot(dx,dy);if(d<g.r&&d>8){const force=g.force*(.45+.55*(1-d/g.r));e.x+=dx/d*force*dt;e.y+=dy/d*force*dt;e.slow=Math.max(e.slow,.12);}}
   if(g.clock<=0){g.clock=.27;for(const e of S.enemy){if(e.hp>0&&Math.hypot(e.x-g.x,e.y-g.y)<e.r+g.r)hurtEnemy(e,g.damage,{slow:.22})}}
  }S.gravityWells=S.gravityWells.filter(g=>g.life>0);
 }
@@ -5205,14 +5813,14 @@ function updateProjectiles(dt){for(let b of S.bullets){b.life-=dt;
  }else if(b.type==='boomer'){
    b.travel+=b.spd*dt;const ownerPos=getDronePos(b.owner,Math.max(0,S.drones.indexOf(b.owner)));
    if(!b.returning&&b.travel>=b.range){b.returning=true;b.hitIds.clear();sfx('boomerReturn',.55)}
-   if(b.specialDisc){b.trailClock-=dt;if(b.trailClock<=0){if(b.specialDisc==='mine')fusionMine(b.x,b.y,b.damage*.58,'#ffd78f',58,'normal');b.trailClock=.24;}}
+   if(b.specialDisc){b.trailClock-=dt;if(b.trailClock<=0){if(b.specialDisc==='mine')fusionMine(b.x,b.y,b.damage*.58,'#ffd78f',b.mineBlast||58,'normal');b.trailClock=.24;}}
    if(b.fireDisc){b.trailClock-=dt;if(b.trailClock<=0){b.trailClock=.22;if(S.effects.filter(x=>x.infernoTrail).length<35)S.effects.push({x:b.x,y:b.y,r:24,life:1.9,clock:0,damage:b.damage*.16,col:'#ff8f4f',fire:true,infernoTrail:true});}}
    if(b.returning){const vec=hypot(ownerPos.x-b.x,ownerPos.y-b.y);b.vx=(ownerPos.x-b.x)/vec*b.spd*1.35;b.vy=(ownerPos.y-b.y)/vec*b.spd*1.35;if(vec<25)b.life=-1;}
    b.x+=b.vx*dt;b.y+=b.vy*dt;for(const e of S.enemy){if(e.hp<=0||b.hitIds.has(e))continue;if(Math.hypot(e.x-b.x,e.y-b.y)<e.r+b.r){hurtEnemy(e,b.damage,{knock:7,burn:b.fireDisc?2.2:0});b.hitIds.add(e);if(b.specialDisc==='lightning')scheduleChain({x:b.x,y:b.y},e,3+Math.min(10,wm(b.owner,'jumps')),b.damage*.42,180,'#c3baff',.17);burst(e.x,e.y,b.col,4,60)}}
-  }else if(b.type==='rocket'){if(!b.target||b.target.hp<=0)b.target=closest(b.x,b.y,420);if(b.target){let m=hypot(b.target.x-b.x,b.target.y-b.y),tx=(b.target.x-b.x)/m*b.spd,ty=(b.target.y-b.y)/m*b.spd;b.vx=lerp(b.vx,tx,Math.min(1,dt*5));b.vy=lerp(b.vy,ty,Math.min(1,dt*5))}b.x+=b.vx*dt;b.y+=b.vy*dt;const e=closest(b.x,b.y,19);if(e||b.life<=0){sfx('explosion',b.hybrid==='napalm'?1.1:.74);damageArea(b.x,b.y,b.blast,b.dmg,{color:b.hybrid==='starfall'?BLUE:b.hybrid==='napalm'?'#ff904f':RED,slow:b.hybrid==='starfall'?.8:0,knock:11,burn:b.hybrid==='napalm'?2.8:0});if(b.hybrid==='napalm')fusionField(b.x,b.y,b.blast*.95,b.dmg*.19,3,'#ff8742',{fire:true});if(b.hybrid==='starfall'){S.effects.push({x:b.x,y:b.y,r:73,life:1.65,clock:0,damage:b.dmg*.25,col:BLUE});burst(b.x,b.y,'#bef5ff',25,230);}b.life=-1;shake=Math.max(shake,2)}}else{b.x+=b.vx*dt;b.y+=b.vy*dt;for(let e of S.enemy){if(e.hp>0&&!(b.hitIds&&b.hitIds.has(e))&&Math.abs(e.x-b.x)<e.r+b.r&&Math.abs(e.y-b.y)<e.r+b.r&&Math.hypot(e.x-b.x,e.y-b.y)<e.r+b.r){hurtEnemy(e,b.dmg,{knock:5});if((b.type==='pulse'||b.type==='fusion_ion')&&performance.now()/1000-lastLaserImpact>.085){sfx('laserHit',.70);lastLaserImpact=performance.now()/1000}if(b.hitIds)b.hitIds.add(e);burst(b.x,b.y,TEAL,3,65);if(b.pierce>0){b.pierce--;b.dmg*=.75;b.x+=b.vx*dt*3;b.y+=b.vy*dt*3}else b.life=-1;break}}}}
+  }else if(b.type==='rocket'){if(!b.target||b.target.hp<=0)b.target=closest(b.x,b.y,420);if(b.target){let m=hypot(b.target.x-b.x,b.target.y-b.y),tx=(b.target.x-b.x)/m*b.spd,ty=(b.target.y-b.y)/m*b.spd;b.vx=lerp(b.vx,tx,Math.min(1,dt*5));b.vy=lerp(b.vy,ty,Math.min(1,dt*5))}b.x+=b.vx*dt;b.y+=b.vy*dt;const e=closest(b.x,b.y,19);if(e||b.life<=0){sfx('explosion',b.hybrid==='napalm'?1.1:.74);damageArea(b.x,b.y,b.blast,b.dmg,{color:b.hybrid==='starfall'?BLUE:b.hybrid==='napalm'?'#ff904f':RED,slow:b.hybrid==='starfall'?.8:0,knock:11,burn:b.hybrid==='napalm'?2.8:0,markedMultiplier:b.hybrid==='predator'?1.65:1});if(b.hybrid==='napalm')fusionField(b.x,b.y,b.blast*.95,b.dmg*.19,3,'#ff8742',{fire:true});if(b.hybrid==='starfall'){S.effects.push({x:b.x,y:b.y,r:73,life:1.65,clock:0,damage:b.dmg*.25,col:BLUE});burst(b.x,b.y,'#bef5ff',25,230);}b.life=-1;shake=Math.max(shake,2)}}else{b.x+=b.vx*dt;b.y+=b.vy*dt;for(let e of S.enemy){if(e.hp>0&&!(b.hitIds&&b.hitIds.has(e))&&Math.abs(e.x-b.x)<e.r+b.r&&Math.abs(e.y-b.y)<e.r+b.r&&Math.hypot(e.x-b.x,e.y-b.y)<e.r+b.r){hurtEnemy(e,b.dmg,{knock:5});if((b.type==='pulse'||b.type==='fusion_ion')&&performance.now()/1000-lastLaserImpact>.085){sfx('laserHit',.70);lastLaserImpact=performance.now()/1000}if(b.hitIds)b.hitIds.add(e);burst(b.x,b.y,TEAL,3,65);if(b.pierce>0){b.pierce--;b.dmg*=.75;b.x+=b.vx*dt*3;b.y+=b.vy*dt*3}else b.life=-1;break}}}}
  S.bullets=S.bullets.filter(b=>b.life>0);
- for(let b of S.enemyBullets){b.life-=dt;b.x+=b.vx*dt;b.y+=b.vy*dt;if(Math.hypot(S.player.x-b.x,S.player.y-b.y)<S.player.rad+b.r){if(S.player.dashTime>0&&tacticLv('intercept')){b.life=-1;tacticOnIntercept();continue;}hitPlayer(b.dmg,b.x,b.y);b.life=-1;burst(b.x,b.y,RED,6,60)}}S.enemyBullets=S.enemyBullets.filter(b=>b.life>0);
- for(let eff of S.effects){eff.life-=dt;eff.clock-=dt;if(eff.clock<=0){eff.clock=.28;for(let e of S.enemy){if(e.hp>0&&Math.hypot(e.x-eff.x,e.y-eff.y)<e.r+eff.r)hurtEnemy(e,eff.damage,{slow:.34,burn:.5})}}}S.effects=S.effects.filter(x=>x.life>0);
+ if(!(S.timeStopTimer>0))for(let b of S.enemyBullets){b.life-=dt;b.x+=b.vx*dt;b.y+=b.vy*dt;if(Math.hypot(S.player.x-b.x,S.player.y-b.y)<S.player.rad+b.r){if(S.player.dashTime>0&&tacticLv('intercept')){b.life=-1;tacticOnIntercept();continue;}hitPlayer(b.dmg,b.x,b.y);b.life=-1;burst(b.x,b.y,RED,6,60)}}S.enemyBullets=S.enemyBullets.filter(b=>b.life>0);
+ for(let eff of S.effects){eff.life-=dt;eff.clock-=dt;eff.chainClock=(eff.chainClock??0)-dt;if(eff.clock<=0){eff.clock=.28;for(let e of S.enemy){if(e.hp>0&&Math.hypot(e.x-eff.x,e.y-eff.y)<e.r+eff.r){hurtEnemy(e,eff.damage,{slow:eff.ice?1.2:.34,burn:eff.fire?.5:0});if(eff.ice)applyChill(e,eff.chill||9)}}}if(eff.chain&&eff.life>0&&eff.chainClock<=0){eff.chainClock=.65;const near=closest(eff.x,eff.y,eff.r);if(near)scheduleChain({x:eff.x,y:eff.y},near,Math.min(7,eff.chain),eff.damage*1.1,Math.min(200,eff.r+60),'#ceb0ff',.16)}}S.effects=S.effects.filter(x=>x.life>0);
  updateChains(dt);for(let fx of S.fx)fx.life-=dt;S.fx=S.fx.filter(x=>x.life>0);if(S.fx.length>180)S.fx.splice(0,S.fx.length-180);
 }
 
@@ -5575,12 +6183,12 @@ function executeRaid(evt){
  }
  banner('⚠ '+evt.name+' // ПРИОРИТЕТ ЦЕЛЕЙ!',3.4);sfx('warning',.6);
 }
-function update(dt){if(!S)return;if(trainingMode){updateTraining(dt);return;}S.t+=dt;S.spawn-=dt;S.rageTimer=Math.max(0,S.rageTimer-dt);S.invulnTimer=Math.max(0,S.invulnTimer-dt);S.magnetTimer=Math.max(0,S.magnetTimer-dt);S.powerupClock-=dt;if(S.powerupClock<=0){spawnPowerup();S.powerupClock=rand(22,34)}S.player.inv=Math.max(0,S.player.inv-dt);S.player.hit=Math.max(0,S.player.hit-dt);S.player.dashCd=Math.max(0,S.player.dashCd-dt);const wasDashing=S.player.dashTime>0;S.player.dashTime=Math.max(0,S.player.dashTime-dt);let p=S.player,inp=getInput(),mag=hypot(inp.x,inp.y);p.moving=Math.abs(inp.x)+Math.abs(inp.y)>.12;if(p.moving){p.dx=inp.x/mag;p.dy=inp.y/mag}if(p.dashTime>0){p.x+=p.dx*900*dt;p.y+=p.dy*900*dt;if(Math.random()<dt*90)burst(p.x,p.y,TEAL,1,40)}else{p.x+=inp.x*p.speed*dt;p.y+=inp.y*p.speed*dt}p.x=clamp(p.x,-1740,1740);p.y=clamp(p.y,-1740,1740);if(wasDashing&&p.dashTime===0)tacticAfterDash();tacticUpdate(dt);
+function update(dt){if(!S)return;if(trainingMode){updateTraining(dt);return;}S.t+=dt;const freezeActive=S.timeStopTimer>0;S.timeStopTimer=Math.max(0,S.timeStopTimer-dt);S.spawn-=freezeActive?0:dt;S.rageTimer=Math.max(0,S.rageTimer-dt);S.invulnTimer=Math.max(0,S.invulnTimer-dt);S.magnetTimer=Math.max(0,S.magnetTimer-dt);S.powerupClock-=dt;if(S.powerupClock<=0){spawnPowerup();S.powerupClock=rand(60,85)}S.player.inv=Math.max(0,S.player.inv-dt);S.player.hit=Math.max(0,S.player.hit-dt);S.player.dashCd=Math.max(0,S.player.dashCd-dt);const wasDashing=S.player.dashTime>0;S.player.dashTime=Math.max(0,S.player.dashTime-dt);let p=S.player,inp=getInput(),mag=hypot(inp.x,inp.y);p.moving=Math.abs(inp.x)+Math.abs(inp.y)>.12;if(p.moving){p.dx=inp.x/mag;p.dy=inp.y/mag}if(p.dashTime>0){p.x+=p.dx*900*dt;p.y+=p.dy*900*dt;if(Math.random()<dt*90)burst(p.x,p.y,TEAL,1,40)}else{p.x+=inp.x*p.speed*dt;p.y+=inp.y*p.speed*dt}p.x=clamp(p.x,-1740,1740);p.y=clamp(p.y,-1740,1740);if(wasDashing&&p.dashTime===0)tacticAfterDash();tacticUpdate(dt);
  if(S.player.regen){S.player.hp=Math.min(S.player.maxHp,S.player.hp+S.player.regen*dt)}
  S.cam.x=lerp(S.cam.x,p.x,Math.min(1,dt*5));S.cam.y=lerp(S.cam.y,p.y,Math.min(1,dt*5));
   const phase=Math.min(4,Math.floor(S.t/180));
   const bossPressure=S.bosses.some(b=>b.hp>0);const diff=Math.max(.29,1.12-S.t/1400-(S.threat-1)*.055)*(bossPressure?1.25:1);
-  if(S.spawn<=0){
+  if(!freezeActive&&S.spawn<=0){
    const n=Math.max(1,1+(S.t>75?1:0)+(S.t>240?1:0)+(S.t>460?1:0)+(S.t>690?1:0)+(S.threat>=4?1:0)-(bossPressure?1:0));
    const pool=['scarab','scarab','hunter'];
    if(S.t>55)pool.push('brute','sentry');
@@ -5588,12 +6196,12 @@ function update(dt){if(!S)return;if(trainingMode){updateTraining(dt);return;}S.t
    if(S.t>400)pool.push('phantom','brute','sentry','hive');
    if(S.t>650)pool.push('hunter','phantom','brute','sentry','hive');
    for(let i=0;i<n;i++)spawnEnemy(pool[Math.floor(Math.random()*pool.length)]);
-   S.spawn=diff*rand(.78,1.24);S.spawnCount++;
+   S.spawn=diff*.86*rand(.78,1.24);S.spawnCount++;
   }
-  RAID_EVENTS.forEach((event,i)=>{if(S.t>=event.t&&!S.raidFlags[i]){S.raidFlags[i]=true;executeRaid(event);}});
+  if(!freezeActive)RAID_EVENTS.forEach((event,i)=>{if(S.t>=event.t&&!S.raidFlags[i]){S.raidFlags[i]=true;executeRaid(event);}});
    // Never stack scheduled bosses. Old encounters finish first, followed by a short respite.
    const scheduled=[...BOSS_EVENTS.map((event,i)=>({...event,kind:'boss',i})),...SYNTH_EVENTS.map((event,i)=>({...event,kind:'synth',i}))].sort((a,b)=>a.t-b.t);
-   if(!S.bosses.some(b=>b.hp>0) && S.t-(S.lastBossDefeatAt??-1000)>=10){
+   if(!freezeActive&&!S.bosses.some(b=>b.hp>0) && S.t-(S.lastBossDefeatAt??-1000)>=10){
     const next=scheduled.find(e=>S.t>=e.t&&!(e.kind==='boss'?S.bossFlags[e.i]:S.synthFlags[e.i]));
     if(next){if(next.kind==='boss')S.bossFlags[next.i]=true;else S.synthFlags[next.i]=true;
      const id=next.kind==='synth'?S.synthOrder[next.i]:next.id==='omega'?'omega':S.bossOrder[next.i];
@@ -5602,7 +6210,7 @@ function update(dt){if(!S)return;if(trainingMode){updateTraining(dt);return;}S.t
      if(id==='omega')toast('ОМЕГА ПРИБЫЛА: УНИЧТОЖЬ ЕЁ, ЧТОБЫ ЗАВЕРШИТЬ ЗАБЕГ',6);
     }
    }
- droneUpdate(dt);updateHybridCombat(dt);updateAreaWeapons(dt);updateProjectiles(dt);if(mode!=='playing')return;updateEnemies(dt);if(mode!=='playing')return;updateHazards(dt);updateDrops(dt);if(mode!=='playing')return;balTick(dt);
+ droneUpdate(dt);updateHybridCombat(dt);updateAreaWeapons(dt);updateProjectiles(dt);if(mode!=='playing')return;if(!freezeActive)updateEnemies(dt);if(mode!=='playing')return;if(!freezeActive)updateHazards(dt);updateDrops(dt);if(mode!=='playing')return;balTick(dt);
  shake=Math.max(0,shake-dt*26);if(S.t>showToastUntil)$('toast').classList.add('hidden');if(S.t>showBannerUntil)$('wavebanner').classList.add('hidden');if(S.bosses.length){const b=S.bosses[S.bosses.length-1];$('bossWrap').classList.remove('hidden');const bossPct=clamp(100*b.hp/Math.max(1,b.maxHp),0,100);$('bossName').textContent=ENEMY[b.id].name+' · '+Math.ceil(bossPct)+'%';$('bossFill').style.width=bossPct+'%'}else $('bossWrap').classList.add('hidden');S.clock-=dt;if(S.clock<=0){S.clock=.15;updateHUD()}}
 function updateHUD(){
  if(!S)return;const p=S.player;
@@ -5623,7 +6231,7 @@ function updateHUD(){
    return `<div class="mobile-weapon-slot ${linked?'is-linked':''}" style="--c:${meta.color}" title="${meta.name}, уровень ${d.lvl}" aria-label="${meta.name}, уровень ${d.lvl}"><span class="weapon-glyph">${meta.glyph}</span><span class="weapon-name">${meta.name}</span><span class="weapon-level">УР. ${d.lvl}${linked?' ✦':''}</span></div>`;
   }).join('');
  }
- const active=[S.rageTimer>0?`ϟ ЯРОСТЬ ${Math.ceil(S.rageTimer)}с`:'',S.invulnTimer>0?`⬡ ЩИТ ${Math.ceil(S.invulnTimer)}с`:'',S.magnetTimer>0?`◎ МАГНИТ ${Math.ceil(S.magnetTimer)}с`:''].filter(Boolean);
+ const active=[S.timeStopTimer>0?`❄ STASIS ${Math.ceil(S.timeStopTimer)}s`:'',S.rageTimer>0?`ϟ ЯРОСТЬ ${Math.ceil(S.rageTimer)}с`:'',S.invulnTimer>0?`⬡ ЩИТ ${Math.ceil(S.invulnTimer)}с`:'',S.magnetTimer>0?`◎ МАГНИТ ${Math.ceil(S.magnetTimer)}с`:''].filter(Boolean);
  $('buffs').textContent=active.join('  ·  ');$('buffs').classList.toggle('hidden',!active.length);
  $('dashCool').style.transform=`scaleY(${clamp(p.dashCd/(S.dashCooldown||3.6),0,1)})`;$('dashBtn').style.opacity=p.dashCd>.1?.65:1;
 }
@@ -5763,19 +6371,19 @@ function drawBackground(camX,camY,zoom=1){rect(0,0,W,H,'#08111d');const viewW=W/
   cx.strokeStyle='#ffcc78';cx.lineWidth=2;cx.setLineDash([18,20]);cx.strokeRect(-edge+25,-edge+25,edge*2-50,edge*2-50);cx.setLineDash([]);
   cx.fillStyle='#ffe2a0';cx.font='bold 15px Trebuchet MS';cx.textAlign='center';
   for(let k=-1600;k<=1600;k+=400){
-   cx.fillText('⚠ ГРАНИЦА СЕКТОРА',k,-edge+56);
-   cx.fillText('⚠ ГРАНИЦА СЕКТОРА',k,edge-42);
-   cx.save();cx.translate(-edge+53,k);cx.rotate(-Math.PI/2);cx.fillText('⚠ ГРАНИЦА СЕКТОРА',0,0);cx.restore();
-   cx.save();cx.translate(edge-53,k);cx.rotate(Math.PI/2);cx.fillText('⚠ ГРАНИЦА СЕКТОРА',0,0);cx.restore();
+   cx.fillText('⚠ SECTOR BOUNDARY',k,-edge+56);
+   cx.fillText('⚠ SECTOR BOUNDARY',k,edge-42);
+   cx.save();cx.translate(-edge+53,k);cx.rotate(-Math.PI/2);cx.fillText('⚠ SECTOR BOUNDARY',0,0);cx.restore();
+   cx.save();cx.translate(edge-53,k);cx.rotate(Math.PI/2);cx.fillText('⚠ SECTOR BOUNDARY',0,0);cx.restore();
   }
   cx.restore();
-  }if(trainingMode){cx.save();for(const r of [150,300,450]){ring(0,0,r,'#355f66',1.5)}for(let q=-4;q<=4;q++){line(q*80,-420,q*80,420,'#244f5633',1);line(-420,q*80,420,q*80,'#244f5633',1)}cx.font='bold 14px Trebuchet MS';cx.fillStyle='#74cfc4aa';cx.textAlign='center';cx.fillText('ИСПЫТАТЕЛЬНЫЙ СЕКТОР // 08',0,-315);cx.restore()}cx.restore()}
+  }if(trainingMode){cx.save();for(const r of [150,300,450]){ring(0,0,r,'#355f66',1.5)}for(let q=-4;q<=4;q++){line(q*80,-420,q*80,420,'#244f5633',1);line(-420,q*80,420,q*80,'#244f5633',1)}cx.font='bold 14px Trebuchet MS';cx.fillStyle='#74cfc4aa';cx.textAlign='center';cx.fillText('TRAINING SECTOR // 08',0,-315);cx.restore()}cx.restore()}
 function drawPickup(o){
- const t=ambient+.25*o.x+o.y,colors={xp:TEAL,shard:AMBER,heal:'#84ffaa',magnet:'#78e9ff',rage:'#ff9e54',invuln:'#d5a6ff',core:'#ffe38e'},col=colors[o.type]||TEAL;
+ const t=ambient+.25*o.x+o.y,colors={xp:TEAL,shard:AMBER,heal:'#84ffaa',magnet:'#78e9ff',rage:'#ff9e54',timeStop:'#8deeff',invuln:'#d5a6ff',core:'#ffe38e'},col=colors[o.type]||TEAL;
  cx.save();cx.translate(o.x,o.y+Math.sin(t*2)*2.4);glow(0,0,o.type==='xp'?22:o.type==='core'?56:38,col,.38);cx.rotate(t*.75);
  if(o.type==='xp'){poly([[0,-8],[7,0],[0,8],[-7,0]],'#55f2d0','#c5fff7',1.4);poly([[0,-4],[3,0],[0,4],[-3,0]],'#dffffd');}
  else if(o.type==='shard'){poly([[0,-13],[9,-3],[6,10],[-6,10],[-9,-3]],'#e59542','#ffe4a6',1.7);line(-3,0,4,5,'#ffefc8',2);}
- else{ring(0,0,14,col,3);circ(0,0,10,'#152c3b',col,2);cx.rotate(-t*.75);cx.fillStyle=col;cx.textAlign='center';cx.textBaseline='middle';cx.font='bold 19px Trebuchet MS';cx.fillText({heal:'✚',magnet:'◎',rage:'ϟ',invuln:'⬡',core:'◈'}[o.type]||'✚',0,0);}
+ else{ring(0,0,14,col,3);circ(0,0,10,'#152c3b',col,2);cx.rotate(-t*.75);cx.fillStyle=col;cx.textAlign='center';cx.textBaseline='middle';cx.font='bold 19px Trebuchet MS';cx.fillText({heal:'✚',magnet:'◎',rage:'ϟ',timeStop:'❄',invuln:'⬡',core:'◈'}[o.type]||'✚',0,0);}
  cx.restore();}
 function drawRobot(p,menu=false){const skin=skinVisualOverride||equippedSkin();cx.save();cx.translate(p.x,p.y);let a=Math.atan2(p.dy??-1,p.dx??0)+Math.PI/2;cx.rotate(a);const t=ambient,inv=p.inv>0;const rage=(S?.rageTimer||0),invulnerable=(S?.invulnTimer||0);if(inv&&Math.floor(t*22)%2===0){cx.globalAlpha=.55}glow(0,0,62,rage>0?AMBER:skin.core,.24);if(invulnerable>0){ring(0,0,40+Math.sin(ambient*9)*3,'#ddc1ff',4);glow(0,0,68,'#c0b2ff',.27);}else if(rage>0)ring(0,0,35,'#ffae51',3);cx.save();cx.scale(1,.52);ring(0,13,30,skin.core+'58',3);cx.restore();
 
