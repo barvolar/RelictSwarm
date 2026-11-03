@@ -7,7 +7,7 @@ const src=['src/modules/20-core/state/skins.js','src/modules/70-render/layers/sk
 const drawNames=['poly','circ','line','glow','rect','ring'];
 function makeContext(){
  const calls={rotate:0};
- const canvas={save(){},restore(){},translate(){},scale(){},rotate(){calls.rotate++;},
+ const canvas={save(){},restore(){},translate(){},scale(...args){assert.equal(args.length,2,'CanvasRenderingContext2D.scale requires scaleX and scaleY');assert.ok(args.every(Number.isFinite),'Canvas scale arguments must be finite');},rotate(){calls.rotate++;},
   beginPath(){},arc(){},stroke(){},fill(){},moveTo(){},lineTo(){},closePath(){},fillRect(){},setLineDash(){}};
  const context=vm.createContext({Math,TAU:Math.PI*2,BLUE:'#6dbbff',AMBER:'#ffbf70',cx:canvas,
   S:{rageTimer:0,invulnTimer:0},
