@@ -1,29 +1,58 @@
 function droneUpdate(dt){
- const haste=(S.haste||1)*(S.tacticHasteUntil>S.t?1.25:1);
+ const haste=(S.haste||1)*(S.rageTimer>0?1.45:1)*(S.tacticHasteUntil>S.t?1.25:1);
  for(let i=0;i<S.drones.length;i++){
   const d=S.drones[i],meta=DRONES[d.id],rank=d.lvl;
   const pos=getDronePos(d,i),linked=S.hybrids.some(h=>HYBRIDS[h.id].a===d.id||HYBRIDS[h.id].b===d.id);
-  d.cd-=dt;d.hitCd-=dt;d.flash=Math.max(0,(d.flash||0)-dt);
+  d.cd-=dt;d.hitCd-=dt*(S.rageTimer>0?1.45:1);d.flash=Math.max(0,(d.flash||0)-dt);
   const baseDmg=calculateWeaponDamage(S.playerDmg,rank,wm(d,'power'),S.rageTimer>0);
   if(['saw','fusion_thermal','fusion_tesla','fusion_frostblade','fusion_magnetblade'].includes(d.id)){
    const positions=sawPositions(d,i),thermal=d.id==='fusion_thermal',tesla=d.id==='fusion_tesla',frost=d.id==='fusion_frostblade',magnet=d.id==='fusion_magnetblade';
-   if(tesla){d.zapCd=(d.zapCd||0)-dt;if(d.zapCd<=0){const near=closest(S.player.x,S.player.y,365);if(near){scheduleChain(pos,near,3+Math.min(12,wm(d,'jumps')),22*baseDmg,260,'#ffe5a6',.22);d.zapCd=.95/(S.haste||1)}}}
-   if(magnet){for(const pp of positions)for(const e of S.enemy){if(e.hp<=0||e.elite)continue;const dx=pp.x-e.x,dy=pp.y-e.y,dd=Math.hypot(dx,dy);if(dd>30&&dd<130+wm(d,'radius')*8){let pull=(90+wm(d,'force')*28)*dt;e.x+=dx/dd*pull;e.y+=dy/dd*pull;}}}
+   if(tesla){d.zapCd=(d.zapCd||0)-dt*(S.rageTimer>0?1.45:1);if(d.zapCd<=0){const near=closest(S.player.x,S.player.y,365);if(near){scheduleChain(pos,near,3+Math.min(12,wm(d,'jumps')),22*baseDmg,260,'#ffe5a6',.22);d.zapCd=.95/(S.haste||1)}}}
+   if(magnet&&!(S.timeStopTimer>0)){for(const pp of positions)for(const e of S.enemy){if(e.hp<=0||e.elite)continue;const dx=pp.x-e.x,dy=pp.y-e.y,dd=Math.hypot(dx,dy);if(dd>30&&dd<130+wm(d,'radius')*8){let pull=(90+wm(d,'force')*28)*dt;e.x+=dx/dd*pull;e.y+=dy/dd*pull;}}}
    const speedBoost=1+Math.log1p(wm(d,'spin'))*.25,overflow=1+Math.max(0,wm(d,'count')-9)*.14+Math.max(0,wm(d,'radius')-13)*.08;
    if(d.hitCd<=0){let found=0;
     for(const pp of positions){for(const e of S.enemy){
       if(e.hp>0&&Math.hypot(e.x-pp.x,e.y-pp.y)<e.r+(26+Math.min(12,Math.sqrt(rank)*2))){
-       hurtEnemy(e,(16+Math.sqrt(rank)*4)*baseDmg*speedBoost*overflow,{knock:rank>=7?8:4,burn:thermal?1.3:0,stun:tesla?.08:frost?.35:0,slow:frost?2:0});if(frost)e.frost=Math.max(e.frost||0,1.8);found++;
+       if(frost&&e.frost>0)shatterFrozen(e,18*baseDmg,56);
+       if(e.hp<=0)continue;
+       hurtEnemy(e,(16+Math.sqrt(rank)*4)*baseDmg*speedBoost*overflow*(magnet?1.18:1),{knock:rank>=7?8:4,burn:thermal?1.3:0,stun:tesla?.08:frost?.35:0,slow:frost?2:0});if(frost&&e.hp>0){e.frost=Math.max(e.frost||0,1.8);applyChill(e,15)}found++;
       }
     }}
     if(tesla&&found){const near=closest(pos.x,pos.y,280);if(near)scheduleChain(pos,near,2+Math.min(8,wm(d,'jumps')),22*baseDmg,235,'#ffe9a1',.20)}
     if(found){sfx('sawHit',.8);d.hitCd=Math.max(.13,(.36-Math.min(rank,12)*.007)/(speedBoost*(S.haste||1)));if(Math.random()<.15)burst(pos.x,pos.y,thermal?'#ff8a45':AMBER,3,65);}
    }
    // THERMOPILA is a *new persistent trail weapon*, not merely a colored ring.
-   if(thermal){d.trailTimer=(d.trailTimer||0)-dt;if(d.trailTimer<=0){d.trailTimer=.48;for(const pp of positions){
-    if(S.effects.filter(e=>e.thermalTrail).length<25)S.effects.push({x:pp.x,y:pp.y,r:19+Math.min(rank,12)*.7,life:1.8,clock:0,damage:17*baseDmg,col:'#ff8d43',fire:true,thermalTrail:true});
+   if(thermal){d.trailTimer=(d.trailTimer||0)-dt;if(d.trailTimer<=0){d.trailTimer=.38;for(const pp of positions){
+    if(S.effects.filter(e=>e.thermalTrail).length<25)S.effects.push({x:pp.x,y:pp.y,r:38+Math.min(rank,12)*.9,life:2.3,clock:0,damage:(rank<=4?115:45)*baseDmg,col:'#ff8d43',fire:true,thermalTrail:true});
     if(Math.random()<.13)burst(pp.x,pp.y,'#ff9d42',2,60);
    }}}
+   // Glacial blades leave compact cold wakes; this gives the fusion a real
+   // defensive zone instead of being only a weaker saw with a freeze colour.
+   if(frost){d.frostWakeTimer=(d.frostWakeTimer||0)-dt;if(d.frostWakeTimer<=0){
+    d.frostWakeTimer=.56;
+    for(const pp of positions){
+     if(S.effects.filter(e=>e.frostBladeWake).length<18)
+      S.effects.push({x:pp.x,y:pp.y,r:39,life:1.9,clock:0,
+       damage:34*baseDmg,col:'#abedff',ice:true,chill:16,frostBladeWake:true});
+    }
+   }}
+   // A fusion consumes two modules; orbital builds must not lose the
+   // ranged boss pressure supplied by their original cryo/plasma/gravity part.
+   // Distinct visual pulses preserve their primary orbit combat identity.
+   if(thermal||frost||magnet){
+    d.resonanceCd=(d.resonanceCd||0)-dt;
+    if(d.resonanceCd<=0){
+     const boss=S.bosses.find(e=>e.hp>0&&Math.hypot(e.x-pos.x,e.y-pos.y)<540);
+     if(boss){
+      const color=thermal?'#ff9959':frost?'#a5efff':'#c7a2ff';
+      const pulse=baseDmg*(thermal?140:frost?42:190);
+      hurtEnemy(boss,pulse,{burn:thermal?2.5:0,stun:frost?.22:0,slow:frost?1.5:0});
+      if(frost&&boss.hp>0)applyChill(boss,22);
+      S.fx.push({type:'beam',a:{x:pos.x,y:pos.y},b:{x:boss.x,y:boss.y},life:.30,max:.30,col:color,width:thermal?6:4});
+      d.resonanceCd=thermal?.85:frost?1.25:1.15;
+     }
+    }
+   }
    continue;
   }
   let target=chooseCombatTarget(pos.x,pos.y,d.id==='flame'?205+24*Math.sqrt(wm(d,'range'))+100:550,d.id);
@@ -58,16 +87,23 @@ function droneUpdate(dt){
    const n=Math.min(5,1+wm(d,'beams'));
    for(let j=0;j<n;j++){
     const off=(j-(n-1)/2)*16,source=weaponMuzzle(pos,target,off,30);
-    launchBullet(source.x,source.y,target,26*baseDmg,'fusion_ion',2+Math.floor(rank/8));
-    S.fx.push({type:'beam',a:source,b:{x:target.x,y:target.y},life:.28,max:.28,col:'#cc9bff',width:3.4});
+    launchBullet(source.x,source.y,target,42*baseDmg,'fusion_ion',2+Math.floor(rank/8));
+    const ionMuzzle=aimGeometry(source,target);S.fx.push({type:'beam',a:source,b:{x:source.x+ionMuzzle.dx*32,y:source.y+ionMuzzle.dy*32},life:.12,max:.12,col:'#cc9bff',width:3.4});
    }
-   scheduleChain(weaponMuzzle(pos,target,0,30),target,5+Math.min(10,wm(d,'jumps')),27*baseDmg,250,'#d5afff',.18);burst(target.x,target.y,'#b6dfff',16,135);continue;
+   target.marked=Math.max(target.marked||0,3.5);scheduleChain(weaponMuzzle(pos,target,0,30),target,5+Math.min(10,wm(d,'jumps')),35*baseDmg,250,'#d5afff',.18,1.08);burst(target.x,target.y,'#b6dfff',16,135);continue;
   }
   if(d.id==='fusion_starfall'||d.id==='fusion_predator'){
    const star=d.id==='fusion_starfall',n=Math.min(8,3+wm(d,'salvo'));
-   if(!star){S.fx.push({type:'beam',a:weaponMuzzle(pos,target,0,30),b:{x:target.x,y:target.y},life:.28,max:.28,col:RED,width:4});target.marked=4;}
+   let marks=[target];
+   if(!star){
+    const maxMarks=1+Math.min(4,wm(d,'beams'));
+    marks=S.enemy.filter(e=>e.hp>0&&Math.hypot(e.x-target.x,e.y-target.y)<260)
+     .sort((a,b)=>Math.hypot(a.x-target.x,a.y-target.y)-Math.hypot(b.x-target.x,b.y-target.y)).slice(0,maxMarks);
+    if(!marks.length)marks=[target];
+    for(const e of marks){e.marked=4;S.fx.push({type:'beam',a:weaponMuzzle(pos,e,0,30),b:{x:e.x,y:e.y},life:.28,max:.28,col:RED,width:4});}
+   }
    for(let j=0;j<n;j++){const angle=j*TAU/n+S.t;
-    S.bullets.push({type:'rocket',x:pos.x+Math.cos(angle)*14,y:pos.y+Math.sin(angle)*14,vx:Math.cos(angle)*90,vy:Math.sin(angle)*90,target,spd:390,life:4,r:7,dmg:(star?39:47)*baseDmg,col:star?BLUE:RED,blast:Math.min(175,74+wm(d,'blast')*19),hybrid:star?'starfall':'predator'});
+    S.bullets.push({type:'rocket',x:pos.x+Math.cos(angle)*14,y:pos.y+Math.sin(angle)*14,vx:Math.cos(angle)*90,vy:Math.sin(angle)*90,target:star?target:marks[j%marks.length],spd:390,life:4,r:7,dmg:(star?39:47)*baseDmg,col:star?BLUE:RED,blast:Math.min(175,74+wm(d,'blast')*19),hybrid:star?'starfall':'predator'});
    }continue;
   }
   // v0.7: each recipe below is a real alternative combat mechanism, not just a renamed drone.
@@ -77,7 +113,7 @@ function droneUpdate(dt){
    for(let j=0;j<total;j++){
     const offset=(j-(total-1)/2)*13,source=weaponMuzzle(pos,target,offset,24);
     launchBullet(source.x,source.y,target,(17+Math.sqrt(rank)*8)*baseDmg*(1+.14*Math.max(0,wm(d,'beams')-6))/(1+.18*(total-1)),'pulse',pierce);
-    S.fx.push({type:'beam',a:source,b:{x:target.x,y:target.y},life:.18,max:.18,col:TEAL,width:rank>=8?3.3:1.8});
+    const muzzleDir=aimGeometry(source,target);S.fx.push({type:'beam',a:source,b:{x:source.x+muzzleDir.dx*27,y:source.y+muzzleDir.dy*27},life:.10,max:.10,col:TEAL,width:rank>=8?3.3:1.8});
    }
   }
   if(d.id==='arc'){
@@ -86,10 +122,10 @@ function droneUpdate(dt){
   }
   if(d.id==='rail'||d.id==='fusion_glacier'){
    // Railgun: hits every enemy crossing a long, thick laser corridor. Charging flash is visible before the shot.
-   const isIce=d.id==='fusion_glacier',a=aimGeometry(pos,target),origin=weaponMuzzle(pos,target,0,27),length=Math.min(1500,640+55*Math.sqrt(wm(d,'pierce'))),width=(isIce?17:11)+6*Math.sqrt(wm(d,'width'));
+   const isIce=d.id==='fusion_glacier',a=aimGeometry(pos,target),origin=weaponMuzzle(pos,target,0,27),length=Math.min(1500,640+55*Math.sqrt(wm(d,'pierce'))),width=(isIce?21:11)+6*Math.sqrt(wm(d,'width'));
    const end={x:origin.x+a.dx*length,y:origin.y+a.dy*length};
    let hits=0;
-   for(const e of S.enemy){if(e.hp>0&&pointSegmentDist(e.x,e.y,origin.x,origin.y,end.x,end.y)<e.r+width/2){hurtEnemy(e,((isIce?84:100)*baseDmg+rank*7)*attackOverflow,{knock:isIce?8:20,stun:isIce?.9+wm(d,'freeze')*.13:.07,slow:isIce?2.2:0});hits++;}}
+   for(const e of S.enemy){if(e.hp>0&&pointSegmentDist(e.x,e.y,origin.x,origin.y,end.x,end.y)<e.r+width/2){if(isIce&&e.frost>0)shatterFrozen(e,20*baseDmg,60);if(e.hp<=0)continue;hurtEnemy(e,((isIce?155:100)*baseDmg+rank*7)*attackOverflow,{knock:isIce?8:20,stun:isIce?.9+wm(d,'freeze')*.13:.07,slow:isIce?2.2:0});if(isIce&&e.hp>0){e.frost=1.9;applyChill(e,21+wm(d,'freeze')*6);}hits++;}}
    S.fx.push({type:'rail',a:origin,b:end,life:.44,max:.44,col:isIce?'#a6edff':'#ffd886',width});
    burst(origin.x,origin.y,isIce?'#b6f4ff':'#ffecb9',21,120);if(hits)shake=Math.max(shake,4);continue;
   }
@@ -111,7 +147,7 @@ function droneUpdate(dt){
    const gravityMine=d.id==='fusion_singularity',n=Math.min(4,(gravityMine?2:1)+wm(d,'count'));
    // Mines accumulate strategically but there is a hard cap for mobile performance.
    for(let j=0;j<n;j++){const angle=S.t*1.7+j*TAU/n,offset=j===0?0:48+Math.min(j*22,64);
-    S.mines.push({x:S.player.x+Math.cos(angle)*offset,y:S.player.y+Math.sin(angle)*offset,r:12,blast:Math.min(200,(gravityMine?86:67)+wm(d,'blast')*17),damage:(gravityMine?80:54)*baseDmg*(1+.12*Math.max(0,wm(d,'count')-3)),life:gravityMine?18:15,arm:.45,col:gravityMine?'#c5a6ff':'#ffc36c',gravityMine,gravRadius:Math.min(280,155+wm(d,'blast')*15),force:Math.min(390,155*Math.pow(1.22,wm(d,'force')))});
+    S.mines.push({x:(gravityMine?target.x:S.player.x)+Math.cos(angle)*(gravityMine?Math.min(offset,20):offset),y:(gravityMine?target.y:S.player.y)+Math.sin(angle)*(gravityMine?Math.min(offset,20):offset),r:12,blast:Math.min(200,(gravityMine?86:67)+wm(d,'blast')*17),damage:(gravityMine?140:54)*baseDmg*(1+.12*Math.max(0,wm(d,'count')-3)),life:gravityMine?18:15,arm:.45,col:gravityMine?'#c5a6ff':'#ffc36c',gravityMine,gravRadius:Math.min(280,155+wm(d,'blast')*15),force:Math.min(390,155*Math.pow(1.22,wm(d,'force')))});
    }
    if(S.mines.length>48)S.mines.splice(0,S.mines.length-48);
    burst(pos.x,pos.y,'#ffc36c',6,70);continue;
@@ -153,7 +189,7 @@ function droneUpdate(dt){
   if(d.id==='plasma'){
    const radius=Math.min(240,61+Math.min(11,rank)*6+Math.min(9,wm(d,'radius'))*21);
    const duration=Math.min(9,2.1+Math.sqrt(rank)*.25+Math.min(14,wm(d,'duration'))*.65);
-   S.effects.push({x:target.x,y:target.y,r:radius,life:duration,clock:0,damage:(9+Math.sqrt(rank)*4)*baseDmg*(1+.07*Math.max(0,wm(d,'radius')-9)+.06*Math.max(0,wm(d,'duration')-14))/1.8,col:BLUE});
+   S.effects.push({x:target.x,y:target.y,r:radius,life:duration,clock:0,damage:(9+Math.sqrt(rank)*4)*baseDmg*(1+.07*Math.max(0,wm(d,'radius')-9)+.06*Math.max(0,wm(d,'duration')-14))/1.8,col:BLUE,fire:true});
    if(rank>=8)damageArea(target.x,target.y,radius*.48,14*baseDmg,{color:BLUE,slow:.45});
    burst(target.x,target.y,BLUE,7,95);
   }
