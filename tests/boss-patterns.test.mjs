@@ -45,7 +45,7 @@ test('seven different bosses publish real attacks in both phases',()=>{
   ctx.bossAttack(e,.016,-240,0,240);
   assert.ok(S.hazards.length+S.enemyBullets.length>0,id+' phase two silent');
   assert.ok(seen.banners.length>=2,id+' telegraph absent');
-  assert.ok([...first].some(t=>['dash','annulus','sweep','slash','circle'].includes(t))
+  assert.ok([...first].some(t=>['dash','annulus','sweep','slash','circle','forgeMeteor'].includes(t))
    ||S.enemyBullets.length>0);
  }
 });
@@ -98,6 +98,79 @@ test('spawns and warning hazards remain bounded under repeated boss casts',()=>{
  assert.ok(S.enemyBullets.length<=120,'too many projectiles');
  assert.ok(S.enemy.length<=148,'too many summoned enemies');
  assert.ok(seen.summons<=18,'up to 8 sentries, 5 phantoms and 5 hunters');
+});
+
+
+test('Chaos Smith cycles three different attack types instead of repeating one spiral',()=>{
+ const {ctx,S,seen}=mock();
+ const smith=boss('synth2'); S.enemy.push(smith);S.bosses.push(smith);
+ S.player.moving=true;S.player.dx=1;S.player.dy=0;
+ ctx.bossAttack(smith,.016,-240,0,240);
+ assert.equal(smith.bossCycle,1);
+ assert.ok(S.hazards.filter(h=>h.type==='forgeMeteor').length>=3);
+ assert.equal(S.enemyBullets.length,0,'first attack is the forecast meteor chase, not a bullet fan');
+ // At 1.04 seconds a straight run would place the player inside the predicted strike.
+ const meteor=S.hazards.find(h=>h.type==='forgeMeteor');
+ assert.ok(Math.abs(meteor.x-225*meteor.delay)<10,'meteor predicts straight-line movement');
+ S.hazards=[];smith.special=0;
+ ctx.bossAttack(smith,.016,-240,0,240);
+ assert.equal(smith.bossCycle,2);
+ assert.ok(S.hazards.filter(h=>h.type==='slash').length>=2,'second attack uses anvil press lines');
+ assert.ok(S.hazards.some(h=>h.type==='forgeMeteor'),'press finishes with a delayed meteor');
+ S.hazards=[];smith.special=0;
+ ctx.bossAttack(smith,.016,-240,0,240);
+ assert.equal(smith.bossCycle,3);
+ assert.ok(S.enemyBullets.length>=9,'third attack uses a bullet spiral');
+ assert.ok(S.hazards.some(h=>h.type==='forgeMeteor'),'spiral must also deny camping its gap');
+ assert.ok(seen.banners.some(s=>s.includes('МЕНЯЙ НАПРАВЛЕНИЕ')));
+ assert.ok(seen.banners.some(s=>s.includes('ПРЕСС')));
+ assert.ok(seen.banners.some(s=>s.includes('СПИРАЛЬ')));
+});
+
+test('Chaos Smith meteors punish continuous forward movement but allow a deliberate sidestep',()=>{
+ const {ctx,S,seen}=mock();const smith=boss('synth2'); S.enemy.push(smith);
+ S.player.moving=true;S.player.dx=1;S.player.dy=0;
+ ctx.bossAttack(smith,.016,-240,0,240);
+ const meteor=S.hazards.find(h=>h.type==='forgeMeteor');
+ const forecastX=meteor.x,forecastY=meteor.y;
+ S.player.x=225*meteor.delay;S.player.y=0;
+ ctx.updateHazards(meteor.delay+.015);
+ assert.ok(seen.hits>=1,'a player running straight into the forecast must be hit');
+ assert.equal(meteor.type,'forgeScorch','meteor becomes a distinct temporary hazard');
+ assert.ok(meteor.life>1,'scorch has positive life after impact');
+ // Replaying the very same attack, a lateral change in direction clears the blast.
+ const alt=mock();const second=boss('synth2');alt.S.enemy.push(second);
+ alt.S.player.moving=true;alt.S.player.dx=1;alt.S.player.dy=0;
+ alt.ctx.bossAttack(second,.016,-240,0,240);
+ const warned=alt.S.hazards.find(h=>h.type==='forgeMeteor');
+ alt.S.player.x=forecastX-115;alt.S.player.y=forecastY+130;
+ alt.ctx.updateHazards(warned.delay+.015);
+ assert.equal(alt.seen.hits,0,'sidestepping forecast area must avoid the damage');
+});
+
+test('Chaos Smith burn pools persist briefly and are removed when finished',()=>{
+ const {ctx,S,seen}=mock();const smith=boss('synth2');S.enemy.push(smith);
+ S.hazards.push({type:'forgeMeteor',owner:smith,x:0,y:0,r:70,delay:.1,life:.1,
+  col:'#ffad61',dmg:27,linger:1.35,hit:false});
+ ctx.updateHazards(.11);
+ assert.equal(S.hazards[0].type,'forgeScorch');
+ assert.equal(seen.hits,1);
+ ctx.updateHazards(.42);
+ assert.equal(seen.hits,2,'standing on the glowing hot ground deals further damage');
+ S.player.x=180;
+ ctx.updateHazards(.43);
+ assert.equal(seen.hits,2,'leaving the hot ground prevents further hits');
+ ctx.updateHazards(.9);
+ assert.equal(S.hazards.length,0,'finished burn pools are cleaned up');
+});
+
+test('Smith phase two adds delayed pressure, without exceeding hazard or bullet caps',()=>{
+ const {ctx,S}=mock();const smith=boss('synth2',1);S.enemy.push(smith);
+ for(let i=0;i<90;i++){smith.special=0;ctx.bossAttack(smith,.016,-240,0,240);}
+ assert.ok(S.hazards.length<=48);
+ assert.ok(S.enemyBullets.length<=120);
+ assert.ok(S.enemy.length<=148);
+ assert.ok(S.hazards.some(h=>h.type==='annulus'||h.type==='slash'||h.type==='forgeMeteor'));
 });
 
 test('boss death cancels unresolved owner-linked hazards',()=>{
