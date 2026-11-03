@@ -42,7 +42,7 @@ function chooseTactic(i){
  S.tactics[m.id]=tacticLv(m.id)+1;
  if(m.id==='shield'&&S.tactics[m.id]===1)S.tacticShieldReady=true;
  if(m.id==='cryo'&&S.tactics[m.id]===1)S.tacticNextCryoAt=S.t+14;
- S.tacticChoices=[];sfx('level',.8);
+ S.tacticChoices=[];sfx('level',.8);toast(tacticLanguage('MODULE ACTIVATED: ','МОДУЛЬ АКТИВИРОВАН: ')+tacticLanguage(m.en,m.name)+' · '+S.tactics[m.id],2.8);
  if(typeof bal!=='undefined'&&bal&&!trainingMode)bal.events.push({t:Math.round(S.t),what:'tactic_pick',id:m.id+':'+S.tactics[m.id]});
  if(S.pendingUp>0)showUpgrades();else{setMode('playing');last=performance.now();updateHUD();}
 }
