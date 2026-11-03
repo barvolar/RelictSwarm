@@ -31,7 +31,7 @@ function showAchievementJournal(){
  '<div class="challenge-summary"><span>★ ДОСТИЖЕНИЯ <b>'+unlocked+'/'+ACHIEVEMENTS.length+'</b></span>'+
  '<span>✥ ИСПЫТАНИЯ <b>'+complete+'/'+CHALLENGES.length+'</b></span></div>'+
  '<div class="challenge-unlocks"><b>НАГРАДНЫЕ ОБЛИКИ</b><small>НОВА: '+Math.min(8,unlocked)+'/8 достижений '+(save.skins.includes('nova')?'✓':'')+
- ' · СТРАЖ РОЯ: '+Math.min(4,complete)+'/4 испытаний '+(save.skins.includes('sentinel')?'✓':'')+'</small></div>'+
+ ' · СТРАЖ РОЯ: '+Math.min(4,complete)+'/4 испытаний '+(save.skins.includes('sentinel')?'✓':'')+' · ХРОНОС: '+Math.min(8,complete)+'/8 испытаний'+(save.skins.includes('chronos')?' ✓':'')+' · 4/8 испытаний дают +1/+2 бесплатных переброса за каждый будущий забег'+'</small></div>'+ 
  '<div class="label">★ ДОСТИЖЕНИЯ</div><div class="achievement-list">'+rows+'</div>'+
  '<div class="label" style="margin-top:16px">✥ ИСПЫТАНИЯ (ВЫБИРАЮТСЯ ПЕРЕД ЗАБЕГОМ)</div>'+
  '<div class="achievement-list">'+contracts+'</div>';
