@@ -2294,7 +2294,7 @@ function fireFusionSpecial(d,pos,target,base,rank){
   const r=Math.min(260,130+radius*18);S.gravityWells.push({x:target.x,y:target.y,r,force:175+wm(d,'force')*24,damage:damage*.15,life:3,clock:.04,col});fusionField(target.x,target.y,r*.7,damage*.28,2.6,'#ff9450',{fire:true});return true;
  }
  if(type==='frostmine'){
-  for(let k=0;k<Math.min(6,2+wm(d,'count'));k++){const a=S.t*1.7+k*TAU/Math.max(2,2+wm(d,'count'));fusionMine(S.player.x+Math.cos(a)*60,S.player.y+Math.sin(a)*60,damage,col,86+wm(d,'blast')*13,'ice',wm(d,'freeze'));}return true;
+  for(let k=0;k<Math.min(6,2+wm(d,'count'));k++){const a=S.t*1.7+k*TAU/Math.max(2,2+wm(d,'count'));fusionMine(target.x+Math.cos(a)*(8+(k%2)*10),target.y+Math.sin(a)*(8+(k%2)*10),damage*1.2,col,86+wm(d,'blast')*13,'ice',wm(d,'freeze'));}return true;
  }
  if(type==='plasmamelt'){
   const a=aimGeometry(pos,target),length=Math.min(540,340+wm(d,'range')*23),half=(33+wm(d,'angle')*8)*Math.PI/360;
