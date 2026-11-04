@@ -708,6 +708,22 @@ html.ios-device .orientation-picker{display:none!important}
   grid-template-columns:minmax(0,1fr) 60px repeat(2,30px);
  }
 }
+
+/* In-game privacy policy link is a permitted informational exception on CrazyGames. */
+.privacy-policy-row{
+ display:flex;gap:5px 14px;align-items:center;justify-content:space-between;
+ flex-wrap:wrap;margin-top:15px;padding:12px 0 2px;border-top:1px solid #345063;
+}
+.privacy-policy-link{
+ display:inline-flex;align-items:center;min-height:38px;padding:8px 12px;
+ border:1px solid #397d7c;border-radius:7px;background:#11343c;
+ color:#a8ffeb;font-weight:900;font-size:11px;letter-spacing:.65px;
+ text-decoration:none;
+}
+.privacy-policy-link:hover,.privacy-policy-link:focus-visible{
+ color:#fff;border-color:#7df6df;background:#23545b;
+}
+.privacy-policy-row span{font-size:10px;line-height:1.45;color:#91aeba}
 </style>
 
 </head>
