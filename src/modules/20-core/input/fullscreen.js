@@ -95,6 +95,7 @@ function bindOrientationPicker(){
 }
 async function setOrientationMode(next){
  if(!['auto','portrait','landscape'].includes(next))return false;
+ const previousMode=orientationMode;
  orientationMode=next;
  try{localStorage.setItem(orientationModeKey,next)}catch{}
  syncOrientationChoices();
@@ -121,6 +122,9 @@ async function setOrientationMode(next){
   return true;
  }catch(error){
   console.warn('[Relict Swarm] Screen orientation lock unavailable:',error);
+  orientationMode=previousMode;
+  try{localStorage.setItem(orientationModeKey,previousMode)}catch{}
+  syncOrientationChoices();
   fullscreenNotice('This browser cannot force '+next+'. Rotate the phone and enable Auto-rotate in its settings.');
   return false;
  }
