@@ -59,10 +59,10 @@ function skinSvg(id){
 function menu(){
  setMode('menu');
  const skin=equippedSkin();
- $('modalContent').innerHTML=`<div class="main-home"><div class="home-unit">${skinSvg(save.skin)}<div><span class="label">АКТИВНАЯ ОБОЛОЧКА</span><strong>${skin.name}</strong><small>✧ ${save.shards} кристаллов · лучший счёт ${save.best.toLocaleString('ru')}</small></div></div><div class="home-actions"><button id="mainPlay" class="btn primary home-btn">▶ ИГРАТЬ</button><button id="mainUpgrade" class="btn home-btn">⬡ ПРОКАЧКА</button><button id="mainSettings" class="btn home-btn">⚙ НАСТРОЙКИ</button><button id="mainFullscreen" type="button" class="btn ghost home-btn home-fullscreen">${fullscreenButtonText()}</button></div>${orientationPickerHTML()}</div>`;
+ $('modalContent').innerHTML=`<div class="main-home"><div class="home-unit">${skinSvg(save.skin)}<div><span class="label">АКТИВНАЯ ОБОЛОЧКА</span><strong>${skin.name}</strong><small>✧ ${save.shards} кристаллов · лучший счёт ${save.best.toLocaleString('ru')}</small></div></div><div class="home-actions"><button id="mainPlay" class="btn primary home-btn">▶ ИГРАТЬ</button><button id="mainUpgrade" class="btn home-btn">⬡ ПРОКАЧКА</button><button id="mainSettings" class="btn home-btn">⚙ НАСТРОЙКИ</button>${isAppleTouchDevice?'':`<button id="mainFullscreen" type="button" class="btn ghost home-btn home-fullscreen">${fullscreenButtonText()}</button>`}</div>${orientationPickerHTML()}</div>`;
  $('mainPlay').onclick=showPlayMenu;
  $('mainUpgrade').onclick=()=>showProgression('upgrades');
  $('mainSettings').onclick=showSettings;
- $('mainFullscreen').onclick=toggleFullscreen;
+ const fullscreenMenu=$('mainFullscreen');if(fullscreenMenu)fullscreenMenu.onclick=toggleFullscreen;
  bindOrientationPicker();
 }
