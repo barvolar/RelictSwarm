@@ -1,5 +1,13 @@
 // Fullscreen is opt-in and initiated only by a player gesture.
-// Mobile portrait and landscape are both supported; never lock orientation.
+// iOS browsers cannot use our Fullscreen and Orientation Lock API controls;
+// physical rotation remains fully supported via resize/orientationchange.
+const isAppleTouchDevice=(()=>{
+ if(typeof navigator==='undefined')return false;
+ const ua=navigator.userAgent||'',platform=navigator.platform||'';
+ return /iPhone|iPad|iPod/i.test(ua)||
+  (platform==='MacIntel'&&Number(navigator.maxTouchPoints||0)>1);
+})();
+if(isAppleTouchDevice)document.documentElement.classList?.add('ios-device');
 const fullscreenButtonIds=['fullscreenBtn','mainFullscreen','fullscreenSettings','fullscreenPause'];
 function fullscreenButtonText(){
  const en=typeof locale==='undefined'||locale==='en';
@@ -28,7 +36,7 @@ function fullscreenNotice(message){
 }
 async function toggleFullscreen(){
  // The CrazyGames portal supplies fullscreen; custom game fullscreen controls are prohibited.
- if(window.RELICT_PLATFORM==='crazygames')return false;
+ if(window.RELICT_PLATFORM==='crazygames'||isAppleTouchDevice)return false;
  const en=typeof locale==='undefined'||locale==='en';
  try{
   if(document.fullscreenElement){
@@ -75,6 +83,7 @@ try{
  if(['auto','portrait','landscape'].includes(previous))orientationMode=previous;
 }catch{}
 function orientationPickerHTML(){
+ if(isAppleTouchDevice)return '';
  const entries=[['auto','AUTO'],['portrait','PORTRAIT'],['landscape','LANDSCAPE']];
  return '<div class="orientation-picker" role="group" aria-label="Screen orientation"><div class="orientation-title">SCREEN ORIENTATION</div>'+
   '<div class="orientation-choices">'+entries.map(([id,label])=>'<button type="button" class="btn ghost orientation-choice'+(orientationMode===id?' selected':'')+'" data-orientation="'+id+'" aria-pressed="'+(orientationMode===id)+'">'+label+'</button>').join('')+'</div>'+
@@ -94,6 +103,7 @@ function bindOrientationPicker(){
  syncOrientationChoices();
 }
 async function setOrientationMode(next){
+ if(isAppleTouchDevice)return false;
  if(!['auto','portrait','landscape'].includes(next))return false;
  const previousMode=orientationMode;
  orientationMode=next;
