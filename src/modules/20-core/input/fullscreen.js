@@ -27,6 +27,8 @@ function fullscreenNotice(message){
  fullscreenNoticeTimer=setTimeout(()=>element.classList.remove('visible'),4200);
 }
 async function toggleFullscreen(){
+ // The CrazyGames portal supplies fullscreen; custom game fullscreen controls are prohibited.
+ if(window.RELICT_PLATFORM==='crazygames')return false;
  const en=typeof locale==='undefined'||locale==='en';
  try{
   if(document.fullscreenElement){
