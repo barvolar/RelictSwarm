@@ -2,7 +2,7 @@ function weaponBonusRows(id,key,drone){
  const entry=weaponBranches(id).find(x=>x[0]===key);
  const label=entry?.[1]||key;
  const before=wm(drone,key),after=before+1;
- const f=n=>Number(n.toFixed(1)).toLocaleString(locale==='en'?'en-US':'ru-RU');
+ const f=n=>Number(n.toFixed(1)).toLocaleString(typeof locale!=='undefined'&&locale==='en'?'en-US':'ru-RU');
  const delta=(fn,unit=' ед.')=>'+'+f(Math.max(0,fn(after)-fn(before)))+unit;
  const ratio=(fn)=>'+'+f(Math.max(0,100*(fn(after)/Math.max(.00001,fn(before))-1)))+'%';
  if(key==='power')return [{label:'Урон оружия',value:'+'+f(20/(1+.2*before))+'%'}];
