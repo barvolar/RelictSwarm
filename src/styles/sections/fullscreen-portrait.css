@@ -122,3 +122,19 @@
  #hud .mobile-weapon-slot{grid-template-columns:12px minmax(0,1fr);padding:2px}
  #hud .mobile-weapon-slot .weapon-name{font-size:8px}
 }
+
+/* Respect camera notches, rounded corners and Android/iOS safe areas. */
+@media(pointer:coarse){
+ #hud .hud-top{
+  padding-left:max(6px,env(safe-area-inset-left,0px));
+  padding-right:max(6px,env(safe-area-inset-right,0px));
+ }
+ #hud .hud-loadout{
+  padding-left:max(6px,env(safe-area-inset-left,0px));
+  padding-right:max(6px,env(safe-area-inset-right,0px));
+ }
+ #modal{
+  padding-left:max(10px,env(safe-area-inset-left,0px));
+  padding-right:max(10px,env(safe-area-inset-right,0px));
+ }
+}
