@@ -10,8 +10,8 @@ const overlays=read('src/modules/70-render/layers/overlays.js');
 const portraitCss=read('src/styles/sections/fullscreen-portrait.css');
 const template=read('src/index.template.html');
 
-function harness(){
- const events={},buttons={},notices=[];
+function harness(device={}){
+ const events={},buttons={},notices=[],htmlClasses=new Set();
  for(const id of ['fullscreenBtn','mainFullscreen','fullscreenSettings','fullscreenPause']){
   buttons[id]={textContent:'',title:'',setAttribute(key,value){this[key]=value},addEventListener(type,fn){this[type]=fn}};
  }
@@ -19,6 +19,7 @@ function harness(){
  const document={
   fullscreenElement:null,
   documentElement:{
+   classList:{add:(name)=>htmlClasses.add(name),contains:(name)=>htmlClasses.has(name)},
    requestFullscreen(){document.fullscreenElement=this;return Promise.resolve()}
   },
   exitFullscreen(){document.fullscreenElement=null;return Promise.resolve()},
@@ -27,7 +28,7 @@ function harness(){
  let resets=0,resizes=0;
  const window={visualViewport:{addEventListener(type,fn){events['visual:'+type]=fn}}};
  const context=vm.createContext({
-  document,window,locale:'en',console,
+  document,window,locale:'en',console,navigator:device,
   $:id=>buttons[id]||null,
   addEventListener(type,fn){events[type]=fn},
   resetFloatingJoy:()=>resets++,
@@ -37,7 +38,7 @@ function harness(){
   clearTimeout:()=>{}
  });
  vm.runInContext(fullscreen,context);
- return {document,window,buttons,notices,events,context,get resets(){return resets},get resizes(){return resizes}};
+ return {document,window,buttons,notices,events,htmlClasses,context,get resets(){return resets},get resizes(){return resizes}};
 }
 
 test('fullscreen is an explicit reversible player action and never locks orientation',async()=>{
@@ -139,4 +140,44 @@ test('unsupported orientation lock shows guidance rather than claiming successfu
  h.window.RELICT_PLATFORM='crazygames';
  assert.equal(await vm.runInContext("setOrientationMode('portrait')",h.context),false);
  assert.match(read('scripts/build.mjs'),/\.orientation-picker\{display:none!important\}/);
+});
+
+test('iPhone Safari and Chrome on iOS skip unsupported fullscreen and rotation locks',async()=>{
+ for(const ua of [
+  'Mozilla/5.0 (iPhone; CPU iPhone OS 26_0 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148 Safari/604.1',
+  'Mozilla/5.0 (iPhone; CPU iPhone OS 18_6 like Mac OS X) AppleWebKit/605.1.15 CriOS/140.0 Mobile/15E148 Safari/604.1'
+ ]){
+  const h=harness({userAgent:ua,platform:'iPhone',maxTouchPoints:5});
+  assert.equal(vm.runInContext('isAppleTouchDevice',h.context),true);
+  assert.equal(h.htmlClasses.has('ios-device'),true);
+  assert.equal(vm.runInContext('orientationPickerHTML()',h.context),'');
+  assert.equal(await vm.runInContext('toggleFullscreen()',h.context),false);
+  assert.equal(await vm.runInContext("setOrientationMode('landscape')",h.context),false);
+  assert.equal(h.document.fullscreenElement,null);
+  assert.equal(h.buttons.fullscreenStatus.textContent,'','iOS must not show a useless browser fullscreen error');
+  h.events.orientationchange();
+  assert.equal(h.resets,1,'physical device rotation still resets floating joystick');
+  assert.equal(h.resizes,1,'physical rotation still resizes game canvas');
+ }
+});
+
+test('touch-enabled iPadOS and Android retain their respective controls',async()=>{
+ const ipad=harness({userAgent:'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15',platform:'MacIntel',maxTouchPoints:5});
+ assert.equal(vm.runInContext('isAppleTouchDevice',ipad.context),true);
+ assert.equal(vm.runInContext('orientationPickerHTML()',ipad.context),'');
+ const android=harness({userAgent:'Mozilla/5.0 (Linux; Android 15; Pixel 8) AppleWebKit/537.36 Chrome/143.0',platform:'Linux armv8l',maxTouchPoints:5});
+ assert.equal(vm.runInContext('isAppleTouchDevice',android.context),false);
+ assert.ok(vm.runInContext('orientationPickerHTML()',android.context).includes('LANDSCAPE'));
+ assert.equal(await vm.runInContext('toggleFullscreen()',android.context),true);
+});
+
+test('iOS menus omit unsupported actions without empty rows and the HUD reflows',()=>{
+ const menu=read('src/modules/50-ui/pages/main-menu.js');
+ const settings=read('src/modules/50-ui/pages/settings.js');
+ const pause=read('src/modules/40-game/lifecycle/pause-and-notices.js');
+ assert.match(menu,/isAppleTouchDevice\?'':/);
+ assert.match(settings,/isAppleTouchDevice\?'':/);
+ assert.match(pause,/isAppleTouchDevice\?'':/);
+ assert.match(portraitCss,/html\.ios-device #fullscreenBtn/);
+ assert.match(portraitCss,/html\.ios-device #hud \.hud-top/);
 });
