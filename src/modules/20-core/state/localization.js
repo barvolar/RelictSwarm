@@ -2852,23 +2852,14 @@ const I18N_PAIRS=[
 const NATIVE_EN_TO_RU=[["WASD / arrows: move · SPACE: dash · ESC: pause","WASD / стрелки: движение · ПРОБЕЛ: рывок · ESC: пауза"],["Relict Swarm game arena","Игровая арена Relict Swarm"],["Current weapon loadout","Текущее вооружение"],["All five weapon slots","Все пять слотов оружия"],["Weapons and fusions","Оружие и синтез"],["FIFTEEN MINUTES","ПЯТНАДЦАТЬ МИНУТ"],["ZERO PROTOCOL","НУЛЕВОЙ ПРОТОКОЛ"],["Toggle audio","Выключить звук"],["PROTOCOL III","ПРОТОКОЛ III"],["Toggle audio","Выключить звук"],["PROTOCOL II","ПРОТОКОЛ II"],["PROTOCOL IV","ПРОТОКОЛ IV"],["Fusion Lab","Лаборатория синтеза"],["PROTOCOL I","ПРОТОКОЛ I"],["PROTOCOL V","ПРОТОКОЛ V"],["DESTROYED","УНИЧТОЖЕНО"],["FUSION","СИНТЕЗ"],["REAPER","ЖНЕЦ"],["Pause","Пауза"],["HULL","КОРПУС"],["DATA","ДАННЫЕ"],["DASH","РЫВОК"],["LV.","УР."]];
 I18N_PAIRS.push(['ЯЗЫК','LANGUAGE']);
 I18N_PAIRS.sort((a,b)=>b[0].length-a[0].length);
+// This public release is English-only on every platform and device.
+// Ignore old RU preferences, operating-system language and SDK locale.
 const localeKey='relictswarm_ui_locale_v1';
-let locale='en';
-try{const stored=localStorage.getItem(localeKey);
- const systemLang=(typeof navigator!=='undefined'?navigator.language:'')||'';
- locale=stored==='en'||stored==='ru'?stored:
-  (typeof window!=='undefined'&&window.RelicPlatform?.provider==='crazygames')?'en':
-  /^ru(?:-|$)/i.test(systemLang)?'ru':'en';
-}catch{locale='en';}
+const locale='en';
+try{localStorage.setItem(localeKey,'en')}catch{}
 const i18nTextCache=new WeakMap(),i18nAttrsCache=new WeakMap();
 function localizedText(raw){
- if(typeof raw!=='string')return raw;
- if(locale==='ru'){
-  let result=raw;
-  for(const [en,ru] of NATIVE_EN_TO_RU)if(result.includes(en))result=result.split(en).join(ru);
-  return result;
- }
- if(!/[А-Яа-яЁё]/.test(raw))return raw;
+ if(typeof raw!=='string'||!/[А-Яа-яЁё]/.test(raw))return raw;
  let result=raw;
  for(const [ru,en] of I18N_PAIRS)if(result.includes(ru))result=result.split(ru).join(en);
  return result;
@@ -2901,26 +2892,18 @@ function localizeTree(root){
  const walker=document.createTreeWalker(root,NodeFilter.SHOW_ELEMENT|NodeFilter.SHOW_TEXT);
  while(walker.nextNode()){const n=walker.currentNode;if(n.nodeType===3)localizeTextNode(n);else localizeAttrs(n);}
 }
-if(typeof window!=='undefined')window.RelicOnPlatformLocale=function(value){
- let stored=null;try{stored=localStorage.getItem(localeKey);}catch{}
- if(stored==='ru'||stored==='en')return;
- const next=/^ru(?:-|$)/i.test(String(value||''))?'ru':'en';
- if(next===locale)return;
- locale=next;document.documentElement.lang=locale;localizeTree(document.body);
- if(typeof mode!=='undefined'&&mode==='menu')menu();
+if(typeof window!=='undefined')window.RelicOnPlatformLocale=()=>{
+ // Do not let the platform or the operating system re-enable Russian.
+ if(typeof document!=='undefined')document.documentElement.lang='en';
 };
-function changeLocale(next){
- if(next!=='en'&&next!=='ru')return;
- locale=next;
- try{localStorage.setItem(localeKey,locale);}catch{}
- document.documentElement.lang=locale;
- document.title=locale==='en'?'RELICT SWARM | HTML5 Roguelite':'РЕЛИКТОВЫЙ РОЙ | HTML5 Roguelite';
- localizeTree(document.body);
- if(mode==='menu')showSettings();
+function changeLocale(){
+ // Legacy callers cannot change the language of the release.
+ if(typeof document!=='undefined')document.documentElement.lang='en';
+ return false;
 }
 if(typeof MutationObserver!=='undefined'&&typeof document!=='undefined'&&document.body){
- document.documentElement.lang=locale;
- document.title=locale==='en'?'RELICT SWARM | HTML5 Roguelite':'РЕЛИКТОВЫЙ РОЙ | HTML5 Roguelite';
+ document.documentElement.lang='en';
+ document.title='RELICT SWARM | HTML5 Roguelite';
  localizeTree(document.body);
  const observer=new MutationObserver(records=>{
   for(const record of records){

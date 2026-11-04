@@ -53,7 +53,7 @@ test('fullscreen is an explicit reversible player action and never locks orienta
  h.events.orientationchange();
  assert.equal(h.resets,1);
  assert.ok(h.resizes>=3);
- assert.doesNotMatch(fullscreen,/orientation\.lock\s*\(/);
+ assert.match(fullscreen,/screen\.orientation\.lock\(next\)/);
 });
 
 test('unsupported fullscreen gives a nonblocking notice, game remains accessible',async()=>{
@@ -102,4 +102,41 @@ test('CrazyGames uses platform fullscreen and hides all custom game fullscreen c
  h.window.RELICT_PLATFORM='crazygames';
  assert.equal(await vm.runInContext('toggleFullscreen()',h.context),false);
  assert.equal(h.document.fullscreenElement,null);
+});
+
+
+test('mobile orientation picker provides Auto, Portrait and Landscape',()=>{
+ const h=harness();
+ const picker=vm.runInContext('orientationPickerHTML()',h.context);
+ for(const label of ['AUTO','PORTRAIT','LANDSCAPE'])assert.ok(picker.includes(label));
+ assert.match(read('src/modules/50-ui/pages/main-menu.js'),/orientationPickerHTML\(\)/);
+ assert.match(read('src/modules/50-ui/pages/settings.js'),/orientationPickerHTML\(\)/);
+ assert.match(read('src/modules/40-game/lifecycle/pause-and-notices.js'),/orientationPickerHTML\(\)/);
+ assert.match(read('src/styles/sections/fullscreen-portrait.css'),/orientation-choices/);
+});
+
+test('mobile browser switches screen orientation through a user action when supported',async()=>{
+ const h=harness(),calls=[];
+ h.context.screen={orientation:{
+  lock(next){calls.push(next);return Promise.resolve()},
+  unlock(){calls.push('unlock')}
+ }};
+ assert.equal(await vm.runInContext("setOrientationMode('landscape')",h.context),true);
+ assert.equal(h.document.fullscreenElement,h.document.documentElement);
+ assert.equal(calls[0],'landscape');
+ assert.equal(await vm.runInContext("setOrientationMode('portrait')",h.context),true);
+ assert.equal(calls[1],'portrait');
+ assert.equal(await vm.runInContext("setOrientationMode('auto')",h.context),true);
+ assert.equal(calls[2],'unlock');
+ assert.equal(h.resets,3);
+});
+
+test('unsupported orientation lock shows guidance rather than claiming successful rotation',async()=>{
+ const h=harness();
+ h.context.screen={orientation:{lock(){return Promise.reject(Error('Denied'))}}};
+ assert.equal(await vm.runInContext("setOrientationMode('landscape')",h.context),false);
+ assert.match(h.buttons.fullscreenStatus.textContent,/cannot force landscape/);
+ h.window.RELICT_PLATFORM='crazygames';
+ assert.equal(await vm.runInContext("setOrientationMode('portrait')",h.context),false);
+ assert.match(read('scripts/build.mjs'),/\.orientation-picker\{display:none!important\}/);
 });

@@ -59,7 +59,7 @@ try{
  await send('Runtime.enable');await send('Page.enable');
  await send('Page.navigate',{url:'http://127.0.0.1:43173/?test=1'});
  await waitFor("!!window.__test && !!document.getElementById('mainPlay')",'game main menu');
- await evaluate("localStorage.setItem('relictswarm_ui_locale_v1','en')");
+ await evaluate("localStorage.setItem('relictswarm_ui_locale_v1','ru')"); // Regression: old mobile preferences must not re-enable Russian.
  await evaluate("localStorage.setItem('relictSwarm_v01_save',JSON.stringify({shards:5000,skins:"+JSON.stringify(skinIds)+",skin:'relict',meta:{},threatUnlocked:1}))");
  await send('Page.reload',{ignoreCache:true});
  await waitFor("!!window.__test && !!document.getElementById('mainPlay')",'saved menu');
@@ -77,14 +77,8 @@ try{
  await evaluate("document.getElementById('backHome').click()");
  await evaluate("document.getElementById('mainSettings').click()");
  await expectEnglish('settings');
- assert.equal(await evaluate("!!document.getElementById('langBtn')"),true,'bilingual build must expose language switch');
- await evaluate("document.getElementById('langBtn').click()");
- await waitFor("document.documentElement.lang==='ru'","Russian locale");
- await waitFor("document.querySelector('#modalContent .panel-title')?.textContent.includes('Настройки')","Russian settings");
- assert.ok((await evaluate("document.body.innerText")).includes('НАСТРОЙКИ ЗВУКА'),'Russian audio settings missing');
- await evaluate("document.getElementById('langBtn').click()");
- await waitFor("document.documentElement.lang==='en'","English locale restored");
- await expectEnglish('settings after RU/EN toggle');
+ assert.equal(await evaluate("!!document.getElementById('langBtn')"),false,'English-only build must not offer RU switch');
+ await expectEnglish('settings with old RU preference');
  await evaluate("document.getElementById('backHome').click()");
  await evaluate("document.getElementById('mainUpgrade').click()");
  await expectEnglish('upgrade hangar');
