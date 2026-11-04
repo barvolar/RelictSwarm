@@ -44,14 +44,14 @@ fs.writeFileSync(path.join(dist,'index.html'),html);
 // Explicit platform edition: never point GitHub Pages at /sdk.js.
 const yandexDir=path.join(dist,'yandex');fs.mkdirSync(yandexDir,{recursive:true});
 fs.writeFileSync(path.join(yandexDir,'index.html'),yandexHtml);
-for(const p of ['telemetry-config.js','telemetry-client.js'])fs.copyFileSync(path.join(root,p),path.join(yandexDir,p));
+for(const p of ['telemetry-config.js','telemetry-client.js','privacy.html'])fs.copyFileSync(path.join(root,p),path.join(yandexDir,p));
 // CrazyGames standalone package (no Yandex SDK dependency).
 const crazyDir=path.join(dist,'crazygames');fs.mkdirSync(crazyDir,{recursive:true});
 fs.writeFileSync(path.join(crazyDir,'index.html'),crazygamesHtml);
-for(const p of ['telemetry-config.js','telemetry-client.js'])fs.copyFileSync(path.join(root,p),path.join(crazyDir,p));
+for(const p of ['telemetry-config.js','telemetry-client.js','privacy.html'])fs.copyFileSync(path.join(root,p),path.join(crazyDir,p));
 const check=path.join(dist,'game-check.js'); fs.writeFileSync(check,js);
 try {execFileSync(process.execPath,['--check',check],{stdio:'pipe'});} finally {fs.rmSync(check,{force:true});}
-for (const p of ['telemetry-config.js','telemetry-client.js','.nojekyll']) fs.copyFileSync(path.join(root,p),path.join(dist,p));
+for (const p of ['telemetry-config.js','telemetry-client.js','privacy.html','.nojekyll']) fs.copyFileSync(path.join(root,p),path.join(dist,p));
 const sha=crypto.createHash('sha256').update(html).digest('hex');
 if(process.argv.includes('--verify-migration')&&sha!==read('src/baseline.sha256').trim()) throw Error('Original HTML parity check failed');
 console.log('Built dist/index.html ('+Buffer.byteLength(html)+' bytes), sha256: '+sha);
