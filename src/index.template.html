@@ -19,6 +19,7 @@
   <div class="hud-brand"><div class="sigil">⬡</div><span>RELICT<br><strong>SWARM</strong></span></div>
   <div class="hud-bars"><div class="barline"><span>HULL</span><div class="bartrack hp"><div id="hpfill"></div></div><b id="hptext">120/120</b></div><div class="barline"><span>DATA</span><div class="bartrack xp"><div id="xpfill"></div></div><b id="leveltext">LV. 1</b></div></div>
   <div class="hud-meta"><div class="timer" id="timer">15:00</div><div class="hud-sub"><span id="kills">0 DESTROYED</span><span id="shards">✧ 0</span></div></div>
+  <button id="fullscreenBtn" class="icon-btn" type="button" title="Fullscreen" aria-label="Fullscreen" aria-pressed="false">⛶</button>
   <button id="audioHudBtn" class="icon-btn" title="Toggle audio" aria-label="Toggle audio">♫</button>
   <button id="pauseBtn" class="icon-btn" title="Pause" aria-label="Pause">Ⅱ</button>
   </div>
@@ -45,6 +46,7 @@
  <div class="footer-note" id="menuFoot">© 2026 · Relict Swarm · HTML5 Roguelite</div>
 </div>
 <div id="rotateHint" aria-hidden="true"></div>
+<div id="fullscreenStatus" role="status" aria-live="polite"></div>
 <script src="./telemetry-config.js"></script>
 <script src="./telemetry-client.js"></script>
 <script>%%RELICT_PLATFORM_BRIDGE%%</script>
