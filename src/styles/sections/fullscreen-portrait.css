@@ -1,0 +1,124 @@
+/* Fullscreen controls: visible during play and through menu/settings actions. */
+#fullscreenStatus{
+ position:fixed;z-index:22;left:50%;bottom:calc(12px + env(safe-area-inset-bottom,0px));
+ transform:translate(-50%,8px);max-width:min(92vw,620px);
+ border:1px solid #5f9d9c;border-radius:9px;
+ background:#09232bea;color:#e8fff8;padding:10px 14px;
+ font:700 12px/1.45 system-ui,sans-serif;text-align:center;
+ opacity:0;visibility:hidden;pointer-events:none;
+ transition:opacity .15s,transform .15s,visibility .15s;
+}
+#fullscreenStatus.visible{opacity:1;visibility:visible;transform:translate(-50%,0)}
+.home-actions .home-fullscreen{min-height:42px;font-size:12px;letter-spacing:1px}
+#hud #fullscreenBtn{flex:none}
+@media(max-width:700px),(pointer:coarse) and (max-height:550px){
+ #hud .hud-top{
+  grid-template-columns:minmax(0,1fr) minmax(73px,auto) 34px 34px 34px;
+ }
+}
+@media(max-width:355px){
+ #hud .hud-top{
+  grid-template-columns:minmax(0,1fr) 67px 30px 30px 30px;
+ }
+ #hud #fullscreenBtn,#hud #audioHudBtn,#hud #pauseBtn{width:30px;height:30px;font-size:16px}
+}
+/* Portrait phones: all 5 weapons and fusion remain visible above the arena,
+   while the rest of the screen is reserved for touch movement and combat. */
+@media(orientation:portrait) and (max-width:700px){
+ #hud .hud-dock{
+  padding-bottom:2px;
+ }
+ #hud .hud-top{
+  grid-template-columns:minmax(0,1fr) minmax(65px,76px) repeat(3,32px);
+  min-height:44px;gap:4px;padding:4px 6px 2px;
+ }
+ #hud .hud-bars{gap:4px}
+ #hud .barline{gap:3px}
+ #hud .barline b{flex-basis:46px;width:46px;font-size:9px}
+ #hud .hud-meta{min-width:0}
+ #hud .timer{font-size:clamp(17px,5vw,22px)}
+ #hud .hud-sub{font-size:8px;gap:3px}
+ #hud #fullscreenBtn,#hud #audioHudBtn,#hud #pauseBtn{
+  width:32px;height:32px;font-size:17px;
+ }
+ #hud .hud-loadout{
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  grid-template-rows:repeat(2,31px);
+  gap:3px;min-height:0;height:auto;
+  padding:2px 6px 5px;
+ }
+ #hud .mobile-weapon-slot,#hud .hud-loadout #forgeBtn{
+  height:31px!important;min-height:0!important;
+  padding:2px 4px;
+ }
+ #hud .mobile-weapon-slot .weapon-name{font-size:9px;line-height:11px}
+ #hud .mobile-weapon-slot .weapon-level{font-size:8px;line-height:10px}
+ #hud .boss-wrap{
+  top:calc(124px + env(safe-area-inset-top,0px));
+  width:92vw;max-width:92vw;
+ }
+ #hud .wavebanner{
+  top:calc(161px + env(safe-area-inset-top,0px));
+  max-width:92vw;
+ }
+ #hud .toast{
+  top:calc(196px + env(safe-area-inset-top,0px));
+  max-width:92vw;
+ }
+ #hud .active-buffs{
+  top:calc(228px + env(safe-area-inset-top,0px));
+  right:7px;max-width:84vw;
+ }
+ #touchControls .joystick{
+  width:clamp(92px,26vw,112px);height:clamp(92px,26vw,112px);
+ }
+ #touchControls .dash{
+  width:clamp(72px,22vw,86px);height:clamp(72px,22vw,86px);
+  right:calc(12px + env(safe-area-inset-right,0px));
+  bottom:calc(22px + env(safe-area-inset-bottom,0px));
+ }
+ #modal{
+  justify-content:flex-start;
+  padding:calc(10px + env(safe-area-inset-top,0px)) 10px calc(10px + env(safe-area-inset-bottom,0px));
+  gap:9px;
+ }
+ #modal .menu-head{flex:none}
+ #modal .menu-logo{font-size:clamp(29px,8.3vw,45px)}
+ #modal .menu-logo strong{letter-spacing:6px}
+ #modal .subtitle{font-size:9px;letter-spacing:.6px}
+ #modal .modal-panel{
+  min-height:0;max-height:calc(100dvh - 144px);
+  padding:15px 14px!important;
+ }
+ #modal:has(.upgrade-v2-screen) .modal-panel{
+  max-height:calc(100dvh - 12px);
+ }
+ .home-unit{min-height:0}
+ .home-actions{gap:7px}
+ .home-btn{min-height:45px;font-size:13px}
+ .home-actions .home-fullscreen{min-height:40px;font-size:11px}
+}
+/* Landscape phones with browser chrome or an embedded iframe still retain
+   five HUD buttons and touch controls without forcing screen orientation. */
+@media(orientation:landscape) and (pointer:coarse) and (max-height:550px){
+ #hud .hud-top{
+  grid-template-columns:minmax(0,1fr) minmax(76px,auto) repeat(3,34px);
+ }
+ #touchControls .dash{
+  bottom:calc(15px + env(safe-area-inset-bottom,0px));
+  right:calc(15px + env(safe-area-inset-right,0px));
+ }
+ #modal .modal-panel{min-height:0}
+}
+@media(orientation:portrait) and (max-width:355px){
+ #hud .hud-top{
+  grid-template-columns:minmax(0,1fr) 60px repeat(3,30px);
+  gap:3px;padding-left:4px;padding-right:4px;
+ }
+ #hud .barline b{flex-basis:41px;width:41px}
+ #hud .timer{font-size:17px}
+ #hud .hud-sub{font-size:7px}
+ #hud #fullscreenBtn,#hud #audioHudBtn,#hud #pauseBtn{width:30px;height:30px}
+ #hud .mobile-weapon-slot{grid-template-columns:12px minmax(0,1fr);padding:2px}
+ #hud .mobile-weapon-slot .weapon-name{font-size:8px}
+}
