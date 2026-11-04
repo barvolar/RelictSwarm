@@ -165,3 +165,32 @@
  .orientation-choice.btn{min-height:31px;padding:5px 3px}
  .orientation-help{font-size:9px;line-height:1.25}
 }
+
+/* iPhone/iPad: installed web apps already occupy the available display.
+   Fullscreen/Screen Orientation Lock buttons do not work on iOS WebKit.
+   Preserve the physical rotation and use the reclaimed HUD width. */
+html.ios-device #fullscreenBtn,
+html.ios-device #mainFullscreen,
+html.ios-device #fullscreenSettings,
+html.ios-device #fullscreenPause,
+html.ios-device .orientation-picker{display:none!important}
+@media(max-width:700px),(pointer:coarse) and (max-height:550px){
+ html.ios-device #hud .hud-top{
+  grid-template-columns:minmax(0,1fr) minmax(73px,auto) 34px 34px;
+ }
+}
+@media(orientation:portrait) and (max-width:700px){
+ html.ios-device #hud .hud-top{
+  grid-template-columns:minmax(0,1fr) minmax(65px,76px) repeat(2,32px);
+ }
+}
+@media(orientation:landscape) and (pointer:coarse) and (max-height:550px){
+ html.ios-device #hud .hud-top{
+  grid-template-columns:minmax(0,1fr) minmax(76px,auto) repeat(2,34px);
+ }
+}
+@media(max-width:355px){
+ html.ios-device #hud .hud-top{
+  grid-template-columns:minmax(0,1fr) 60px repeat(2,30px);
+ }
+}
