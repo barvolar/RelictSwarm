@@ -679,6 +679,51 @@ button.forge-card:hover{filter:brightness(1.25)}.forge-card.is-done{border-color
  .orientation-choice.btn{min-height:31px;padding:5px 3px}
  .orientation-help{font-size:9px;line-height:1.25}
 }
+
+/* iPhone/iPad: installed web apps already occupy the available display.
+   Fullscreen/Screen Orientation Lock buttons do not work on iOS WebKit.
+   Preserve the physical rotation and use the reclaimed HUD width. */
+html.ios-device #fullscreenBtn,
+html.ios-device #mainFullscreen,
+html.ios-device #fullscreenSettings,
+html.ios-device #fullscreenPause,
+html.ios-device .orientation-picker{display:none!important}
+@media(max-width:700px),(pointer:coarse) and (max-height:550px){
+ html.ios-device #hud .hud-top{
+  grid-template-columns:minmax(0,1fr) minmax(73px,auto) 34px 34px;
+ }
+}
+@media(orientation:portrait) and (max-width:700px){
+ html.ios-device #hud .hud-top{
+  grid-template-columns:minmax(0,1fr) minmax(65px,76px) repeat(2,32px);
+ }
+}
+@media(orientation:landscape) and (pointer:coarse) and (max-height:550px){
+ html.ios-device #hud .hud-top{
+  grid-template-columns:minmax(0,1fr) minmax(76px,auto) repeat(2,34px);
+ }
+}
+@media(max-width:355px){
+ html.ios-device #hud .hud-top{
+  grid-template-columns:minmax(0,1fr) 60px repeat(2,30px);
+ }
+}
+
+/* In-game privacy policy link is a permitted informational exception on CrazyGames. */
+.privacy-policy-row{
+ display:flex;gap:5px 14px;align-items:center;justify-content:space-between;
+ flex-wrap:wrap;margin-top:15px;padding:12px 0 2px;border-top:1px solid #345063;
+}
+.privacy-policy-link{
+ display:inline-flex;align-items:center;min-height:38px;padding:8px 12px;
+ border:1px solid #397d7c;border-radius:7px;background:#11343c;
+ color:#a8ffeb;font-weight:900;font-size:11px;letter-spacing:.65px;
+ text-decoration:none;
+}
+.privacy-policy-link:hover,.privacy-policy-link:focus-visible{
+ color:#fff;border-color:#7df6df;background:#23545b;
+}
+.privacy-policy-row span{font-size:10px;line-height:1.45;color:#91aeba}
 </style>
 
 </head>
@@ -4562,7 +4607,15 @@ arenaEl.addEventListener('pointercancel',joyStop);
 arenaEl.addEventListener('lostpointercapture',joyStop);
 $('dashBtn').addEventListener('pointerdown',e=>{e.preventDefault();if(mode==='playing')dash()});$('pauseBtn').addEventListener('click',pause);$('audioHudBtn').addEventListener('click',soundToggle);$('forgeBtn').addEventListener('click',()=>{if(mode==='playing'){if(trainingMode)renderTrainingPanel(true);else openForge()}});
 // Fullscreen is opt-in and initiated only by a player gesture.
-// Mobile portrait and landscape are both supported; never lock orientation.
+// iOS browsers cannot use our Fullscreen and Orientation Lock API controls;
+// physical rotation remains fully supported via resize/orientationchange.
+const isAppleTouchDevice=(()=>{
+ if(typeof navigator==='undefined')return false;
+ const ua=navigator.userAgent||'',platform=navigator.platform||'';
+ return /iPhone|iPad|iPod/i.test(ua)||
+  (platform==='MacIntel'&&Number(navigator.maxTouchPoints||0)>1);
+})();
+if(isAppleTouchDevice)document.documentElement.classList?.add('ios-device');
 const fullscreenButtonIds=['fullscreenBtn','mainFullscreen','fullscreenSettings','fullscreenPause'];
 function fullscreenButtonText(){
  const en=typeof locale==='undefined'||locale==='en';
@@ -4591,7 +4644,7 @@ function fullscreenNotice(message){
 }
 async function toggleFullscreen(){
  // The CrazyGames portal supplies fullscreen; custom game fullscreen controls are prohibited.
- if(window.RELICT_PLATFORM==='crazygames')return false;
+ if(window.RELICT_PLATFORM==='crazygames'||isAppleTouchDevice)return false;
  const en=typeof locale==='undefined'||locale==='en';
  try{
   if(document.fullscreenElement){
@@ -4638,6 +4691,7 @@ try{
  if(['auto','portrait','landscape'].includes(previous))orientationMode=previous;
 }catch{}
 function orientationPickerHTML(){
+ if(isAppleTouchDevice)return '';
  const entries=[['auto','AUTO'],['portrait','PORTRAIT'],['landscape','LANDSCAPE']];
  return '<div class="orientation-picker" role="group" aria-label="Screen orientation"><div class="orientation-title">SCREEN ORIENTATION</div>'+
   '<div class="orientation-choices">'+entries.map(([id,label])=>'<button type="button" class="btn ghost orientation-choice'+(orientationMode===id?' selected':'')+'" data-orientation="'+id+'" aria-pressed="'+(orientationMode===id)+'">'+label+'</button>').join('')+'</div>'+
@@ -4657,6 +4711,7 @@ function bindOrientationPicker(){
  syncOrientationChoices();
 }
 async function setOrientationMode(next){
+ if(isAppleTouchDevice)return false;
  if(!['auto','portrait','landscape'].includes(next))return false;
  const previousMode=orientationMode;
  orientationMode=next;
@@ -5068,11 +5123,11 @@ function skinSvg(id){
 function menu(){
  setMode('menu');
  const skin=equippedSkin();
- $('modalContent').innerHTML=`<div class="main-home"><div class="home-unit">${skinSvg(save.skin)}<div><span class="label">АКТИВНАЯ ОБОЛОЧКА</span><strong>${skin.name}</strong><small>✧ ${save.shards} кристаллов · лучший счёт ${save.best.toLocaleString('ru')}</small></div></div><div class="home-actions"><button id="mainPlay" class="btn primary home-btn">▶ ИГРАТЬ</button><button id="mainUpgrade" class="btn home-btn">⬡ ПРОКАЧКА</button><button id="mainSettings" class="btn home-btn">⚙ НАСТРОЙКИ</button><button id="mainFullscreen" type="button" class="btn ghost home-btn home-fullscreen">${fullscreenButtonText()}</button></div>${orientationPickerHTML()}</div>`;
+ $('modalContent').innerHTML=`<div class="main-home"><div class="home-unit">${skinSvg(save.skin)}<div><span class="label">АКТИВНАЯ ОБОЛОЧКА</span><strong>${skin.name}</strong><small>✧ ${save.shards} кристаллов · лучший счёт ${save.best.toLocaleString('ru')}</small></div></div><div class="home-actions"><button id="mainPlay" class="btn primary home-btn">▶ ИГРАТЬ</button><button id="mainUpgrade" class="btn home-btn">⬡ ПРОКАЧКА</button><button id="mainSettings" class="btn home-btn">⚙ НАСТРОЙКИ</button>${isAppleTouchDevice?'':`<button id="mainFullscreen" type="button" class="btn ghost home-btn home-fullscreen">${fullscreenButtonText()}</button>`}</div>${orientationPickerHTML()}</div>`;
  $('mainPlay').onclick=showPlayMenu;
  $('mainUpgrade').onclick=()=>showProgression('upgrades');
  $('mainSettings').onclick=showSettings;
- $('mainFullscreen').onclick=toggleFullscreen;
+ const fullscreenMenu=$('mainFullscreen');if(fullscreenMenu)fullscreenMenu.onclick=toggleFullscreen;
  bindOrientationPicker();
 }
 function showPlayMenu(){
@@ -5110,9 +5165,9 @@ function renderSkins(){
 }
 function showSettings(){
  setMode('menu');
- $('modalContent').innerHTML=`<div class="section-top"><div><div class="label">[ СИСТЕМА ]</div><div class="panel-title">Настройки</div></div><button id="backHome" class="btn ghost small-back">◂ НАЗАД</button></div><div class="settings-action"><button id="soundBtn" class="btn">${mute?'♪ ВКЛЮЧИТЬ ЗВУК':'♫ ВЫКЛЮЧИТЬ ЗВУК'}</button><button id="howBtn" class="btn ghost">? КАК ИГРАТЬ</button></div><div class="settings-action"><button id="fullscreenSettings" type="button" class="btn ghost">${fullscreenButtonText()}</button></div>${orientationPickerHTML()}${audioMixerHTML()}${renderQualityControls()}${window.SwarmTelemetry?.settingsHTML?.()||''}`;
+ $('modalContent').innerHTML=`<div class="section-top"><div><div class="label">[ СИСТЕМА ]</div><div class="panel-title">Настройки</div></div><button id="backHome" class="btn ghost small-back">◂ НАЗАД</button></div><div class="settings-action"><button id="soundBtn" class="btn">${mute?'♪ ВКЛЮЧИТЬ ЗВУК':'♫ ВЫКЛЮЧИТЬ ЗВУК'}</button><button id="howBtn" class="btn ghost">? КАК ИГРАТЬ</button></div>${isAppleTouchDevice?'':`<div class="settings-action"><button id="fullscreenSettings" type="button" class="btn ghost">${fullscreenButtonText()}</button></div>`}${orientationPickerHTML()}${audioMixerHTML()}${renderQualityControls()}${window.SwarmTelemetry?.settingsHTML?.()||''}<div class="privacy-policy-row"><a class="privacy-policy-link" id="privacyPolicyLink" href="./privacy.html" target="_blank" rel="noopener noreferrer" title="Read the Relict Swarm Privacy Policy">↗ PRIVACY POLICY</a><span>Game saves, optional analytics and data choices</span></div>`;
  $('backHome').onclick=menu;$('soundBtn').onclick=soundToggle;
- $('howBtn').onclick=showHow;$('fullscreenSettings').onclick=toggleFullscreen;bindOrientationPicker();bindAudioMixer();
+ $('howBtn').onclick=showHow;const fullscreenSettings=$('fullscreenSettings');if(fullscreenSettings)fullscreenSettings.onclick=toggleFullscreen;bindOrientationPicker();bindAudioMixer();
 }
 let activeMetaTab='hull';
 function renderShop(){
@@ -5372,7 +5427,7 @@ function qaWirePause(){
 function qaSyncFusions(){
  S.hybrids=S.drones.filter(d=>d.id.startsWith('fusion_')).map(d=>({id:d.id.slice(7)}));
 }
-function pause(){if(mode!=='playing')return;if(trainingMode){setMode('paused');$('modalContent').innerHTML=`<div class="label">[ ПОЛИГОН ]</div><div class="panel-title">Испытание приостановлено</div><p class="panel-desc">Изменения оружия здесь не сохраняются в обычный забег.</p><div class="button-row"><button id="fullscreenPause" type="button" class="btn ghost">${fullscreenButtonText()}</button></div>${orientationPickerHTML()}<div class="button-row"><button class="btn primary" id="resumeBtn">▶ ПРОДОЛЖИТЬ</button><button class="btn ghost" id="quitBtn">◂ BACK TO MAIN MENU</button></div>`;$('resumeBtn').onclick=resume;$('fullscreenPause').onclick=toggleFullscreen;bindOrientationPicker();$('quitBtn').onclick=leaveTraining;return;}setMode('paused');$('modalContent').innerHTML=`<div class="label">[ ПАУЗА ]</div><div class="panel-title" style="margin-top:9px">Система ожидает</div><p class="panel-desc">На поле уже ${S.kills} обломков. Машины терпеливо дождутся твоего возвращения.</p>${weaponSummary()}${renderQualityControls()}${qaDebugEnabled()?qaPauseHTML():''}<div class="button-row"><button id="fullscreenPause" type="button" class="btn ghost">${fullscreenButtonText()}</button></div>${orientationPickerHTML()}<div class="button-row"><button id="resumeBtn" class="btn primary">▶ ПРОДОЛЖИТЬ</button><button id="quitBtn" class="btn ghost">ЗАВЕРШИТЬ ЗАБЕГ</button></div>`;$('resumeBtn').onclick=resume;$('fullscreenPause').onclick=toggleFullscreen;bindOrientationPicker();$('quitBtn').onclick=()=>finish(false,true);if(qaDebugEnabled())qaWirePause()}
+function pause(){if(mode!=='playing')return;if(trainingMode){setMode('paused');$('modalContent').innerHTML=`<div class="label">[ ПОЛИГОН ]</div><div class="panel-title">Испытание приостановлено</div><p class="panel-desc">Изменения оружия здесь не сохраняются в обычный забег.</p>${isAppleTouchDevice?'':`<div class="button-row"><button id="fullscreenPause" type="button" class="btn ghost">${fullscreenButtonText()}</button></div>`}${orientationPickerHTML()}<div class="button-row"><button class="btn primary" id="resumeBtn">▶ ПРОДОЛЖИТЬ</button><button class="btn ghost" id="quitBtn">◂ BACK TO MAIN MENU</button></div>`;$('resumeBtn').onclick=resume;const fullscreenPause=$('fullscreenPause');if(fullscreenPause)fullscreenPause.onclick=toggleFullscreen;bindOrientationPicker();$('quitBtn').onclick=leaveTraining;return;}setMode('paused');$('modalContent').innerHTML=`<div class="label">[ ПАУЗА ]</div><div class="panel-title" style="margin-top:9px">Система ожидает</div><p class="panel-desc">На поле уже ${S.kills} обломков. Машины терпеливо дождутся твоего возвращения.</p>${weaponSummary()}${renderQualityControls()}${qaDebugEnabled()?qaPauseHTML():''}${isAppleTouchDevice?'':`<div class="button-row"><button id="fullscreenPause" type="button" class="btn ghost">${fullscreenButtonText()}</button></div>`}${orientationPickerHTML()}<div class="button-row"><button id="resumeBtn" class="btn primary">▶ ПРОДОЛЖИТЬ</button><button id="quitBtn" class="btn ghost">ЗАВЕРШИТЬ ЗАБЕГ</button></div>`;$('resumeBtn').onclick=resume;const fullscreenPause=$('fullscreenPause');if(fullscreenPause)fullscreenPause.onclick=toggleFullscreen;bindOrientationPicker();$('quitBtn').onclick=()=>finish(false,true);if(qaDebugEnabled())qaWirePause()}
 function resume(){if(mode!=='paused')return;setMode('playing');last=performance.now()}
 function toast(v,time=2.8){$('toast').textContent=v;$('toast').classList.remove('hidden');showToastUntil=(S?.t||0)+time}
 function banner(v,time=4.5){$('wavebanner').textContent=v;$('wavebanner').classList.remove('hidden');showBannerUntil=S.t+time;/* Баннер и toast показываются независимо: не дублируем одно событие. */if(/БОСС|УГРОЗ|ПРОРЫВ|ПЕРЕХВАТ|ОСАДА|ВТОРАЯ ФАЗА/.test(v))sfx('warning');else clickSound(360,.16,'triangle',.023)}
