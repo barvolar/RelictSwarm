@@ -37,7 +37,7 @@ const crazygamesHtml=base.replace('%%RELICT_SDK_LOADER%%',
   .replace('[ 10.15: ONLINE TEST ]','[ RELICT SWARM ]')
   .replace(' · No external assets','')
   // CrazyGames supplies its own fullscreen control and prohibits in-game buttons.
-  .replace('</head>','<style id="crazygames-fullscreen-controls">#fullscreenBtn,#mainFullscreen,#fullscreenSettings,#fullscreenPause{display:none!important}</style>\n</head>');
+  .replace('</head>','<style id="crazygames-fullscreen-controls">#fullscreenBtn,#mainFullscreen,#fullscreenSettings,#fullscreenPause,.settings-action:has(#fullscreenSettings),.button-row:has(#fullscreenPause){display:none!important}</style>\n</head>');
 
 const dist=path.join(root,'dist'); fs.mkdirSync(dist,{recursive:true});
 fs.writeFileSync(path.join(dist,'index.html'),html);
