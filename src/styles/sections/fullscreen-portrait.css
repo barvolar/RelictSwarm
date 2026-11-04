@@ -138,3 +138,30 @@
   padding-right:max(10px,env(safe-area-inset-right,0px));
  }
 }
+
+/* Explicit orientation choice on touch devices only. Desktop stays uncluttered. */
+.orientation-picker{display:none;min-width:0}
+@media(pointer:coarse){
+ .orientation-picker{
+  display:grid;gap:8px;margin:10px 0 12px;
+  padding:11px;border:1px solid #356376;border-radius:9px;
+  background:linear-gradient(135deg,#0c2435,#102b36);
+ }
+ .orientation-title{font-size:11px;font-weight:900;letter-spacing:1.3px;color:#8af4e3}
+ .orientation-choices{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}
+ .orientation-choice.btn{
+  width:100%;min-width:0;min-height:39px;letter-spacing:.2px;
+  font-size:clamp(9px,2.5vw,12px);padding:7px 3px;line-height:1.2;
+ }
+ .orientation-choice.selected{
+  border-color:#75f3d9;background:#1b5260;color:#f1fffe;
+  box-shadow:inset 0 0 0 1px #75f3d97a;
+ }
+ .orientation-help{margin:0;color:#a9c1ca;font-size:10px;line-height:1.4}
+}
+@media(pointer:coarse) and (max-height:550px){
+ .orientation-picker{gap:4px;margin:5px 0 8px;padding:7px}
+ .orientation-choices{gap:5px}
+ .orientation-choice.btn{min-height:31px;padding:5px 3px}
+ .orientation-help{font-size:9px;line-height:1.25}
+}
