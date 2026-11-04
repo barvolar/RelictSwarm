@@ -90,3 +90,16 @@ test('portrait layout, controls and all three release HTML files contain fullscr
   assert.match(html,/orientationchange/);
  }
 });
+
+test('CrazyGames uses platform fullscreen and hides all custom game fullscreen controls',async()=>{
+ const cg=read('dist/crazygames/index.html');
+ const normal=read('dist/index.html');
+ assert.match(cg,/id="crazygames-fullscreen-controls"/);
+ assert.match(cg,/#fullscreenBtn,#mainFullscreen,#fullscreenSettings,#fullscreenPause/);
+ assert.match(cg,/\.settings-action:has\(#fullscreenSettings\)/);
+ assert.doesNotMatch(normal,/crazygames-fullscreen-controls/);
+ const h=harness();
+ h.window.RELICT_PLATFORM='crazygames';
+ assert.equal(await vm.runInContext('toggleFullscreen()',h.context),false);
+ assert.equal(h.document.fullscreenElement,null);
+});
