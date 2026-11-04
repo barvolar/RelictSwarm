@@ -55,14 +55,15 @@ function describeUpgrade(u){
 }
 function upgradeCardHtml(u,i){
  const d=describeUpgrade(u);
- const rarityLabel=d.rarity?(locale==='en'?({common:'common',uncommon:'uncommon',rare:'rare',epic:'epic'}[d.rarity.id]||d.rarity.id):d.rarity.name.toLowerCase()):'';
- const rarityParameter=d.rarity?(locale==='en'?(d.rarity.steps===1?'stat':'stats'):(d.rarity.steps===1?'параметр':d.rarity.steps<5?'параметра':'параметров')):'';
+ const currentLocale=typeof locale!=='undefined'&&locale==='en'?'en':'ru';
+ const rarityLabel=d.rarity?(currentLocale==='en'?({common:'common',uncommon:'uncommon',rare:'rare',epic:'epic'}[d.rarity.id]||d.rarity.id):d.rarity.name.toLowerCase()):'';
+ const rarityParameter=d.rarity?(currentLocale==='en'?(d.rarity.steps===1?'stat':'stats'):(d.rarity.steps===1?'параметр':d.rarity.steps<5?'параметра':'параметров')):'';
  const rarity=d.rarity?`<span class="up-rarity" style="--rarity-color:${d.rarity.col}"><span class="rarity-dot" aria-hidden="true"></span>${rarityLabel} · ${d.rarity.steps} ${rarityParameter}</span>`:'';
  const cardName=d.name.replace('КРИОИЗЛУЧАТЕЛЬ','КРИО<wbr>ИЗЛУЧАТЕЛЬ');
  const rows=(d.rows||[]).map(r=>`<li class="up-stat-row"><span>${r.label}</span><strong>${r.value}</strong></li>`).join('');
  return `<button type="button" class="upgrade-card upgrade-v2 upgrade-card--${d.type}" data-up="${i}" aria-label="${d.kind}: ${d.name}">
   <span class="up-type-row"><span class="kind">${d.kind}</span>${rarity}</span>
-  <span class="up-heading"><span class="glyph" aria-hidden="true">${d.glyph}</span><strong class="up-name" lang="${locale}">${cardName}</strong></span>
+  <span class="up-heading"><span class="glyph" aria-hidden="true">${d.glyph}</span><strong class="up-name" lang="${currentLocale}">${cardName}</strong></span>
   ${d.desc?`<span class="up-description">${d.desc}</span>`:''}
   ${rows?`<ul class="up-stats">${rows}</ul>`:''}
   <span class="number"><span class="up-action">ВЫБРАТЬ</span><span class="up-key">${i+1}</span></span>
