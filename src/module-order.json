@@ -16,6 +16,7 @@
   "src/modules/20-core/input/joystick.js",
   "src/modules/20-core/input/buttons.js",
   "src/modules/20-core/input/fullscreen.js",
+  "src/modules/20-core/state/mobile-view-scale.js",
   "src/modules/30-audio/embedded-bank.js",
   "src/modules/30-audio/engine/settings.js",
   "src/modules/30-audio/engine/mixer.js",
