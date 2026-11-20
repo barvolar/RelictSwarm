@@ -130,6 +130,31 @@ try{
   await page.locator('#resumeBtn').waitFor({state:'visible',timeout:15000});
   await page.evaluate(()=>window.__bridgeTrigger('pause',false));
   await page.waitForFunction(()=>document.querySelector('#modal')?.classList.contains('hidden'),{timeout:15000});
+  if(label==='portrait'){
+   // Headless Chrome does not consistently grant native fullscreen in an
+   // embedded portal. Simulate the standard API's state/event transitions
+   // while exercising real click handlers and the actual pause modal.
+   await page.evaluate(()=>{
+    let fullscreen=false;
+    Object.defineProperty(document,'fullscreenElement',{configurable:true,get:()=>fullscreen?document.documentElement:null});
+    document.documentElement.requestFullscreen=async()=>{
+     fullscreen=true;document.dispatchEvent(new Event('fullscreenchange'));
+    };
+    document.exitFullscreen=async()=>{
+     fullscreen=false;document.dispatchEvent(new Event('fullscreenchange'));
+    };
+   });
+   await page.locator('#fullscreenBtn').click({timeout:10000});
+   assert.equal(await page.locator('#fullscreenBtn').getAttribute('aria-pressed'),'true','fullscreen activates from HUD');
+   await page.locator('#pauseBtn').click({timeout:10000});
+   await page.locator('#exitFullscreenPause').waitFor({state:'visible',timeout:10000});
+   await page.locator('#exitFullscreenPause').click({timeout:10000});
+   assert.equal(await page.locator('#fullscreenBtn').getAttribute('aria-pressed'),'false','fullscreen exit must be available from Pause');
+   assert.equal(await page.evaluate(()=>document.fullscreenElement),null,'fullscreen must be released after exit click');
+   await page.locator('#resumeBtn').click({timeout:10000});
+   assert.ok(await page.locator('#modal').evaluate(el=>el.classList.contains('hidden')),'game resumes after leaving fullscreen');
+   console.log('PASS: Playgama portrait fullscreen HUD entry and Pause-menu exit');
+  }
   assert.equal(pageErrors.length,0,label+' errors after gameplay: '+pageErrors.join(' | '));
   if(label==='desktop'){
    // Finish an actual game run, exercise persist(), and reopen the same game.
