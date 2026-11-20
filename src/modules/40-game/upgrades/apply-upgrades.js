@@ -6,6 +6,7 @@ function showUpgrades(){
 }
 function renderUpgradeScreen(){
  const available=canUseReroll();
+ const rewarded=window.RelicPlatform?.canReward?.()&&S.rerollsRemaining===0&&S.rewardedRerollLevel!==S.lvl;
  $('modalContent').innerHTML=`<div class="upgrade-v2-screen">
   <div class="upgrade-topline"><div class="panel-title">ВЫБЕРИ МОДИФИКАЦИЮ</div><div class="label">УР. ${S.lvl}</div></div>
   <p class="up-short-summary">Оружие: ${S.drones.length}/${MAX_WEAPONS} · Выбери одну из трёх модификаций</p>
@@ -13,11 +14,13 @@ function renderUpgradeScreen(){
   <div class="upgrade-reroll-row">
    <button type="button" class="btn upgrade-reroll" data-reroll="free" ${available?'':'disabled'}>${available?'↻ ПЕРЕБРОСИТЬ 3 КАРТОЧКИ':'↻ РЕРОЛЛ ИСПОЛЬЗОВАН'}</button>
    <span class="up-reroll-count">Бесплатных перебросов: ${Math.max(0,S.rerollsRemaining||0)} / 1 за забег</span>
+   ${rewarded?`<button type="button" class="btn upgrade-reroll" data-reroll="rewarded">${locale==='ru'?'▶ СМОТРЕТЬ РЕКЛАМУ: НОВЫЕ КАРТЫ':'▶ WATCH AD: REROLL CARDS'}</button>`:''}
   </div>
   <p class="up-bottom-hint">Реролл заменяет все три карточки без повторов. Цвет рамки означает тип выбора, редкость показана отдельно.</p>
  </div>`;
  $('modalContent').querySelectorAll('[data-up]').forEach(el=>el.onclick=()=>chooseUpgrade(+el.dataset.up));
- const reroll=$('modalContent').querySelector('[data-reroll]');if(reroll)reroll.onclick=requestReroll;
+ const reroll=$('modalContent').querySelector('[data-reroll="free"]');if(reroll)reroll.onclick=requestReroll;
+ const adReroll=$('modalContent').querySelector('[data-reroll="rewarded"]');if(adReroll)adReroll.onclick=requestRewardedReroll;
 }
 function chooseUpgrade(idx){
  if(mode!=='upgrade'||!S.upgrades[idx])return;
