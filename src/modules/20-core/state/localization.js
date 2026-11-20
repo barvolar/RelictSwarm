@@ -2857,8 +2857,9 @@ I18N_PAIRS.sort((a,b)=>b[0].length-a[0].length);
 const localeKey='relictswarm_ui_locale_v1';
 const isPlaygama=typeof window!=='undefined'&&window.RelicPlatform?.provider==='playgama';
 const storedLocale=isPlaygama?window.RelicPlatform.readStored(localeKey):null;
-let locale=isPlaygama?(storedLocale==='ru'||storedLocale==='en'?storedLocale:
- /^ru(?:-|$)/i.test(window.RelicPlatform.language)?'ru':'en'):'en';
+// English is the first-launch default, even when the host language is Russian.
+// A player's explicit RU/EN preference still takes precedence on later visits.
+let locale=isPlaygama&&storedLocale==='ru'?'ru':'en';
 if(!isPlaygama)try{localStorage.setItem(localeKey,'en')}catch{}
 const i18nTextCache=new WeakMap(),i18nAttrsCache=new WeakMap();
 function localizedText(raw){
