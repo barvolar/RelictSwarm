@@ -176,7 +176,11 @@ function droneUpdate(dt){
     if(Math.atan2(Math.abs(a.dx*dy-a.dy*dx),a.dx*dx+a.dy*dy)<half)
      hurtEnemy(e,(8+Math.sqrt(rank)*3.7)*baseDmg*attackOverflow,{burn:4,burnPower:igniteDps});
    }
-   S.fx.push({type:'flame',x:origin.x,y:origin.y,ang:Math.atan2(a.dy,a.dx),length,half,life:.35,max:.35,seed:rand(0,500)});
+   // Keep one visual jet per flamethrower. Its emitter is resolved from the
+   // LIVE drone position when drawing, rather than freezing at the fired position.
+   const jet=S.fx.find(f=>f.type==='flame'&&f.owner===d);
+   const visual={type:'flame',owner:d,x:origin.x,y:origin.y,ang:Math.atan2(a.dy,a.dx),length,half,life:.35,max:.35,seed:rand(0,500)};
+   if(jet)Object.assign(jet,visual);else S.fx.push(visual);
    burst(origin.x+a.dx*Math.min(length*.6,170),origin.y+a.dy*Math.min(length*.6,170),'#ffb04e',7,75);continue;
   }
   if(d.id==='rocket'){
