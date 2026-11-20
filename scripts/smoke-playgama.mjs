@@ -91,14 +91,26 @@ try{
   await page.locator('#mainSettings').click({timeout:15000});
   await page.locator('.graphics-settings').waitFor({state:'visible',timeout:15000});
   let graphics=await page.locator('.graphics-settings').innerText();
-  // Even desktop QA should expose the mobile-oriented scale presets for inspection.
+  // Desktop must APPLY world and HUD scaling, persist settings and keep
+  // phone portrait/landscape preferences separate.
   if(!touch){
    const scalePanel=page.locator('.mobile-view-settings');
    await scalePanel.waitFor({state:'visible',timeout:10000});
    assert.equal(await scalePanel.locator('[data-view-world]').count(),8);
    assert.equal(await scalePanel.locator('[data-view-hud]').count(),6);
-   assert.ok((await scalePanel.innerText()).includes('On a desktop PC'),'explain mobile-only effect on desktop');
-   console.log('PASS: desktop QA exposes mobile scale settings');
+   assert.ok((await scalePanel.innerText()).includes('DESKTOP'),'desktop profile should be selected');
+   await page.locator('[data-view-world="65"]').click({timeout:10000});
+   await page.locator('[data-view-hud="80"]').click({timeout:10000});
+   const stored=await page.evaluate(()=>JSON.parse(window.RelicPlatform.readStored('relictswarm_mobile_scale_v1')));
+   assert.equal(stored.desktop.world,65,'desktop world zoom must persist');
+   assert.equal(stored.desktop.hud,80,'desktop HUD zoom must persist');
+   assert.equal(stored.landscape.world,35,'desktop zoom must not overwrite phone landscape defaults');
+   await page.reload({waitUntil:'domcontentloaded'});
+   await page.locator('#mainPlay').waitFor({state:'visible',timeout:30000});
+   await page.locator('#mainSettings').click({timeout:10000});
+   assert.equal(await page.locator('[data-view-world="65"]').getAttribute('aria-pressed'),'true','desktop world zoom restored');
+   assert.equal(await page.locator('[data-view-hud="80"]').getAttribute('aria-pressed'),'true','desktop HUD zoom restored');
+   console.log('PASS: Playgama desktop world/HUD scales persist independently after F5');
   }
   if(touch&&(label==='portrait'||label==='landscape'||label==='wide-landscape')){
    // Change settings in the real modal, then reload and verify Bridge restored
@@ -173,9 +185,28 @@ try{
    console.log('PASS: Playgama '+label+' compact landscape HUD '+Math.round(hud.height)+'px; dash '+Math.round(hud.dashWidth)+'px');
   }
   if(!touch){
+   // Verify actual on-screen desktop HUD geometry, not merely the stored numbers.
+   const geometry80=await page.evaluate(()=>{
+    const dock=document.querySelector('#hud .hud-dock');
+    return {transform:getComputedStyle(dock).transform,width:dock.getBoundingClientRect().width,
+      height:document.querySelector('#hud .hud-top').getBoundingClientRect().height};
+   });
+   assert.ok(geometry80.transform.startsWith('matrix(0.8, 0, 0, 0.8,'),'desktop HUD must actually scale down: '+JSON.stringify(geometry80));
+   assert.ok(Math.abs(geometry80.width-viewport.width)<3,'scaled desktop HUD must span full viewport');
    await page.keyboard.press('p');
    await page.locator('#resumeBtn').waitFor({state:'visible',timeout:15000});
+   await page.locator('.mobile-scale-fold > summary').click({timeout:10000});
+   await page.locator('.mobile-scale-fold [data-view-hud="110"]').click({timeout:10000});
    await page.locator('#resumeBtn').click();
+   const geometry110=await page.evaluate(()=>{
+    const dock=document.querySelector('#hud .hud-dock');
+    return {transform:getComputedStyle(dock).transform,width:dock.getBoundingClientRect().width,
+      height:document.querySelector('#hud .hud-top').getBoundingClientRect().height};
+   });
+   assert.ok(geometry110.transform.startsWith('matrix(1.1, 0, 0, 1.1,'),'desktop HUD must scale up: '+JSON.stringify(geometry110));
+   assert.ok(geometry110.height>geometry80.height*1.2,'desktop HUD top panel should get visibly larger');
+   assert.ok(Math.abs(geometry110.width-viewport.width)<3,'scaled HUD must still fit viewport');
+   console.log('PASS: Playgama desktop HUD physically resizes 80% → 110% in a running game');
    await page.keyboard.press('Escape');
    assert.ok(await page.locator('#modal').evaluate(el=>el.classList.contains('hidden')),'Escape must be reserved for browser fullscreen');
   }
