@@ -40,9 +40,9 @@ function harness(){
 
 test('bootstrap initializes and loads all persistent keys before the game can run',async()=>{
  const calls=[];
- const keys=['relictSwarm_v01_save','relictSwarm_audio_v1','relictswarm_render_quality','relictswarm_orientation_v1','relictswarm_ui_locale_v1'];
+ const keys=['relictSwarm_v01_save','relictSwarm_audio_v1','relictswarm_render_quality','relictswarm_orientation_v1','relictswarm_ui_locale_v1','relictswarm_mobile_scale_v1'];
  const sdk={initialize:async()=>{calls.push('initialize')},storage:{get:async(items,tryParseJson=true)=>{
-  calls.push('get');assert.equal(tryParseJson,false,'JSON saves must be read without implicit SDK parsing');assert.deepEqual(Array.from(items),keys);return ['{"runs":3}',null,'minimal','portrait','ru'];
+  calls.push('get');assert.equal(tryParseJson,false,'JSON saves must be read without implicit SDK parsing');assert.deepEqual(Array.from(items),keys);return ['{"runs":3}',null,'minimal','portrait','ru','{"landscape":{"world":35,"hud":80}}'];
  }}};
  const window={bridge:sdk};
  vm.runInNewContext(read('src/platform/playgama-bootstrap.js'),{window,bridge:sdk,Promise,Error},{timeout:3000});
@@ -54,6 +54,7 @@ test('bootstrap initializes and loads all persistent keys before the game can ru
  assert.equal(window.RelicPlaygamaData.relictSwarm_audio_v1,null);
  assert.equal(window.RelicPlaygamaData.relictswarm_orientation_v1,'portrait');
  assert.equal(window.RelicPlaygamaData.relictswarm_ui_locale_v1,'ru');
+ assert.equal(JSON.parse(window.RelicPlaygamaData.relictswarm_mobile_scale_v1).landscape.world,35);
 });
 
 test('Playgama adapter uses Bridge Storage, batches writes and sends game_ready once',async()=>{
