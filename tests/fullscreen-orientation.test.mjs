@@ -92,14 +92,24 @@ test('unsupported fullscreen gives a nonblocking notice, game remains accessible
  assert.ok(h.notices.includes('visible'));
 });
 
-test('portrait mobile camera is larger and landscape zoom is unchanged',()=>{
+test('portrait and landscape phone cameras use balanced compact zoom',()=>{
  const ctx=vm.createContext({touching:true,W:390,H:844});
  vm.runInContext(overlays,ctx);
  assert.equal(vm.runInContext('arenaZoom()',ctx),.64);
  vm.runInContext('W=844;H=390',ctx);
- assert.equal(vm.runInContext('arenaZoom()',ctx),.82);
+ assert.equal(vm.runInContext('arenaZoom()',ctx),.72);
+ vm.runInContext('W=1280;H=576',ctx);
+ assert.equal(vm.runInContext('arenaZoom()',ctx),.73);
  vm.runInContext('touching=false',ctx);
  assert.equal(vm.runInContext('arenaZoom()',ctx),1);
+});
+
+test('landscape phone HUD presents five modules and Fusion in one compact row',()=>{
+ const css=read('src/styles/sections/fullscreen-portrait.css');
+ assert.match(css,/Compact landscape PHONE HUD/);
+ assert.match(css,/grid-template-columns:repeat\(6,minmax\(0,1fr\)\)/);
+ assert.match(css,/grid-template-rows:29px/);
+ assert.match(css,/#touchControls \.dash\{/);
 });
 
 test('portrait layout, controls and all three release HTML files contain fullscreen',()=>{
