@@ -91,6 +91,29 @@ try{
   await page.locator('#mainSettings').click({timeout:15000});
   await page.locator('.graphics-settings').waitFor({state:'visible',timeout:15000});
   let graphics=await page.locator('.graphics-settings').innerText();
+  if(touch&&(label==='portrait'||label==='landscape'||label==='wide-landscape')){
+   // Change settings in the real modal, then reload and verify Bridge restored
+   // the same independent portrait/landscape scale preference.
+   await page.locator('.mobile-view-settings').waitFor({state:'visible',timeout:10000});
+   await page.locator('[data-view-world="45"]').click({timeout:10000});
+   await page.locator('[data-view-world="35"]').click({timeout:10000});
+   await page.locator('[data-view-hud="90"]').click({timeout:10000});
+   await page.locator('[data-view-hud="80"]').click({timeout:10000});
+   assert.equal(await page.locator('[data-view-world="35"]').getAttribute('aria-pressed'),'true',label+' 35% world selection');
+   assert.equal(await page.locator('[data-view-hud="80"]').getAttribute('aria-pressed'),'true',label+' 80% HUD selection');
+   const scaleStored=await page.evaluate(()=>JSON.parse(window.RelicPlatform.readStored('relictswarm_mobile_scale_v1')));
+   const orientation=label==='portrait'?'portrait':'landscape';
+   assert.equal(scaleStored[orientation].world,35,label+' stored world scale');
+   assert.equal(scaleStored[orientation].hud,80,label+' stored HUD scale');
+   assert.equal(await page.evaluate(()=>getComputedStyle(document.documentElement).getPropertyValue('--rs-mobile-hud-scale').trim()),'0.8');
+   await page.reload({waitUntil:'domcontentloaded'});
+   await page.locator('#mainPlay').waitFor({state:'visible',timeout:30000});
+   await page.locator('#mainSettings').click({timeout:10000});
+   assert.equal(await page.locator('[data-view-world="35"]').getAttribute('aria-pressed'),'true',label+' scale restored after reload');
+   assert.equal(await page.locator('[data-view-hud="80"]').getAttribute('aria-pressed'),'true',label+' HUD restored after reload');
+   console.log('PASS: Playgama '+label+' world/HUD scale choices persist after reload');
+  }
+
   if(label==='portrait'){
    // Portal advertises RU but brand-new users must still see English.
    assert.ok(graphics.includes('GRAPHICS QUALITY'),label+' default must be English even when host language is Russian');
