@@ -5,13 +5,13 @@ function closest(x,y,max=360,except=null){let best=null,bestD=max*max;for(let e 
 // the camera's visible width. Prefer actual visible threats; never aim the
 // auto-turrets at an enemy hidden beyond the edge of the player's viewport.
 function mobileTargetVisible(e){
- if(!touching||!S?.cam||typeof W!=='number'||typeof H!=='number'||typeof arenaZoom!=='function')return true;
+ if(typeof touching==='undefined'||!touching||!S?.cam||typeof W!=='number'||typeof H!=='number'||typeof arenaZoom!=='function')return true;
  const zoom=arenaZoom(),inset=14/zoom;
  return Math.abs(e.x-S.cam.x)<W/(2*zoom)-inset &&
         Math.abs(e.y-S.cam.y)<H/(2*zoom)-inset;
 }
 function chooseCombatTarget(x,y,max=550,weapon='pulse'){
- const screenAware=touching&&S?.cam&&typeof W==='number'&&typeof H==='number'&&typeof arenaZoom==='function';
+ const screenAware=typeof touching!=='undefined'&&touching&&S?.cam&&typeof W==='number'&&typeof H==='number'&&typeof arenaZoom==='function';
  let nearby,visibleBosses=S.bosses;
  if(screenAware){
   let best=max*max;
