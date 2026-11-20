@@ -26,6 +26,19 @@ function logReroll(before,after){
  }
  bal.events.push({t,level,what:'reroll_used',id:'free'});
 }
+// Playgama reward is granted ONLY on the SDK's confirmed "rewarded" state.
+function requestRewardedReroll(){
+ if(!S||mode!=='upgrade'||S.pendingUp<1||S.rerollsRemaining>0||
+    S.rewardedRerollLevel===S.lvl||!window.RelicPlatform?.canReward?.())return false;
+ const session=S,level=S.lvl;
+ return !!window.RelicPlatform.showRewarded(()=>{
+  if(S!==session||mode!=='upgrade'||S.lvl!==level||
+     S.rewardedRerollLevel===level)return;
+  S.rewardedRerollLevel=level;
+  if(grantReroll(1))requestReroll();
+  else renderUpgradeScreen();
+ });
+}
 function requestReroll(){
  if(!canUseReroll())return false;
  const before=S.upgrades.slice();
