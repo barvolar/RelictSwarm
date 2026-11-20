@@ -8,7 +8,7 @@ const isAppleTouchDevice=(()=>{
   (platform==='MacIntel'&&Number(navigator.maxTouchPoints||0)>1);
 })();
 if(isAppleTouchDevice)document.documentElement.classList?.add('ios-device');
-const fullscreenButtonIds=['fullscreenBtn','mainFullscreen','fullscreenSettings','fullscreenPause','exitFullscreenPause'];
+const fullscreenButtonIds=['fullscreenBtn','mainFullscreen','fullscreenSettings','fullscreenPause'];
 function activeFullscreenElement(){return document.fullscreenElement||document.webkitFullscreenElement||null;}
 function fullscreenButtonText(){
  const en=typeof locale==='undefined'||locale==='en';
@@ -70,14 +70,6 @@ async function toggleFullscreen(){
   syncFullscreenButtons();
   return false;
  }
-}
-function fullscreenExitPauseHTML(){
- if(window.RELICT_PLATFORM!=='playgama'||isAppleTouchDevice||!activeFullscreenElement())return '';
- return '<div class="button-row"><button id="exitFullscreenPause" class="btn ghost" type="button">⤡ EXIT FULLSCREEN</button></div>';
-}
-function bindFullscreenExitPause(){
- const button=$('exitFullscreenPause');
- if(button)button.onclick=()=>toggleFullscreen();
 }
 $('fullscreenBtn').addEventListener('click',toggleFullscreen);
 function onGameFullscreenChange(){
