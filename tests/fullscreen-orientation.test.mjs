@@ -52,9 +52,36 @@ test('fullscreen is an explicit reversible player action and never locks orienta
  assert.equal(h.document.fullscreenElement,null);
  assert.equal(h.buttons.fullscreenBtn['aria-pressed'],'false');
  h.events.orientationchange();
- assert.equal(h.resets,1);
+ assert.equal(h.resets,2,'exit fullscreen and orientation change both reset floating joystick');
  assert.ok(h.resizes>=3);
  assert.match(fullscreen,/screen\.orientation\.lock\(next\)/);
+});
+
+test('Android fullscreen exit releases orientation lock and exposes a Pause exit action',async()=>{
+ const h=harness({userAgent:'Mozilla/5.0 (Linux; Android 15) AppleWebKit/537.36 Chrome/143.0',platform:'Linux',maxTouchPoints:5});
+ const calls=[];
+ h.context.screen={orientation:{unlock(){calls.push('unlock')}}};
+ h.window.RELICT_PLATFORM='playgama';
+ await vm.runInContext('toggleFullscreen()',h.context);
+ assert.equal(h.buttons.fullscreenBtn.textContent,'⤡');
+ assert.ok(vm.runInContext('fullscreenExitPauseHTML()',h.context).includes('exitFullscreenPause'));
+ // Paused menu gets an explicit action separate from the small HUD icon.
+ await vm.runInContext('exitGameFullscreen()',h.context);
+ assert.deepEqual(calls,['unlock']);
+ assert.equal(h.document.fullscreenElement,null);
+ assert.equal(h.buttons.fullscreenBtn.textContent,'⛶');
+ assert.equal(vm.runInContext('fullscreenExitPauseHTML()',h.context),'');
+});
+
+test('webkit fullscreen exit fallback works when standard API is absent',async()=>{
+ const h=harness();
+ h.document.exitFullscreen=undefined;
+ h.document.webkitExitFullscreen=()=>{
+  h.document.fullscreenElement=null;return Promise.resolve();
+ };
+ await vm.runInContext('toggleFullscreen()',h.context);
+ assert.equal(await vm.runInContext('toggleFullscreen()',h.context),true);
+ assert.equal(h.document.fullscreenElement,null);
 });
 
 test('unsupported fullscreen gives a nonblocking notice, game remains accessible',async()=>{
@@ -68,7 +95,7 @@ test('unsupported fullscreen gives a nonblocking notice, game remains accessible
 test('portrait mobile camera is larger and landscape zoom is unchanged',()=>{
  const ctx=vm.createContext({touching:true,W:390,H:844});
  vm.runInContext(overlays,ctx);
- assert.equal(vm.runInContext('arenaZoom()',ctx),.72);
+ assert.equal(vm.runInContext('arenaZoom()',ctx),.64);
  vm.runInContext('W=844;H=390',ctx);
  assert.equal(vm.runInContext('arenaZoom()',ctx),.82);
  vm.runInContext('touching=false',ctx);
