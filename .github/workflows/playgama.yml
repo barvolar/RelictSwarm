@@ -16,6 +16,10 @@ jobs:
           node-version: '22'
       - name: Build and test
         run: npm test
+      - name: Browser smoke test (Chrome)
+        run: |
+          npm install --no-save --package-lock=false playwright-core@1.56.1
+          node scripts/smoke-playgama.mjs
       - name: Assemble Playgama upload ZIP
         shell: bash
         run: |
