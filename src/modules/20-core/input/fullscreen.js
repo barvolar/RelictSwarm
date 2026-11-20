@@ -84,10 +84,13 @@ try{
 }catch{}
 function orientationPickerHTML(){
  if(isAppleTouchDevice)return '';
- const entries=[['auto','AUTO'],['portrait','PORTRAIT'],['landscape','LANDSCAPE']];
- return '<div class="orientation-picker" role="group" aria-label="Screen orientation"><div class="orientation-title">SCREEN ORIENTATION</div>'+
+ const ru=typeof locale!=='undefined'&&locale==='ru';
+ const entries=ru?[['auto','АВТО'],['portrait','ВЕРТИКАЛЬНО'],['landscape','ГОРИЗОНТАЛЬНО']]:[['auto','AUTO'],['portrait','PORTRAIT'],['landscape','LANDSCAPE']];
+ const title=ru?'ОРИЕНТАЦИЯ ЭКРАНА':'SCREEN ORIENTATION';
+ const help=ru?'Автоматический режим следует повороту телефона. Для принудительной ориентации браузер может потребовать полноэкранный режим. Если поворот заблокирован, включи автоповорот в настройках устройства.':'Auto follows your phone rotation. To force portrait or landscape, your browser may require fullscreen. If the device blocks rotation, enable Auto-rotate in phone settings.';
+ return '<div class="orientation-picker" role="group" aria-label="'+title+'"><div class="orientation-title">'+title+'</div>'+
   '<div class="orientation-choices">'+entries.map(([id,label])=>'<button type="button" class="btn ghost orientation-choice'+(orientationMode===id?' selected':'')+'" data-orientation="'+id+'" aria-pressed="'+(orientationMode===id)+'">'+label+'</button>').join('')+'</div>'+
-  '<p class="orientation-help">Auto follows your phone rotation. To force portrait or landscape, your browser may require fullscreen. If the device blocks rotation, enable Auto-rotate in phone settings.</p></div>';
+  '<p class="orientation-help">'+help+'</p></div>';
 }
 function syncOrientationChoices(){
  for(const button of document.querySelectorAll?.('[data-orientation]')||[]){
