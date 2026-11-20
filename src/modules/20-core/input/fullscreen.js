@@ -71,6 +71,14 @@ async function toggleFullscreen(){
   return false;
  }
 }
+function fullscreenExitPauseHTML(){
+ if(window.RELICT_PLATFORM!=='playgama'||isAppleTouchDevice||!activeFullscreenElement())return '';
+ return '<div class="button-row"><button id="exitFullscreenPause" class="btn ghost" type="button">⤡ EXIT FULLSCREEN</button></div>';
+}
+function bindFullscreenExitPause(){
+ const button=$('exitFullscreenPause');
+ if(button)button.onclick=()=>toggleFullscreen();
+}
 $('fullscreenBtn').addEventListener('click',toggleFullscreen);
 function onGameFullscreenChange(){
  syncFullscreenButtons();
