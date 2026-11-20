@@ -351,3 +351,33 @@ html.ios-device .orientation-picker{display:none!important}
  background:transparent;
  padding:3px;
 }
+
+
+/* Desktop Playgama: scale the actual HUD dock, not the modal or canvas.
+   Compensating its box dimensions keeps the timers/buttons at the edges of
+   the viewport and preserves click coordinates at both 70% and 110%.
+   On desktop .hud-loadout uses display:contents, so its absolute-positioned
+   weapon chips and Fusion button now position relative to the scaled dock. */
+html.playgama-desktop-scale #hud .hud-dock{
+ display:block;
+ position:absolute;
+ top:0;left:0;
+ width:calc(100% / var(--rs-mobile-hud-scale, 1));
+ height:calc(100% / var(--rs-mobile-hud-scale, 1));
+ transform:scale(var(--rs-mobile-hud-scale, 1));
+ transform-origin:top left;
+ pointer-events:none;
+}
+html.playgama-desktop-scale #hud .hud-loadout{display:contents}
+html.playgama-desktop-scale #hud .hud-top{pointer-events:auto}
+html.playgama-desktop-scale #hud .boss-wrap,
+html.playgama-desktop-scale #hud .wavebanner,
+html.playgama-desktop-scale #hud .toast{
+ transform:translateX(-50%) scale(var(--rs-mobile-hud-scale, 1));
+ transform-origin:top center;
+}
+html.playgama-desktop-scale #hud .active-buffs,
+html.playgama-desktop-scale #hud .controls-tip{
+ transform:scale(var(--rs-mobile-hud-scale, 1));
+ transform-origin:top right;
+}
