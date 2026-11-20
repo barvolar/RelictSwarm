@@ -79,7 +79,7 @@ syncFullscreenButtons();
 const orientationModeKey='relictswarm_orientation_v1';
 let orientationMode='auto';
 try{
- const previous=localStorage.getItem(orientationModeKey);
+ const previous=window.RelicPlatform?.readStored?window.RelicPlatform.readStored(orientationModeKey):localStorage.getItem(orientationModeKey);
  if(['auto','portrait','landscape'].includes(previous))orientationMode=previous;
 }catch{}
 function orientationPickerHTML(){
@@ -107,7 +107,7 @@ async function setOrientationMode(next){
  if(!['auto','portrait','landscape'].includes(next))return false;
  const previousMode=orientationMode;
  orientationMode=next;
- try{localStorage.setItem(orientationModeKey,next)}catch{}
+ try{if(window.RelicPlatform?.writeStored)window.RelicPlatform.writeStored(orientationModeKey,next);else localStorage.setItem(orientationModeKey,next)}catch{}
  syncOrientationChoices();
  // CrazyGames manages orientation based on the submission configuration.
  if(window.RELICT_PLATFORM==='crazygames')return false;
@@ -133,7 +133,7 @@ async function setOrientationMode(next){
  }catch(error){
   console.warn('[Relict Swarm] Screen orientation lock unavailable:',error);
   orientationMode=previousMode;
-  try{localStorage.setItem(orientationModeKey,previousMode)}catch{}
+  try{if(window.RelicPlatform?.writeStored)window.RelicPlatform.writeStored(orientationModeKey,previousMode);else localStorage.setItem(orientationModeKey,previousMode)}catch{}
   syncOrientationChoices();
   fullscreenNotice('This browser cannot force '+next+'. Rotate the phone and enable Auto-rotate in its settings.');
   return false;
