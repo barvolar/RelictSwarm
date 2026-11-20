@@ -1,12 +1,12 @@
-// Playgama mobile display scaling. No effect on other distribution builds.
-// World and HUD scales are independent and persist per phone orientation.
-// 35% world / 80% HUD is the requested landscape test preset. Portrait starts
-// at a safer 55% world / 80% HUD; both can be changed by the player.
+// Playgama display scaling for desktop, portrait phone, and landscape phone.
+// World zoom and HUD scale are independent and persist per device/layout.
+// Saved portrait/landscape values from older builds remain compatible.
 const mobileScaleKey='relictswarm_mobile_scale_v1';
 const mobileWorldSteps=[35,45,55,65,75,85,95,100];
 const mobileHudSteps=[70,80,85,90,100,110];
-const mobileScaleDefaults={portrait:{world:55,hud:80},landscape:{world:35,hud:80}};
+const mobileScaleDefaults={desktop:{world:100,hud:100},portrait:{world:55,hud:80},landscape:{world:35,hud:80}};
 const mobileScaleValues={
+ desktop:{...mobileScaleDefaults.desktop},
  portrait:{...mobileScaleDefaults.portrait},
  landscape:{...mobileScaleDefaults.landscape}
 };
@@ -15,15 +15,16 @@ if(isPlaygama){
   const raw=window.RelicPlatform?.readStored?.(mobileScaleKey);
   const saved=typeof raw==='string'?JSON.parse(raw):raw;
   if(saved&&typeof saved==='object'){
-   for(const mode of ['portrait','landscape']){
+   for(const mode of ['desktop','portrait','landscape']){
     if(mobileWorldSteps.includes(saved[mode]?.world))mobileScaleValues[mode].world=saved[mode].world;
     if(mobileHudSteps.includes(saved[mode]?.hud))mobileScaleValues[mode].hud=saved[mode].hud;
    }
   }
  }catch(error){console.warn('[Relict Swarm] Invalid stored mobile scale:',error);}
  document.documentElement.classList.add('playgama-scale-enabled');
+ if(!touching)document.documentElement.classList.add('playgama-desktop-scale');
 }
-function mobileScaleOrientation(){return innerWidth<innerHeight?'portrait':'landscape';}
+function mobileScaleOrientation(){return !touching?'desktop':innerWidth<innerHeight?'portrait':'landscape';}
 function mobileScaleCurrent(){return mobileScaleValues[mobileScaleOrientation()];}
 function mobileScaleWorldZoom(){return mobileScaleCurrent().world/100;}
 function syncMobileScaleCSS(){
@@ -40,7 +41,7 @@ function syncMobileScaleCSS(){
  const section=document.querySelector('.mobile-view-settings');
  if(section){
   const label=section.querySelector('.mobile-view-orientation');
-  if(label)label.textContent=mobileScaleOrientation()==='landscape'?'LANDSCAPE':'PORTRAIT';
+  if(label)label.textContent=mobileScaleOrientation()==='desktop'?'DESKTOP':mobileScaleOrientation()==='landscape'?'LANDSCAPE':'PORTRAIT';
   for(const button of section.querySelectorAll('[data-view-world],[data-view-hud]')){
    const selected=button.hasAttribute('data-view-world')
     ?Number(button.getAttribute('data-view-world'))===current.world
@@ -65,10 +66,10 @@ function mobileScaleSettingsHTML(){
  const data=mobileScaleCurrent();
  const buttons=(steps,key)=>steps.map(n=>`<button type="button" class="mobile-scale-option ${data[key]===n?'selected':''}" data-view-${key}="${n}" aria-pressed="${data[key]===n}">${n}%</button>`).join('');
  return `<section class="mobile-view-settings">
-  <div class="mobile-view-head"><b>DISPLAY SCALE</b><span class="mobile-view-orientation">${mobileScaleOrientation()==='landscape'?'LANDSCAPE':'PORTRAIT'}</span></div>
+  <div class="mobile-view-head"><b>DISPLAY SCALE</b><span class="mobile-view-orientation">${mobileScaleOrientation()==='desktop'?'DESKTOP':mobileScaleOrientation()==='landscape'?'LANDSCAPE':'PORTRAIT'}</span></div>
   <p class="mobile-scale-label">WORLD SCALE</p><div class="mobile-scale-options" role="group" aria-label="World scale">${buttons(mobileWorldSteps,'world')}</div>
   <p class="mobile-scale-label">HUD SCALE</p><div class="mobile-scale-options" role="group" aria-label="HUD scale">${buttons(mobileHudSteps,'hud')}</div>
-  <p class="mobile-scale-hint">Settings are saved separately for portrait and landscape. Smaller world scale shows more of the arena; HUD scale changes the information panel. On a desktop PC these controls edit the mobile presets but do not scale desktop gameplay.</p>
+  <p class="mobile-scale-hint">Settings are saved separately for desktop, portrait and landscape. Smaller world scale shows more of the arena; HUD scale changes the size of gameplay controls and information.</p>
  </section>`;
 }
 // Keep the main Pause menu usable: the presets expand on demand, while
