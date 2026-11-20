@@ -2849,14 +2849,16 @@ const I18N_PAIRS=[
   "TARGET"
  ]
 ];
-const NATIVE_EN_TO_RU=[["WASD / arrows: move · SPACE: dash · ESC: pause","WASD / стрелки: движение · ПРОБЕЛ: рывок · ESC: пауза"],["Relict Swarm game arena","Игровая арена Relict Swarm"],["Current weapon loadout","Текущее вооружение"],["All five weapon slots","Все пять слотов оружия"],["Weapons and fusions","Оружие и синтез"],["FIFTEEN MINUTES","ПЯТНАДЦАТЬ МИНУТ"],["ZERO PROTOCOL","НУЛЕВОЙ ПРОТОКОЛ"],["Toggle audio","Выключить звук"],["PROTOCOL III","ПРОТОКОЛ III"],["Toggle audio","Выключить звук"],["PROTOCOL II","ПРОТОКОЛ II"],["PROTOCOL IV","ПРОТОКОЛ IV"],["Fusion Lab","Лаборатория синтеза"],["PROTOCOL I","ПРОТОКОЛ I"],["PROTOCOL V","ПРОТОКОЛ V"],["DESTROYED","УНИЧТОЖЕНО"],["FUSION","СИНТЕЗ"],["REAPER","ЖНЕЦ"],["Pause","Пауза"],["HULL","КОРПУС"],["DATA","ДАННЫЕ"],["DASH","РЫВОК"],["LV.","УР."]];
+const NATIVE_EN_TO_RU=[["WASD / arrows: move · SPACE: dash · P: pause","WASD / стрелки: движение · ПРОБЕЛ: рывок · P: пауза"],["Relict Swarm game arena","Игровая арена Relict Swarm"],["Current weapon loadout","Текущее вооружение"],["All five weapon slots","Все пять слотов оружия"],["Weapons and fusions","Оружие и синтез"],["FIFTEEN MINUTES","ПЯТНАДЦАТЬ МИНУТ"],["ZERO PROTOCOL","НУЛЕВОЙ ПРОТОКОЛ"],["Toggle audio","Выключить звук"],["PROTOCOL III","ПРОТОКОЛ III"],["Toggle audio","Выключить звук"],["PROTOCOL II","ПРОТОКОЛ II"],["PROTOCOL IV","ПРОТОКОЛ IV"],["Fusion Lab","Лаборатория синтеза"],["PROTOCOL I","ПРОТОКОЛ I"],["PROTOCOL V","ПРОТОКОЛ V"],["DESTROYED","УНИЧТОЖЕНО"],["FUSION","СИНТЕЗ"],["REAPER","ЖНЕЦ"],["Pause","Пауза"],["HULL","КОРПУС"],["DATA","ДАННЫЕ"],["DASH","РЫВОК"],["LV.","УР."]];
 I18N_PAIRS.push(['ЯЗЫК','LANGUAGE']);
 I18N_PAIRS.sort((a,b)=>b[0].length-a[0].length);
 // Existing web, CrazyGames and Yandex releases remain English-only.
 // Playgama follows Bridge platform.language (Russian or English fallback).
 const localeKey='relictswarm_ui_locale_v1';
 const isPlaygama=typeof window!=='undefined'&&window.RelicPlatform?.provider==='playgama';
-const locale=isPlaygama&&/^ru(?:-|$)/i.test(window.RelicPlatform.language)?'ru':'en';
+const storedLocale=isPlaygama?window.RelicPlatform.readStored(localeKey):null;
+let locale=isPlaygama?(storedLocale==='ru'||storedLocale==='en'?storedLocale:
+ /^ru(?:-|$)/i.test(window.RelicPlatform.language)?'ru':'en'):'en';
 if(!isPlaygama)try{localStorage.setItem(localeKey,'en')}catch{}
 const i18nTextCache=new WeakMap(),i18nAttrsCache=new WeakMap();
 function localizedText(raw){
@@ -2903,10 +2905,16 @@ if(typeof window!=='undefined')window.RelicOnPlatformLocale=()=>{
  // Locale is chosen once from the initialized Playgama Bridge at boot.
  if(typeof document!=='undefined')document.documentElement.lang=locale;
 };
-function changeLocale(){
- // Legacy callers cannot change the language of the release.
- if(typeof document!=='undefined')document.documentElement.lang=locale;
- return false;
+function changeLocale(next){
+ // Only the Playgama edition can switch languages. Other editions are English-only.
+ if(!isPlaygama||!['en','ru'].includes(next)||next===locale)return false;
+ locale=next;
+ window.RelicPlatform.writeStored(localeKey,locale);
+ if(typeof document!=='undefined'){
+  document.documentElement.lang=locale;
+  localizeTree(document.body);
+ }
+ return true;
 }
 if(typeof MutationObserver!=='undefined'&&typeof document!=='undefined'&&document.body){
  document.documentElement.lang=locale;
