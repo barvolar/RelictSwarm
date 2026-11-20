@@ -13,6 +13,16 @@ function drawLightning(fx){
  for(let i=2;i<pts.length-2;i+=3){const [x,y]=pts[i],t=Math.sin(i+fx.seed)*15;line(x,y,x+nx*t+dx*.07,y+ny*t+dy*.07,'#d8ffff',1.3);}
  glow(to.x,to.y,35,fx.col,.35);circ(to.x,to.y,4,'#eaffff');cx.restore();
 }
+// A jet follows its current moving nozzle. Its particles and hit calculations
+// are separate: gameplay damage is still computed in droneUpdate().
+function flameJetPose(fx){
+ if(!fx.owner)return {x:fx.x,y:fx.y,ang:fx.ang};
+ const i=S.drones.indexOf(fx.owner);
+ if(i<0)return null;
+ const pos=getDronePos(fx.owner,i);
+ const ang=Number.isFinite(fx.owner.visualAimAngle)?fx.owner.visualAimAngle:fx.ang;
+ return {x:pos.x+Math.cos(ang)*20,y:pos.y+Math.sin(ang)*20,ang};
+}
 function drawBullets(){
  const lite=renderIsLite(),zoom=arenaZoom(),halfW=W/(2*zoom),halfH=H/(2*zoom),camX=S.cam.x,camY=S.cam.y;
  const visible=(x,y,pad=65)=>Math.abs(x-camX)<=halfW+pad&&Math.abs(y-camY)<=halfH+pad;
@@ -24,15 +34,16 @@ function drawBullets(){
  for(const e of S.effects){if(!visible(e.x,e.y,e.r))continue;const k=Math.max(0,e.life/3);if(!lite)glow(e.x,e.y,e.r*1.25,e.fire?'#ff853f':BLUE,e.fire?.10:.12+Math.sin(ambient*6)*.05);cx.save();cx.globalAlpha=clamp(e.life/2,0,e.fire?.22:.6);circ(e.x,e.y,e.r,e.fire?'#ef621538':'#2c80ad1c',e.fire?'#ffad52':BLUE,e.fire?3:2);if(e.fire){for(let f=0;f<5;f++){let q=ambient*1.8+f*TAU/5;circ(e.x+Math.cos(q)*e.r*.65,e.y+Math.sin(q)*e.r*.65,4+Math.sin(ambient*10+f)*2,'#ff9a37')}}for(let k=0;k<6;k++){let a=TAU*k/6+ambient*.5;let x=e.x+Math.cos(a)*e.r,y=e.y+Math.sin(a)*e.r;circ(x,y,3,e.fire?'#ffb453':BLUE)}cx.restore()}
  for(const b of S.bullets){if(!visible(b.x,b.y,40))continue;if(!lite)glow(b.x,b.y,b.type==='rocket'?26:17,b.col,.3);cx.save();cx.translate(b.x,b.y);cx.rotate(Math.atan2(b.vy,b.vx)+Math.PI/2);if(b.type==='gravitySeed'){glow(0,0,28,'#b79aff',.4);ring(0,0,9,'#a88cff',2);circ(0,0,5,'#080514','#dbc7ff',2)}else if(b.type==='boomer'){cx.rotate(ambient*12);for(let k=0;k<5;k++){const a=k*TAU/5;poly([[Math.cos(a)*8,Math.sin(a)*8],[Math.cos(a-.19)*17,Math.sin(a-.19)*17],[Math.cos(a+.19)*17,Math.sin(a+.19)*17]],b.fireDisc?'#7b3f32':'#426f58',b.fireDisc?'#ffb46d':'#8affb2',1)}circ(0,0,7,b.fireDisc?'#fff0be':'#e8fff0',b.col,2)}else if(b.type==='rocket'){poly([[0,-11],[7,-2],[5,9],[-5,9],[-7,-2]],'#bcb3ac','#ffad92',2);glow(0,11,19,AMBER,.4);poly([[0,6],[5,14],[0,18],[-5,14]],AMBER)}else{line(0,8,0,-13,'#adfff8',4);circ(0,-4,3,b.col)}cx.restore()}
  for(const b of S.enemyBullets){if(!visible(b.x,b.y,24))continue;if(!lite)glow(b.x,b.y,19,RED,.25);circ(b.x,b.y,b.r,b.col||RED,'#ffd5d2',1.5)}
- for(const fx of S.fx){const pt=fx.a||fx;if(!visible(pt.x,pt.y,Math.max(fx.length||0,fx.r||60,90))&&!(fx.b&&visible(fx.b.x,fx.b.y,80)))continue;cx.save();cx.globalAlpha=clamp(fx.life/fx.max,0,1);if(fx.type==='rail'){cx.lineCap='round';line(fx.a.x,fx.a.y,fx.b.x,fx.b.y,'#8b5e2b',fx.width*3);line(fx.a.x,fx.a.y,fx.b.x,fx.b.y,'#ffe39b',fx.width);line(fx.a.x,fx.a.y,fx.b.x,fx.b.y,'#ffffff',Math.max(2,fx.width*.3));glow(fx.a.x,fx.a.y,55,'#ffdb86',.6)}else if(fx.type==='cryo'||fx.type==='flame'){
+ for(const fx of S.fx){const jet=fx.type==='flame'?flameJetPose(fx):null;if(fx.type==='flame'&&!jet)continue;const pt=jet||fx.a||fx;if(!visible(pt.x,pt.y,Math.max(fx.length||0,fx.r||60,90))&&!(fx.b&&visible(fx.b.x,fx.b.y,80)))continue;cx.save();cx.globalAlpha=clamp(fx.life/fx.max,0,1);if(fx.type==='rail'){cx.lineCap='round';line(fx.a.x,fx.a.y,fx.b.x,fx.b.y,'#8b5e2b',fx.width*3);line(fx.a.x,fx.a.y,fx.b.x,fx.b.y,'#ffe39b',fx.width);line(fx.a.x,fx.a.y,fx.b.x,fx.b.y,'#ffffff',Math.max(2,fx.width*.3));glow(fx.a.x,fx.a.y,55,'#ffdb86',.6)}else if(fx.type==='cryo'||fx.type==='flame'){
    const ice=fx.type==='cryo',life=clamp(fx.life/fx.max,0,1),v=Math.max(6,Math.round((ice?27:35)*renderEffectDensity()));
    // No opaque triangle: visible jet consists of fast, layered, uneven particles and tapered streaks.
    cx.save();cx.lineCap='round';
    for(let j=0;j<v;j++){
     const u=(j*.61803398875+ambient*(ice?.70:1.25))%1;
     const transverse=Math.sin(j*78.233+(fx.seed||0))*.90;
-    const sweep=fx.ang+transverse*fx.half*(.4+.6*u);
-    const dist=fx.length*(.09+.90*u),jx=fx.x+Math.cos(sweep)*dist,jy=fx.y+Math.sin(sweep)*dist;
+    const emitter=jet||fx;
+    const sweep=emitter.ang+transverse*fx.half*(.4+.6*u);
+    const dist=fx.length*(.09+.90*u),jx=emitter.x+Math.cos(sweep)*dist,jy=emitter.y+Math.sin(sweep)*dist;
     const flow=8+dist*.075,xx=jx-Math.cos(sweep)*flow,yy=jy-Math.sin(sweep)*flow;
     const col=ice?(j%3?'#9cf1ff':'#e5ffff'):(j%3?'#ff852f':'#fff1a4');
     cx.globalAlpha=(.27+.63*life)*(1-.26*u);
