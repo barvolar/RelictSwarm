@@ -1,5 +1,5 @@
 // Opt-in QA sandbox: append ?qa=1. Test runs cannot grant persistent rewards.
-function qaDebugEnabled(){return typeof location!=='undefined'&&new URLSearchParams(location.search).get('qa')==='1';}
+function qaDebugEnabled(){return window.RelicPlatform?.provider!=='playgama'&&typeof location!=='undefined'&&new URLSearchParams(location.search).get('qa')==='1';}
 let qaWeapon='pulse',qaEnemy='scarab',qaSlot='new',qaCount=12,qaLevel=1;
 function qaPauseHTML(){
  const opts=(map,picked)=>Object.entries(map).map(([id,v])=>'<option value="'+id+'"'+(id===picked?' selected':'')+'>'+v.name+'</option>').join('');
