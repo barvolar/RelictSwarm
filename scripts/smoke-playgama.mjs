@@ -33,8 +33,20 @@ const makeMock=language=>`
   },
   initialize(){calls.push(['initialize']);return Promise.resolve()},
   storage:{
-   get(keys){calls.push(['get',keys]);return Promise.resolve(keys.map(()=>null))},
-   set(keys,values){calls.push(['set',keys,values]);return Promise.resolve()}
+   get(keys,tryParseJson=true){
+    calls.push(['get',keys,tryParseJson]);
+    return Promise.resolve(keys.map(key=>{
+     const value=localStorage.getItem('bridge-test:'+key);
+     if(value===null)return null;
+     if(!tryParseJson)return value;
+     try{return JSON.parse(value)}catch{return value}
+    }));
+   },
+   set(keys,values){
+    calls.push(['set',keys,values]);
+    keys.forEach((key,i)=>localStorage.setItem('bridge-test:'+key,values[i]));
+    return Promise.resolve();
+   }
   },
   platform:{
    language:'${language}',isAudioEnabled:true,isPaused:false,
@@ -119,6 +131,33 @@ try{
   await page.evaluate(()=>window.__bridgeTrigger('pause',false));
   await page.waitForFunction(()=>document.querySelector('#modal')?.classList.contains('hidden'),{timeout:15000});
   assert.equal(pageErrors.length,0,label+' errors after gameplay: '+pageErrors.join(' | '));
+  if(label==='desktop'){
+   // Finish an actual game run, exercise persist(), and reopen the same game.
+   await page.waitForTimeout(1300);
+   await page.keyboard.press('p');
+   await page.locator('#quitBtn').waitFor({state:'visible',timeout:10000});
+   await page.locator('#quitBtn').click();
+   await page.locator('#hangarBtn').click();
+   await page.waitForFunction(()=>localStorage.getItem('bridge-test:relictSwarm_v01_save')!==null,{timeout:10000});
+   const finished=await page.evaluate(()=>JSON.parse(localStorage.getItem('bridge-test:relictSwarm_v01_save')));
+   assert.ok(finished.runs>=1,'actual game finish must persist run count');
+   // In the mock Cloud, add representative progress so a reload regression is
+   // visible even if an immediate abandoned run earned zero crystals.
+   const meaningful={...finished,shards:89,best:357};
+   await page.evaluate(value=>window.RelicPlatform.writeStored('relictSwarm_v01_save',JSON.stringify(value)),meaningful);
+   await page.waitForFunction(()=>JSON.parse(localStorage.getItem('bridge-test:relictSwarm_v01_save')||'null')?.shards===89,{timeout:10000});
+   await page.reload({waitUntil:'domcontentloaded'});
+   await page.locator('#mainPlay').waitFor({state:'visible',timeout:30000});
+   const stored=await page.evaluate(()=>JSON.parse(window.RelicPlatform.readStored('relictSwarm_v01_save')));
+   assert.equal(stored.shards,89,'Bridge restore must include crystals');
+   assert.equal(stored.best,357,'Bridge restore must include high score');
+   assert.equal(stored.runs,finished.runs,'Bridge restore must preserve real run count');
+   const home=await page.locator('#modalContent').innerText();
+   assert.ok(home.includes('89 crystals'),'menu must display restored crystals');
+   assert.ok(home.includes('best score 357'),'menu must display restored score');
+   assert.equal(pageErrors.length,0,'reload should not cause script errors: '+pageErrors.join(' | '));
+   console.log('PASS: Playgama real run finish, Bridge save and F5 restore (crystals, best score, run count)');
+  }
   console.log('PASS: Playgama '+label+' ('+viewport.width+'x'+viewport.height+') interactive startup and pause');
   await context.close();
  }
