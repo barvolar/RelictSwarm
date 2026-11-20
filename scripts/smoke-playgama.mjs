@@ -20,7 +20,7 @@ const server=http.createServer((req,res)=>{
 });
 await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
 const url='http://127.0.0.1:'+server.address().port+'/';
-const mock=`
+const makeMock=language=>`
 (function(){
  const calls=window.__bridgeCalls=[];
  const listeners={};
@@ -37,7 +37,7 @@ const mock=`
    set(keys,values){calls.push(['set',keys,values]);return Promise.resolve()}
   },
   platform:{
-   language:'en',isAudioEnabled:true,isPaused:false,
+   language:'${language}',isAudioEnabled:true,isPaused:false,
    on(event,cb){(listeners[event]??=[]).push(cb)},
    sendMessage(value){calls.push(['message',value]);return Promise.resolve()}
   },
@@ -64,7 +64,7 @@ try{
   const page=await context.newPage();
   const pageErrors=[];
   page.on('pageerror',error=>pageErrors.push(error.message));
-  await page.route('https://bridge.playgama.com/**',route=>route.fulfill({status:200,contentType:'text/javascript',body:mock}));
+  await page.route('https://bridge.playgama.com/**',route=>route.fulfill({status:200,contentType:'text/javascript',body:makeMock(label==='portrait'?'ru':'en')}));
   await page.goto(url,{waitUntil:'domcontentloaded',timeout:30000});
   await page.locator('#mainPlay').waitFor({state:'visible',timeout:30000});
   let calls=await page.evaluate(()=>window.__bridgeCalls);
@@ -73,6 +73,33 @@ try{
   assert.ok(calls.some(c=>c[0]==='message'&&c[1]==='game_ready'),label+' must report ready');
   assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+2),label+' page must not scroll horizontally');
   assert.equal(pageErrors.length,0,label+' errors after menu: '+pageErrors.join(' | '));
+  // The screenshots reported a mixed Russian/English settings panel.
+  // Check both locale directions and the manual language switch.
+  await page.locator('#mainSettings').click({timeout:15000});
+  await page.locator('.graphics-settings').waitFor({state:'visible',timeout:15000});
+  let graphics=await page.locator('.graphics-settings').innerText();
+  if(label==='portrait'){
+   assert.ok(graphics.includes('КАЧЕСТВО ГРАФИКИ'),label+' should display Russian graphics heading');
+   assert.ok(graphics.includes('Максимальная детализация'),label+' should display Russian preset descriptions');
+   assert.ok(!graphics.includes('GRAPHICS QUALITY')&&!graphics.includes('Enemies use'),label+' settings must not mix languages');
+   assert.ok((await page.locator('.privacy-policy-row').innerText()).includes('Прогресс сохраняется'),label+' privacy must be Russian');
+   await page.locator('#howBtn').click();
+   assert.ok((await page.locator('#modalContent').innerText()).includes('СОБЕРИ СВОЙ АРСЕНАЛ'),label+' help must be Russian');
+   await page.locator('#backFromHow').click();
+   await page.locator('#languageBtn').click();
+   graphics=await page.locator('.graphics-settings').innerText();
+   assert.ok(graphics.includes('GRAPHICS QUALITY')&&!graphics.includes('КАЧЕСТВО ГРАФИКИ'),label+' should switch to English');
+   assert.equal(await page.evaluate(()=>document.documentElement.lang),'en');
+   assert.ok((await page.locator('.privacy-policy-row').innerText()).includes('Game progress uses Playgama Bridge'));
+   assert.ok((await page.evaluate(()=>window.__bridgeCalls)).some(c=>c[0]==='set'&&c[1].includes('relictswarm_ui_locale_v1')&&c[2].includes('en')),label+' language choice must be saved through Bridge');
+   await page.locator('#languageBtn').click();
+   assert.ok((await page.locator('.graphics-settings').innerText()).includes('КАЧЕСТВО ГРАФИКИ'),label+' should switch back to Russian');
+  }else{
+   assert.ok(graphics.includes('GRAPHICS QUALITY'),label+' should display English graphics heading');
+   assert.ok(!graphics.includes('КАЧЕСТВО ГРАФИКИ'),label+' settings must be English');
+  }
+  assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+2),label+' settings must not scroll horizontally');
+  await page.locator('#backHome').click();
   await page.locator('#mainPlay').click({timeout:15000});
   await page.locator('#startBtn').waitFor({state:'visible',timeout:15000});
   await page.locator('#startBtn').click({timeout:15000});
