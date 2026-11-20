@@ -41,8 +41,8 @@ function harness(){
 test('bootstrap initializes and loads all persistent keys before the game can run',async()=>{
  const calls=[];
  const keys=['relictSwarm_v01_save','relictSwarm_audio_v1','relictswarm_render_quality','relictswarm_orientation_v1','relictswarm_ui_locale_v1'];
- const sdk={initialize:async()=>{calls.push('initialize')},storage:{get:async(items)=>{
-  calls.push('get');assert.deepEqual(Array.from(items),keys);return ['{"runs":3}',null,'minimal','portrait','ru'];
+ const sdk={initialize:async()=>{calls.push('initialize')},storage:{get:async(items,tryParseJson=true)=>{
+  calls.push('get');assert.equal(tryParseJson,false,'JSON saves must be read without implicit SDK parsing');assert.deepEqual(Array.from(items),keys);return ['{"runs":3}',null,'minimal','portrait','ru'];
  }}};
  const window={bridge:sdk};
  vm.runInNewContext(read('src/platform/playgama-bootstrap.js'),{window,bridge:sdk,Promise,Error},{timeout:3000});
@@ -120,4 +120,27 @@ test('Playgama build has correct SDK order, config and no developer telemetry cl
  assert.ok(read('src/modules/40-game/lifecycle/finish.js').includes("showInterstitial?.()"));
  assert.ok(read('src/modules/40-game/upgrades/reroll.js').includes('requestRewardedReroll'));
  assert.ok(!read('src/platform/playgama-privacy.html').includes('workers.dev'));
+});
+
+// The actual Bridge SDK's default storage.get() behavior JSON-parses values.
+// Previously this returned an object, which the legacy loader then parsed twice,
+// silently resetting crystals and best score to zero after F5.
+test('stored crystals and high score survive both Bridge JSON return formats',()=>{
+ const src=read('src/modules/20-core/state/runtime.js');
+ const owned=src.slice(0,src.indexOf('function equippedSkin()'));
+ const load=src.slice(src.indexOf('function readSave()'),src.indexOf('function persist()'));
+ assert.ok(owned.includes('function ownedSkins')&&load.includes('function readSave'));
+ const original={shards:126,best:638,runs:4,wins:1,meta:{hull:2},recipes:{},skins:['relict','ghost'],skin:'relict',threatUnlocked:2,records:[]};
+ for(const raw of [JSON.stringify(original),original]){
+  const save=vm.runInNewContext(owned+'\\n'+load+'\\nreadSave()',{
+   window:{RelicPlatform:{readStored:()=>raw}},
+   localStorage:{getItem(){throw Error('No localStorage fallback for Playgama saves')}},
+   saveKey:'relictSwarm_v01_save',
+   SKINS:{relict:{},ghost:{}},META:[{id:'hull',max:10}]
+  },{timeout:2000});
+  assert.equal(save.shards,126,'crystals restored');
+  assert.equal(save.best,638,'best score restored');
+  assert.equal(save.runs,4,'completed runs restored');
+  assert.equal(save.meta.hull,2,'purchased upgrades restored');
+ }
 });
