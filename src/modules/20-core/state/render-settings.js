@@ -8,7 +8,7 @@ const RENDER_PRESETS=[
 ];
 let renderQuality='normal';
 try{
- const stored=window.RelicPlatform?.readStored?.(renderQualityKey)??localStorage.getItem(renderQualityKey);
+ const stored=(window.RelicPlatform?.readStored?window.RelicPlatform.readStored(renderQualityKey):localStorage.getItem(renderQualityKey));
  // Old ECO upgrades to LOW instead of unexpectedly replacing enemies with polygons.
  renderQuality=stored==='eco'?'low':RENDER_PRESETS.some(p=>p.id===stored)?stored:'normal';
 }catch{}
