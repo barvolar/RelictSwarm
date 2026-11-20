@@ -1,4 +1,4 @@
-function saveAudioSettings(){try{localStorage.setItem(audioSettingsKey,JSON.stringify(audioSettings))}catch{}}
+function saveAudioSettings(){try{if(window.RelicPlatform?.writeStored)window.RelicPlatform.writeStored(audioSettingsKey,JSON.stringify(audioSettings));else localStorage.setItem(audioSettingsKey,JSON.stringify(audioSettings))}catch{}}
 function refreshAudioControls(){
  const b=$('soundBtn'),h=$('audioHudBtn');if(b)b.textContent=audioSettings.on?'♫ Звук: вкл.':'♪ Звук: выкл.';
  if(h){h.textContent=audioSettings.on?'♫':'♪';h.title=audioSettings.on?'Выключить звук':'Включить звук';h.setAttribute('aria-label',h.title)}
