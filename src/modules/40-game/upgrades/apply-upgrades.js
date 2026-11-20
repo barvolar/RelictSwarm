@@ -6,7 +6,7 @@ function showUpgrades(){
 }
 function renderUpgradeScreen(){
  const available=canUseReroll();
- const rewarded=window.RelicPlatform?.canReward?.()&&S.rerollsRemaining===0&&S.rewardedRerollLevel!==S.lvl;
+ const rewarded=typeof window!=='undefined'&&window.RelicPlatform?.canReward?.()&&S.rerollsRemaining===0&&S.rewardedRerollLevel!==S.lvl;
  $('modalContent').innerHTML=`<div class="upgrade-v2-screen">
   <div class="upgrade-topline"><div class="panel-title">ВЫБЕРИ МОДИФИКАЦИЮ</div><div class="label">УР. ${S.lvl}</div></div>
   <p class="up-short-summary">Оружие: ${S.drones.length}/${MAX_WEAPONS} · Выбери одну из трёх модификаций</p>
