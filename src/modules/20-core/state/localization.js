@@ -561,8 +561,8 @@ const I18N_PAIRS=[
   "Threat:"
  ],
  [
-  "Результат сохранён только в этом браузере.",
-  "Your result is stored in this browser only."
+  "Результат сохранён.",
+  "Result saved."
  ],
  [
   "↻ ЕЩЁ ОДИН ЗАБЕГ",
@@ -2853,7 +2853,7 @@ const NATIVE_EN_TO_RU=[["WASD / arrows: move · SPACE: dash · P: pause","WASD /
 I18N_PAIRS.push(['ЯЗЫК','LANGUAGE']);
 I18N_PAIRS.sort((a,b)=>b[0].length-a[0].length);
 // Existing web, CrazyGames and Yandex releases remain English-only.
-// Playgama follows Bridge platform.language (Russian or English fallback).
+// Playgama starts in English; the player can explicitly switch to Russian.
 const localeKey='relictswarm_ui_locale_v1';
 const isPlaygama=typeof window!=='undefined'&&window.RelicPlatform?.provider==='playgama';
 const storedLocale=isPlaygama?window.RelicPlatform.readStored(localeKey):null;
