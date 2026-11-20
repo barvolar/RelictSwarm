@@ -64,13 +64,15 @@ test('Android fullscreen exit releases orientation lock and exposes a Pause exit
  h.window.RELICT_PLATFORM='playgama';
  await vm.runInContext('toggleFullscreen()',h.context);
  assert.equal(h.buttons.fullscreenBtn.textContent,'⤡');
- assert.ok(vm.runInContext('fullscreenExitPauseHTML()',h.context).includes('exitFullscreenPause'));
- // Paused menu gets an explicit action separate from the small HUD icon.
+ assert.equal(vm.runInContext('fullscreenButtonText()',h.context),'⤡ EXIT FULLSCREEN');
+ const pauseSource=read('src/modules/40-game/lifecycle/pause-and-notices.js');
+ assert.equal((pauseSource.match(/id="fullscreenPause"/g)||[]).length,2,'one fullscreen toggle per pause variant');
+ assert.doesNotMatch(pauseSource,/exitFullscreenPause/,'redundant second button must not return');
  await vm.runInContext('exitGameFullscreen()',h.context);
  assert.deepEqual(calls,['unlock']);
  assert.equal(h.document.fullscreenElement,null);
  assert.equal(h.buttons.fullscreenBtn.textContent,'⛶');
- assert.equal(vm.runInContext('fullscreenExitPauseHTML()',h.context),'');
+ assert.equal(vm.runInContext('fullscreenButtonText()',h.context),'⛶ FULLSCREEN');
 });
 
 test('webkit fullscreen exit fallback works when standard API is absent',async()=>{
