@@ -79,22 +79,25 @@ try{
   await page.locator('.graphics-settings').waitFor({state:'visible',timeout:15000});
   let graphics=await page.locator('.graphics-settings').innerText();
   if(label==='portrait'){
-   assert.ok(graphics.includes('КАЧЕСТВО ГРАФИКИ'),label+' should display Russian graphics heading');
+   // Portal advertises RU but brand-new users must still see English.
+   assert.ok(graphics.includes('GRAPHICS QUALITY'),label+' default must be English even when host language is Russian');
+   assert.equal(await page.evaluate(()=>document.documentElement.lang),'en');
+   await page.locator('#languageBtn').click();
+   graphics=await page.locator('.graphics-settings').innerText();
+   assert.ok(graphics.includes('КАЧЕСТВО ГРАФИКИ'),label+' should switch to Russian');
    assert.ok(graphics.includes('Максимальная детализация'),label+' should display Russian preset descriptions');
    assert.ok(!graphics.includes('GRAPHICS QUALITY')&&!graphics.includes('Enemies use'),label+' settings must not mix languages');
    assert.ok((await page.locator('.privacy-policy-row').innerText()).includes('Прогресс сохраняется'),label+' privacy must be Russian');
    await page.locator('#howBtn').click();
    assert.ok((await page.locator('#modalContent').innerText()).includes('СОБЕРИ СВОЙ АРСЕНАЛ'),label+' help must be Russian');
    await page.locator('#backFromHow').click();
+   assert.ok((await page.evaluate(()=>window.__bridgeCalls)).some(c=>c[0]==='set'&&c[1].includes('relictswarm_ui_locale_v1')&&c[2].includes('ru')),label+' explicit Russian selection must be saved');
    await page.locator('#languageBtn').click();
    graphics=await page.locator('.graphics-settings').innerText();
-   assert.ok(graphics.includes('GRAPHICS QUALITY')&&!graphics.includes('КАЧЕСТВО ГРАФИКИ'),label+' should switch to English');
+   assert.ok(graphics.includes('GRAPHICS QUALITY')&&!graphics.includes('КАЧЕСТВО ГРАФИКИ'),label+' should switch back to English');
    assert.equal(await page.evaluate(()=>document.documentElement.lang),'en');
    assert.ok((await page.locator('.privacy-policy-row').innerText()).includes('Game progress uses Playgama Bridge'));
-   assert.ok((await page.evaluate(()=>window.__bridgeCalls)).some(c=>c[0]==='set'&&c[1].includes('relictswarm_ui_locale_v1')&&c[2].includes('en')),label+' language choice must be saved through Bridge');
-   await page.locator('#languageBtn').click();
-   assert.ok((await page.locator('.graphics-settings').innerText()).includes('КАЧЕСТВО ГРАФИКИ'),label+' should switch back to Russian');
-  }else{
+    }else{
    assert.ok(graphics.includes('GRAPHICS QUALITY'),label+' should display English graphics heading');
    assert.ok(!graphics.includes('КАЧЕСТВО ГРАФИКИ'),label+' settings must be English');
   }
