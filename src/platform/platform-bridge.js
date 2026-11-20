@@ -33,21 +33,7 @@
    if(provider==='yandex'){
     if(active)sdk.features?.GameplayAPI?.start?.();
     else sdk.features?.GameplayAPI?.stop?.();
-   }else if(provider==='playgama'){
-  if(!window.bridge)throw Error('Playgama Bridge must initialize before the game');
-  sdk=window.bridge;
-  language=String(sdk.platform?.language||'en');
-  audioEnabled=sdk.platform?.isAudioEnabled!==false;
-  sdk.platform.on(sdk.EVENT_NAME.PAUSE_STATE_CHANGED,paused=>paused?platformPause():platformResume());
-  sdk.platform.on(sdk.EVENT_NAME.AUDIO_STATE_CHANGED,enabled=>{audioEnabled=!!enabled;audioStateHandler(audioEnabled)});
-  sdk.advertisement.on(sdk.EVENT_NAME.REWARDED_STATE_CHANGED,state=>{
-   if(state==='rewarded'&&rewardedCallback){const cb=rewardedCallback;rewardedCallback=null;cb()}
-   else if(state==='closed'||state==='failed')rewardedCallback=null;
-  });
-  if(sdk.platform.isPaused)platformPause();
-  return;
- }
- if(provider==='crazygames'){
+   }else if(provider==='crazygames'){
     if(active)sdk.game?.gameplayStart?.();
     else sdk.game?.gameplayStop?.();
    }
@@ -103,6 +89,20 @@
  document.addEventListener('visibilitychange',()=>{
   if(provider==='yandex')syncGameplay(gameplayRequested);
  });
+ if(provider==='playgama'){
+  if(!window.bridge)throw Error('Playgama Bridge must initialize before the game');
+  sdk=window.bridge;
+  language=String(sdk.platform?.language||'en');
+  audioEnabled=sdk.platform?.isAudioEnabled!==false;
+  sdk.platform.on(sdk.EVENT_NAME.PAUSE_STATE_CHANGED,paused=>paused?platformPause():platformResume());
+  sdk.platform.on(sdk.EVENT_NAME.AUDIO_STATE_CHANGED,enabled=>{audioEnabled=!!enabled;audioStateHandler(audioEnabled)});
+  sdk.advertisement.on(sdk.EVENT_NAME.REWARDED_STATE_CHANGED,state=>{
+   if(state==='rewarded'&&rewardedCallback){const cb=rewardedCallback;rewardedCallback=null;cb()}
+   else if(state==='closed'||state==='failed')rewardedCallback=null;
+  });
+  if(sdk.platform.isPaused)platformPause();
+  return;
+ }
  if(provider==='crazygames'){
   const crazy=window.CrazyGames?.SDK;
   if(!crazy||typeof crazy.init!=='function'){
