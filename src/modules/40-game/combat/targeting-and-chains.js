@@ -1,9 +1,33 @@
 function closest(x,y,max=360,except=null){let best=null,bestD=max*max;for(let e of S.enemy){if(e.hp<=0||e===except)continue;let d=(e.x-x)**2+(e.y-y)**2;if(d<bestD){best=e;bestD=d}}return best}
 // Ranged weapons favor a reachable boss, but switch to immediate threats when surrounded.
 // The nearest target still governs flame, saws, mines and short-range defensive effects.
+// On narrow touchscreens the maximum weapon range can be much larger than
+// the camera's visible width. Prefer actual visible threats; never aim the
+// auto-turrets at an enemy hidden beyond the edge of the player's viewport.
+function mobileTargetVisible(e){
+ if(!touching||!S?.cam||typeof W!=='number'||typeof H!=='number'||typeof arenaZoom!=='function')return true;
+ const zoom=arenaZoom(),inset=14/zoom;
+ return Math.abs(e.x-S.cam.x)<W/(2*zoom)-inset &&
+        Math.abs(e.y-S.cam.y)<H/(2*zoom)-inset;
+}
 function chooseCombatTarget(x,y,max=550,weapon='pulse'){
- if(!trainingMode&&tacticLv('hunter')&&S.tacticBossLockUntil>S.t){const boss=S.bosses.find(e=>e.hp>0&&Math.hypot(e.x-x,e.y-y)<=max);if(boss&&!['saw','flame','mine','gravity'].includes(weapon))return boss;}
- return selectCombatTarget(closest(x,y,max),S.bosses,x,y,max,weapon,trainingMode);
+ const screenAware=touching&&S?.cam&&typeof W==='number'&&typeof H==='number'&&typeof arenaZoom==='function';
+ let nearby,visibleBosses=S.bosses;
+ if(screenAware){
+  let best=max*max;
+  nearby=null;
+  for(const e of S.enemy){
+   if(e.hp<=0||!mobileTargetVisible(e))continue;
+   const d=(e.x-x)**2+(e.y-y)**2;
+   if(d<best){best=d;nearby=e;}
+  }
+  visibleBosses=S.bosses.filter(mobileTargetVisible);
+ }else nearby=closest(x,y,max);
+ if(!trainingMode&&tacticLv('hunter')&&S.tacticBossLockUntil>S.t){
+  const boss=visibleBosses.find(e=>e.hp>0&&Math.hypot(e.x-x,e.y-y)<=max);
+  if(boss&&!['saw','flame','mine','gravity'].includes(weapon))return boss;
+ }
+ return selectCombatTarget(nearby,visibleBosses,x,y,max,weapon,trainingMode);
 }
 function damageArea(x,y,r,dmg,options={}){for(const e of S.enemy){if(e.hp<=0)continue;let dx=e.x-x,dy=e.y-y;if(dx*dx+dy*dy<(r+e.r)**2){hurtEnemy(e,dmg*(options.markedMultiplier&&e.marked>0?options.markedMultiplier:1),options)}}S.fx.push({type:'ring',x,y,r,life:.32,max:.32,col:options.color||AMBER});burst(x,y,options.color||AMBER,19,r*2)}
 // Shared firing geometry. The illustrated muzzle is on the drone's local -Y axis.
