@@ -19,7 +19,7 @@ function balReport(){
   events:bal.events,
   fpsSummary:typeof perfSummary==='function'?perfSummary():null};
 }
-function balStore(){try{const report=balReport();if(report){balLast=report;localStorage.setItem(BAL_STORE,JSON.stringify(report));if(report.result?.status==='in_progress')window.SwarmTelemetry?.sample?.(report,perf.samples)}}catch(err){console.warn('Balance report storage:',err)}}
+function balStore(){try{const report=balReport();if(report){balLast=report;if(window.RelicPlatform?.provider!=='playgama')localStorage.setItem(BAL_STORE,JSON.stringify(report));if(report.result?.status==='in_progress')window.SwarmTelemetry?.sample?.(report,perf.samples)}}catch(err){console.warn('Balance report storage:',err)}}
 function balFinalize(won,giveup){
  if(!bal||trainingMode)return;
  balSnapshot();bal.result={status:won?'win':giveup?'abandoned':'defeat',
