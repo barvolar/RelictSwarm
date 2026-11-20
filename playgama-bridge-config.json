@@ -1,0 +1,21 @@
+{
+  "advertisement": {
+    "minimumDelayBetweenInterstitial": 60,
+    "interstitial": {
+      "placementFallback": "run_end",
+      "placements": [
+        {
+          "id": "run_end"
+        }
+      ]
+    },
+    "rewarded": {
+      "placementFallback": "upgrade_reroll",
+      "placements": [
+        {
+          "id": "upgrade_reroll"
+        }
+      ]
+    }
+  }
+}
