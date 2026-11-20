@@ -78,6 +78,18 @@ test('main game uses mobile preferences without affecting desktop or other editi
  vm.runInContext(overlays,other);
  assert.equal(vm.runInContext('arenaZoom()',other),.73);
 });
+test('mobile presets are visible on desktop Playgama QA without scaling desktop gameplay',()=>{
+ const h=context();
+ h.ctx.touching=false;
+ const markup=run(h,'mobileScaleSettingsHTML()');
+ assert.ok(markup.includes('data-view-world="35"'));
+ assert.ok(markup.includes('data-view-hud="80"'));
+ assert.ok(markup.includes('On a desktop PC'));
+ const pause=run(h,'mobileScalePauseHTML()');
+ assert.ok(pause.includes('<details class="mobile-scale-fold">'));
+ assert.ok(pause.includes('WORLD 35% · HUD 80%'));
+});
+
 test('HUD scale applies to both mobile orientation layouts and preserves click geometry',()=>{
  const css=read('src/styles/sections/fullscreen-portrait.css');
  assert.match(css,/html\.playgama-scale-enabled #hud \.hud-dock/);
@@ -88,6 +100,7 @@ test('HUD scale applies to both mobile orientation layouts and preserves click g
  const pause=read('src/modules/40-game/lifecycle/pause-and-notices.js');
  assert.match(menu,/\$\{mobileScaleSettingsHTML\(\)\}/);
  assert.match(menu,/bindMobileScaleSettings\(\)/);
- assert.equal((pause.match(/\$\{mobileScaleSettingsHTML\(\)\}/g)||[]).length,2);
+ assert.equal((pause.match(/\$\{mobileScalePauseHTML\(\)\}/g)||[]).length,2);
+ assert.ok(source.includes('function mobileScalePauseHTML()'));
  assert.equal((pause.match(/bindMobileScaleSettings\(\)/g)||[]).length,2);
 });
