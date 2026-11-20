@@ -8,7 +8,7 @@ const RENDER_PRESETS=[
 ];
 let renderQuality='normal';
 try{
- const stored=localStorage.getItem(renderQualityKey);
+ const stored=window.RelicPlatform?.readStored?.(renderQualityKey)??localStorage.getItem(renderQualityKey);
  // Old ECO upgrades to LOW instead of unexpectedly replacing enemies with polygons.
  renderQuality=stored==='eco'?'low':RENDER_PRESETS.some(p=>p.id===stored)?stored:'normal';
 }catch{}
@@ -30,7 +30,7 @@ function effectiveRenderDpr(){
 function setRenderQuality(next){
  if(!RENDER_PRESETS.some(p=>p.id===next))return;
  renderQuality=next;adaptiveRenderScale=1;adaptiveRenderLastChange=-100;
- try{localStorage.setItem(renderQualityKey,renderQuality)}catch{}
+ try{if(window.RelicPlatform?.writeStored)window.RelicPlatform.writeStored(renderQualityKey,renderQuality);else localStorage.setItem(renderQualityKey,renderQuality)}catch{}
  if(typeof bal!=='undefined'&&bal)bal.graphicsQuality=renderQuality;
  resize();
 }
