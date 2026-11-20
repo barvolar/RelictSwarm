@@ -40,9 +40,9 @@ function harness(){
 
 test('bootstrap initializes and loads all persistent keys before the game can run',async()=>{
  const calls=[];
- const keys=['relictSwarm_v01_save','relictSwarm_audio_v1','relictswarm_render_quality'];
+ const keys=['relictSwarm_v01_save','relictSwarm_audio_v1','relictswarm_render_quality','relictswarm_orientation_v1'];
  const sdk={initialize:async()=>{calls.push('initialize')},storage:{get:async(items)=>{
-  calls.push('get');assert.deepEqual(Array.from(items),keys);return ['{"runs":3}',null,'minimal'];
+  calls.push('get');assert.deepEqual(Array.from(items),keys);return ['{"runs":3}',null,'minimal','portrait'];
  }}};
  const window={bridge:sdk};
  vm.runInNewContext(read('src/platform/playgama-bootstrap.js'),{window,bridge:sdk,Promise,Error},{timeout:3000});
@@ -52,6 +52,7 @@ test('bootstrap initializes and loads all persistent keys before the game can ru
  assert.equal(window.RelicPlaygamaData.relictSwarm_v01_save,'{"runs":3}');
  assert.equal(window.RelicPlaygamaData.relictswarm_render_quality,'minimal');
  assert.equal(window.RelicPlaygamaData.relictSwarm_audio_v1,null);
+ assert.equal(window.RelicPlaygamaData.relictswarm_orientation_v1,'portrait');
 });
 
 test('Playgama adapter uses Bridge Storage, batches writes and sends game_ready once',async()=>{
