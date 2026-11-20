@@ -132,7 +132,7 @@ test('stored crystals and high score survive both Bridge JSON return formats',()
  assert.ok(owned.includes('function ownedSkins')&&load.includes('function readSave'));
  const original={shards:126,best:638,runs:4,wins:1,meta:{hull:2},recipes:{},skins:['relict','ghost'],skin:'relict',threatUnlocked:2,records:[]};
  for(const raw of [JSON.stringify(original),original]){
-  const save=vm.runInNewContext(owned+'\\n'+load+'\\nreadSave()',{
+  const save=vm.runInNewContext(owned+'\n'+load+'\nreadSave()',{
    window:{RelicPlatform:{readStored:()=>raw}},
    localStorage:{getItem(){throw Error('No localStorage fallback for Playgama saves')}},
    saveKey:'relictSwarm_v01_save',
