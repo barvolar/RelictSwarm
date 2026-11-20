@@ -33,7 +33,7 @@ function bindAudioMixer(){refreshAudioControls();for(const [id,key] of [['sfxVol
 // Audio diagnostics are only visible on an explicit developer URL (?dev=1).
 // No sound data is removed; players retain music and effects volume controls.
 function audioDebugEnabled(){
- return window.RelicPlatform?.provider!=='playgama'&&typeof location!=='undefined' && new URLSearchParams(location.search).get('dev')==='1';
+ return (typeof window==='undefined'||window.RelicPlatform?.provider!=='playgama')&&typeof location!=='undefined' && new URLSearchParams(location.search).get('dev')==='1';
 }
 function audioMixerHTML(){
  const debug=audioDebugEnabled();
