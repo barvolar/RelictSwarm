@@ -137,6 +137,9 @@ try{
    await page.keyboard.press('p');
    await page.locator('#quitBtn').waitFor({state:'visible',timeout:10000});
    await page.locator('#quitBtn').click();
+   await page.waitForFunction(()=>document.querySelector('#modalContent')?.textContent?.includes('Result saved.'),{timeout:10000});
+   const resultText=await page.locator('#modalContent').innerText();
+   assert.ok(!/[А-Яа-яЁё]/.test(resultText),'English result screen must contain no leftover Russian labels');
    await page.locator('#hangarBtn').click();
    await page.waitForFunction(()=>localStorage.getItem('bridge-test:relictSwarm_v01_save')!==null,{timeout:10000});
    const finished=await page.evaluate(()=>JSON.parse(localStorage.getItem('bridge-test:relictSwarm_v01_save')));
