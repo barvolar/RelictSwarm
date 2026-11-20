@@ -2854,7 +2854,8 @@ NATIVE_EN_TO_RU.push(
  ['DISPLAY SCALE','МАСШТАБ ИЗОБРАЖЕНИЯ'],
  ['WORLD SCALE','МАСШТАБ МИРА'],
  ['HUD SCALE','МАСШТАБ ИНТЕРФЕЙСА'],
- ['Settings are saved separately for portrait and landscape. Smaller world scale shows more of the arena; HUD scale changes the information panel. On a desktop PC these controls edit the mobile presets but do not scale desktop gameplay.','Настройки отдельно сохраняются для вертикального и горизонтального режимов. Меньший масштаб мира показывает больше арены, а масштаб интерфейса меняет размер информационной панели. На компьютере можно настроить мобильные пресеты, но они не влияют на масштаб компьютерной версии.'],
+ ['Settings are saved separately for desktop, portrait and landscape. Smaller world scale shows more of the arena; HUD scale changes the size of gameplay controls and information.','Настройки отдельно сохраняются для ПК, вертикального и горизонтального режимов. Меньший масштаб мира показывает больше арены, а масштаб интерфейса изменяет размер игровых элементов и информации.'],
+ ['DESKTOP','ПК'],
  ['LANDSCAPE','ГОРИЗОНТАЛЬНО'],
  ['PORTRAIT','ВЕРТИКАЛЬНО']
 );
