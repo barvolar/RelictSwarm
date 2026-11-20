@@ -1,0 +1,35 @@
+name: Playgama build and QA
+on:
+  push:
+    branches:
+      - playgama-integration
+  workflow_dispatch:
+jobs:
+  playgama:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Build and test
+        run: npm test
+      - name: Assemble Playgama upload ZIP
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd dist/playgama
+          test -s index.html
+          test -s playgama-bridge-config.json
+          test -s privacy.html
+          zip -9 -q ../../RelictSwarm-Playgama.zip index.html playgama-bridge-config.json privacy.html
+          cd ../..
+          unzip -l RelictSwarm-Playgama.zip
+      - name: Upload Playgama release archive
+        uses: actions/upload-artifact@v4
+        with:
+          name: RelictSwarm-Playgama
+          path: RelictSwarm-Playgama.zip
+          if-no-files-found: error
