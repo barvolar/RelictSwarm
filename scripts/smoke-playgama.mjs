@@ -91,6 +91,15 @@ try{
   await page.locator('#mainSettings').click({timeout:15000});
   await page.locator('.graphics-settings').waitFor({state:'visible',timeout:15000});
   let graphics=await page.locator('.graphics-settings').innerText();
+  // Even desktop QA should expose the mobile-oriented scale presets for inspection.
+  if(!touch){
+   const scalePanel=page.locator('.mobile-view-settings');
+   await scalePanel.waitFor({state:'visible',timeout:10000});
+   assert.equal(await scalePanel.locator('[data-view-world]').count(),8);
+   assert.equal(await scalePanel.locator('[data-view-hud]').count(),6);
+   assert.ok((await scalePanel.innerText()).includes('On a desktop PC'),'explain mobile-only effect on desktop');
+   console.log('PASS: desktop QA exposes mobile scale settings');
+  }
   if(touch&&(label==='portrait'||label==='landscape'||label==='wide-landscape')){
    // Change settings in the real modal, then reload and verify Bridge restored
    // the same independent portrait/landscape scale preference.
@@ -191,8 +200,17 @@ try{
    await page.locator('#fullscreenBtn').click({timeout:10000});
    assert.equal(await page.locator('#fullscreenBtn').getAttribute('aria-pressed'),'true','fullscreen activates from HUD');
    await page.locator('#pauseBtn').click({timeout:10000});
-   await page.locator('#exitFullscreenPause').waitFor({state:'visible',timeout:10000});
-   await page.locator('#exitFullscreenPause').click({timeout:10000});
+   const pauseToggle=page.locator('#fullscreenPause');
+   await pauseToggle.waitFor({state:'visible',timeout:10000});
+   assert.equal(await pauseToggle.count(),1,'one fullscreen toggle in Pause');
+   assert.equal(await page.locator('#exitFullscreenPause').count(),0,'no duplicate fullscreen exit button');
+   assert.ok((await pauseToggle.innerText()).includes('EXIT FULLSCREEN'));
+   // The extra scale panel should be discoverable but not crowd out Pause controls.
+   assert.equal(await page.locator('.mobile-scale-fold').count(),1);
+   await page.locator('.mobile-scale-fold > summary').click({timeout:10000});
+   await page.locator('.mobile-scale-fold [data-view-world="45"]').click({timeout:10000});
+   assert.equal(await page.locator('.mobile-scale-fold > summary').innerText(),'DISPLAY SCALE · WORLD 45% · HUD 80%');
+   await pauseToggle.click({timeout:10000});
    assert.equal(await page.locator('#fullscreenBtn').getAttribute('aria-pressed'),'false','fullscreen exit must be available from Pause');
    assert.equal(await page.evaluate(()=>document.fullscreenElement),null,'fullscreen must be released after exit click');
    await page.locator('#resumeBtn').click({timeout:10000});
