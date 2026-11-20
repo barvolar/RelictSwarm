@@ -325,3 +325,29 @@ html.ios-device .orientation-picker{display:none!important}
  .mobile-scale-label{margin:6px 0 4px}
  .mobile-scale-option{min-height:32px}
 }
+
+
+/* Keep Pause readable while exposing world/HUD presets on every Playgama device. */
+.mobile-scale-fold{
+ margin:8px 0 11px;
+ border:1px solid #335e6b;
+ border-radius:8px;
+ background:#102435;
+}
+.mobile-scale-fold > summary{
+ display:list-item;
+ cursor:pointer;
+ padding:10px 12px;
+ color:#b8fff3;
+ font-size:11px;
+ font-weight:900;
+ letter-spacing:.6px;
+ touch-action:manipulation;
+}
+.mobile-scale-fold[open] > summary{border-bottom:1px solid #335e6b}
+.mobile-scale-fold .mobile-view-settings{
+ margin:8px;
+ border:none;
+ background:transparent;
+ padding:3px;
+}
