@@ -4,5 +4,9 @@ function arenaZoom(){if(!touching)return 1;
  // Give the narrow portrait screen more world visibility. Previous .72 zoom
  // left a large part of a 550-unit weapon's target radius outside the view.
  if(W<H&&W<=700)return W<=340?.59:W<=430?.64:.71;
- if(W<=390)return .52;if(W<=430)return .56;if(W<=650)return .62;return .82;
+ if(W<=390)return .52;if(W<=430)return .56;if(W<=650)return .62;
+ // Landscape touch devices need room around the robot without enlarging
+ // weapons and enemies to the point of obscuring nearby threats.
+ if(W>H&&H<=700)return W>=1100?.73:.72;
+ return .82;
 }
