@@ -8,10 +8,11 @@ const isAppleTouchDevice=(()=>{
   (platform==='MacIntel'&&Number(navigator.maxTouchPoints||0)>1);
 })();
 if(isAppleTouchDevice)document.documentElement.classList?.add('ios-device');
-const fullscreenButtonIds=['fullscreenBtn','mainFullscreen','fullscreenSettings','fullscreenPause'];
+const fullscreenButtonIds=['fullscreenBtn','mainFullscreen','fullscreenSettings','fullscreenPause','exitFullscreenPause'];
+function activeFullscreenElement(){return document.fullscreenElement||document.webkitFullscreenElement||null;}
 function fullscreenButtonText(){
  const en=typeof locale==='undefined'||locale==='en';
- const active=!!document.fullscreenElement;
+ const active=!!activeFullscreenElement();
  return active?(en?'⤡ EXIT FULLSCREEN':'⤡ ВЫЙТИ ИЗ ПОЛНОГО ЭКРАНА'):(en?'⛶ FULLSCREEN':'⛶ ПОЛНЫЙ ЭКРАН');
 }
 function syncFullscreenButtons(){
@@ -34,36 +35,50 @@ function fullscreenNotice(message){
  clearTimeout(fullscreenNoticeTimer);
  fullscreenNoticeTimer=setTimeout(()=>element.classList.remove('visible'),4200);
 }
+async function exitGameFullscreen(){
+ // On Android, release a previously requested rotation lock BEFORE leaving
+ // fullscreen. This avoids a stuck orientation or a failed second toggle.
+ if(!activeFullscreenElement())return false;
+ try{if(typeof screen!=='undefined')screen.orientation?.unlock?.()}catch(error){
+  console.warn('[Relict Swarm] Fullscreen orientation unlock:',error);
+ }
+ if(typeof document.exitFullscreen==='function')await document.exitFullscreen();
+ else if(typeof document.webkitExitFullscreen==='function')await document.webkitExitFullscreen();
+ else throw Error('Fullscreen exit API unavailable');
+ syncFullscreenButtons();
+ resetFloatingJoy();
+ requestAnimationFrame(()=>resize());
+ return true;
+}
 async function toggleFullscreen(){
  // The CrazyGames portal supplies fullscreen; custom game fullscreen controls are prohibited.
  if(window.RELICT_PLATFORM==='crazygames'||isAppleTouchDevice)return false;
  const en=typeof locale==='undefined'||locale==='en';
  try{
-  if(document.fullscreenElement){
-   if(typeof document.exitFullscreen!=='function')throw Error('exitFullscreen unavailable');
-   await document.exitFullscreen();
-  }else{
-   const root=document.documentElement;
-   if(typeof root.requestFullscreen!=='function')throw Error('Fullscreen API unavailable');
-   // Some browsers and embedded game portals reject fullscreen requests;
-   // keep the game playable in both orientations if they do.
-   await root.requestFullscreen();
-  }
+  if(activeFullscreenElement())return await exitGameFullscreen();
+  const root=document.documentElement;
+  if(typeof root.requestFullscreen!=='function')throw Error('Fullscreen API unavailable');
+  // Fullscreen is reversible by the HUD and the dedicated exit in Pause.
+  // Do not lock screen orientation during a plain fullscreen toggle.
+  await root.requestFullscreen();
   syncFullscreenButtons();
   requestAnimationFrame(()=>resize());
   return true;
  }catch(error){
   console.warn('[Relict Swarm] Fullscreen not available:',error);
-  fullscreenNotice(en?'Fullscreen unavailable in this browser or embed. Use the browser fullscreen control.':'Полный экран недоступен в этом браузере или окне. Используй кнопку браузера.');
+  fullscreenNotice(en?'Fullscreen unavailable here. Use the browser or Playgama fullscreen button.':'Здесь полный экран недоступен. Используй кнопку браузера или Playgama.');
   syncFullscreenButtons();
   return false;
  }
 }
 $('fullscreenBtn').addEventListener('click',toggleFullscreen);
-document.addEventListener('fullscreenchange',()=>{
+function onGameFullscreenChange(){
  syncFullscreenButtons();
+ resetFloatingJoy();
  requestAnimationFrame(()=>resize());
-});
+}
+document.addEventListener('fullscreenchange',onGameFullscreenChange);
+document.addEventListener('webkitfullscreenchange',onGameFullscreenChange);
 addEventListener('orientationchange',()=>{
  resetFloatingJoy();
  requestAnimationFrame(()=>resize());
