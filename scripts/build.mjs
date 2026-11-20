@@ -44,7 +44,6 @@ const playgamaLoader='<script src="https://bridge.playgama.com/v2/stable/playgam
   +'<script>'+read('src/platform/playgama-bootstrap.js')+'</script>';
 let playgamaHtml=base.replace('%%RELICT_SDK_LOADER%%',playgamaLoader)
   .replace('[ 10.15: ONLINE TEST ]','[ RELICT SWARM ]')
-  .replaceAll('ESC: pause','P: pause')
   // Playgama prohibits embedded third-party analytics. Leave all telemetry
   // modules inside the game for balance logic, but never load the remote client.
   .replace('<script src="./telemetry-config.js"></script>\n<script src="./telemetry-client.js"></script>\n','');
@@ -55,7 +54,7 @@ const gatedScripts='<script>window.RelicPlaygamaBoot.then(()=>{\n'
   +'}).catch(error=>{console.error("[Playgama] Game startup failed",error);'
   +'document.getElementById("modalContent").textContent="Unable to load game progress. Please reload to try again.";'
   +'});</script>';
-playgamaHtml=playgamaHtml.replace(originalScripts,gatedScripts);
+playgamaHtml=playgamaHtml.replace(originalScripts,gatedScripts).replaceAll('ESC: pause','P: pause');
 const dist=path.join(root,'dist'); fs.mkdirSync(dist,{recursive:true});
 fs.writeFileSync(path.join(dist,'index.html'),html);
 // Explicit platform edition: never point GitHub Pages at /sdk.js.
