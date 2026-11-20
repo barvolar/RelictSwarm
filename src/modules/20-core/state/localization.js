@@ -2855,8 +2855,9 @@ I18N_PAIRS.sort((a,b)=>b[0].length-a[0].length);
 // Existing web, CrazyGames and Yandex releases remain English-only.
 // Playgama follows Bridge platform.language (Russian or English fallback).
 const localeKey='relictswarm_ui_locale_v1';
-const locale=window.RelicPlatform?.provider==='playgama'&&/^ru(?:-|$)/i.test(window.RelicPlatform.language)?'ru':'en';
-if(window.RelicPlatform?.provider!=='playgama')try{localStorage.setItem(localeKey,'en')}catch{}
+const isPlaygama=typeof window!=='undefined'&&window.RelicPlatform?.provider==='playgama';
+const locale=isPlaygama&&/^ru(?:-|$)/i.test(window.RelicPlatform.language)?'ru':'en';
+if(!isPlaygama)try{localStorage.setItem(localeKey,'en')}catch{}
 const i18nTextCache=new WeakMap(),i18nAttrsCache=new WeakMap();
 function localizedText(raw){
  if(typeof raw!=='string')return raw;
