@@ -70,6 +70,7 @@ try{
   ['desktop',{width:1280,height:720},false],
   ['portrait',{width:390,height:844},true],
   ['landscape',{width:844,height:390},true],
+  ['wide-landscape',{width:1280,height:576},true],
   ['square',{width:540,height:540},true]
  ]){
   const context=await browser.newContext({viewport,isMobile:touch,hasTouch:touch});
@@ -119,6 +120,26 @@ try{
   await page.locator('#startBtn').waitFor({state:'visible',timeout:15000});
   await page.locator('#startBtn').click({timeout:15000});
   await page.waitForFunction(()=>window.RelicPlatform?.provider==='playgama'&&document.querySelector('#modal')?.classList.contains('hidden'),{timeout:15000});
+  if(label==='landscape'||label==='wide-landscape'){
+   await page.waitForFunction(()=>document.querySelectorAll('#mobileModules .mobile-weapon-slot').length===5,{timeout:12000});
+   const hud=await page.evaluate(()=>{
+    const panel=document.querySelector('#hud .hud-dock').getBoundingClientRect();
+    const dash=document.querySelector('#dashBtn').getBoundingClientRect();
+    const slots=[...document.querySelectorAll('#mobileModules .mobile-weapon-slot')].map(e=>e.getBoundingClientRect());
+    const fusion=document.querySelector('#forgeBtn').getBoundingClientRect();
+    return {height:panel.height,ratio:panel.height/innerHeight,dashWidth:dash.width,
+     rows:[...slots.map(r=>Math.round(r.top)),Math.round(fusion.top)],
+     slotCount:slots.length,
+     fusionEndsWithinViewport:fusion.right<=innerWidth,
+     gameWidth:document.documentElement.scrollWidth};
+   });
+   assert.equal(hud.slotCount,5,'all five weapon modules must be present');
+   assert.equal(new Set(hud.rows).size,1,'five weapons and Fusion must fit on ONE row in landscape');
+   assert.ok(hud.height<=91&&hud.ratio<.24,label+' HUD should not cover a quarter of the display: '+JSON.stringify(hud));
+   assert.ok(hud.dashWidth<=85,label+' dash button should be compact: '+hud.dashWidth);
+   assert.ok(hud.fusionEndsWithinViewport&&hud.gameWidth<=viewport.width+2,'mobile HUD must not overflow sideways');
+   console.log('PASS: Playgama '+label+' compact landscape HUD '+Math.round(hud.height)+'px; dash '+Math.round(hud.dashWidth)+'px');
+  }
   if(!touch){
    await page.keyboard.press('p');
    await page.locator('#resumeBtn').waitFor({state:'visible',timeout:15000});
