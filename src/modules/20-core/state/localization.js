@@ -2850,6 +2850,14 @@ const I18N_PAIRS=[
  ]
 ];
 const NATIVE_EN_TO_RU=[["WASD / arrows: move · SPACE: dash · P: pause","WASD / стрелки: движение · ПРОБЕЛ: рывок · P: пауза"],["Relict Swarm game arena","Игровая арена Relict Swarm"],["Current weapon loadout","Текущее вооружение"],["All five weapon slots","Все пять слотов оружия"],["Weapons and fusions","Оружие и синтез"],["FIFTEEN MINUTES","ПЯТНАДЦАТЬ МИНУТ"],["ZERO PROTOCOL","НУЛЕВОЙ ПРОТОКОЛ"],["Toggle audio","Выключить звук"],["PROTOCOL III","ПРОТОКОЛ III"],["Toggle audio","Выключить звук"],["PROTOCOL II","ПРОТОКОЛ II"],["PROTOCOL IV","ПРОТОКОЛ IV"],["Fusion Lab","Лаборатория синтеза"],["PROTOCOL I","ПРОТОКОЛ I"],["PROTOCOL V","ПРОТОКОЛ V"],["DESTROYED","УНИЧТОЖЕНО"],["FUSION","СИНТЕЗ"],["REAPER","ЖНЕЦ"],["Pause","Пауза"],["HULL","КОРПУС"],["DATA","ДАННЫЕ"],["DASH","РЫВОК"],["LV.","УР."]];
+NATIVE_EN_TO_RU.push(
+ ['DISPLAY SCALE','МАСШТАБ ИЗОБРАЖЕНИЯ'],
+ ['WORLD SCALE','МАСШТАБ МИРА'],
+ ['HUD SCALE','МАСШТАБ ИНТЕРФЕЙСА'],
+ ['Settings are saved separately for portrait and landscape. Smaller world scale shows more of the arena; HUD scale changes the information panel.','Настройки отдельно сохраняются для вертикального и горизонтального режимов. Меньший масштаб мира показывает больше арены, а масштаб интерфейса меняет размер информационной панели.'],
+ ['LANDSCAPE','ГОРИЗОНТАЛЬНО'],
+ ['PORTRAIT','ВЕРТИКАЛЬНО']
+);
 I18N_PAIRS.push(['ЯЗЫК','LANGUAGE']);
 I18N_PAIRS.sort((a,b)=>b[0].length-a[0].length);
 // Existing web, CrazyGames and Yandex releases remain English-only.
