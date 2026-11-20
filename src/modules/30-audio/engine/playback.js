@@ -7,10 +7,11 @@ function unlockAudio(){try{
   try{const binary=atob(base64);const raw=new Uint8Array(binary.length);for(let i=0;i<binary.length;i++)raw[i]=binary.charCodeAt(i);audioBuffers[name]=await audio.decodeAudioData(raw.buffer);}catch(e){console.warn('Audio decode '+name,e)}
  })).then(()=>{audioLoaded=true;return true});
  }
- if(audio.state==='suspended')audio.resume().then(()=>syncMusic()).catch(()=>{});
+ if(audio.state==='suspended'&&window.RelicPlatform?.isAudioEnabled?.()!==false)audio.resume().then(()=>syncMusic()).catch(()=>{});
+ if(window.RelicPlatform?.isAudioEnabled?.()===false&&audio.state==='running')audio.suspend().catch(()=>{});
  syncMusic();return true;
  }catch(e){console.warn('[Audio]',e);return false;}}
-function desiredMusic(){if(document.hidden||!audioSettings.on||audioSettings.music<=0)return '';
+function desiredMusic(){if(document.hidden||window.RelicPlatform?.isAudioEnabled?.()===false||!audioSettings.on||audioSettings.music<=0)return '';
  if(mode==='paused')return '';
  if(musicPreviewMode&&mode==='menu')return musicPreviewMode==='menu'?'menu_theme':'combat_theme';
  if(mode==='menu'||mode==='end')return 'menu_theme';
