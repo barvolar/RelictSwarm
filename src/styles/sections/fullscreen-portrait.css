@@ -210,3 +210,70 @@ html.ios-device .orientation-picker{display:none!important}
  color:#fff;border-color:#7df6df;background:#23545b;
 }
 .privacy-policy-row span{font-size:10px;line-height:1.45;color:#91aeba}
+
+
+/* Compact landscape PHONE HUD. The old 3x2 loadout occupied roughly one
+   third of the visible playfield at short landscape heights. Keep all five
+   modules and Fusion accessible, but use one horizontal row instead. */
+@media (orientation:landscape) and (pointer:coarse) and (max-height:700px){
+ #hud .hud-dock{
+  padding-bottom:1px;
+  box-shadow:0 2px 9px #01071056;
+ }
+ #hud .hud-top{
+  grid-template-columns:minmax(0,1fr) minmax(68px,76px) repeat(3,31px);
+  min-height:35px;
+  gap:5px;
+  padding:2px max(6px,env(safe-area-inset-right,0px)) 2px max(6px,env(safe-area-inset-left,0px));
+ }
+ #hud .hud-bars{gap:3px}
+ #hud .barline{gap:5px}
+ #hud .barline b{width:47px;flex:0 0 47px;font-size:9px}
+ #hud .bartrack{height:6px}
+ #hud .timer{font-size:clamp(16px,2vw,21px);line-height:1}
+ #hud .hud-sub{font-size:8px;gap:3px}
+ #hud #fullscreenBtn,#hud #audioHudBtn,#hud #pauseBtn{
+  width:31px;height:31px;font-size:15px;padding:0;
+ }
+ #hud .hud-loadout{
+  display:grid;
+  grid-template-columns:repeat(6,minmax(0,1fr));
+  grid-template-rows:29px;
+  gap:3px;
+  min-height:0;height:auto;
+  padding:1px max(6px,env(safe-area-inset-right,0px)) 3px max(6px,env(safe-area-inset-left,0px));
+ }
+ #hud .mobile-weapon-slot{
+  height:29px!important;max-height:29px;
+  min-width:0;
+  grid-template-columns:13px minmax(0,1fr);
+  column-gap:3px;padding:1px 4px;
+  border-radius:5px;
+ }
+ #hud .mobile-weapon-slot .weapon-glyph{font-size:12px}
+ #hud .mobile-weapon-slot .weapon-name{font-size:9px;line-height:12px}
+ #hud .mobile-weapon-slot .weapon-level{font-size:8px;line-height:10px}
+ #hud .hud-loadout #forgeBtn{
+  height:29px!important;min-height:29px!important;
+  font-size:9px!important;padding:1px 2px;
+ }
+ #hud .hud-loadout #forgeCount{width:17px;height:17px;font-size:9px}
+ #touchControls .dash{
+  width:clamp(66px,13vh,79px);height:clamp(66px,13vh,79px);
+  right:calc(10px + env(safe-area-inset-right,0px));
+  bottom:calc(12px + env(safe-area-inset-bottom,0px));
+ }
+ #touchControls .dash span:first-child{font-size:24px}
+ #touchControls .dash small{font-size:9px}
+ #touchControls .joystick{width:80px;height:80px}
+ #hud .boss-wrap{top:calc(77px + env(safe-area-inset-top,0px))}
+ #hud .wavebanner{top:calc(98px + env(safe-area-inset-top,0px))}
+ #hud .toast{top:calc(125px + env(safe-area-inset-top,0px))}
+ #hud .active-buffs{top:calc(78px + env(safe-area-inset-top,0px))}
+}
+/* iOS remains two control buttons across the top when fullscreen isn't supported. */
+@media (orientation:landscape) and (pointer:coarse) and (max-height:700px){
+ html.ios-device #hud .hud-top{
+  grid-template-columns:minmax(0,1fr) minmax(68px,76px) repeat(2,31px);
+ }
+}
