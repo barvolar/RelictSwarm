@@ -39,6 +39,22 @@ const crazygamesHtml=base.replace('%%RELICT_SDK_LOADER%%',
   // CrazyGames supplies its own fullscreen control and prohibits in-game buttons.
   .replace('</head>','<style id="crazygames-fullscreen-controls">#fullscreenBtn,#mainFullscreen,#fullscreenSettings,#fullscreenPause,.settings-action:has(#fullscreenSettings),.button-row:has(#fullscreenPause),.orientation-picker{display:none!important}</style>\n</head>');
 
+// Playgama build: never start game code until Bridge + cloud storage are ready.
+const playgamaLoader='<script src="https://bridge.playgama.com/v2/stable/playgama-bridge.js"></script>\n'
+  +'<script>'+read('src/platform/playgama-bootstrap.js')+'</script>';
+let playgamaHtml=base.replace('%%RELICT_SDK_LOADER%%',playgamaLoader)
+  .replace('[ 10.15: ONLINE TEST ]','[ RELICT SWARM ]')
+  // Playgama prohibits embedded third-party analytics. Leave all telemetry
+  // modules inside the game for balance logic, but never load the remote client.
+  .replace('<script src="./telemetry-config.js"></script>\n<script src="./telemetry-client.js"></script>\n','');
+const originalScripts='<script>'+platformCode+'</script>\n<script>'+js+'</script>';
+if(!playgamaHtml.includes(originalScripts))throw Error('Playgama script launch anchor missing');
+const gatedScripts='<script>window.RelicPlaygamaBoot.then(()=>{\n'
+  +platformCode+'\n(function(){\n'+js+'\n})();\n'
+  +'}).catch(error=>{console.error("[Playgama] Game startup failed",error);'
+  +'document.getElementById("modalContent").textContent="Unable to load game progress. Please reload to try again.";'
+  +'});</script>';
+playgamaHtml=playgamaHtml.replace(originalScripts,gatedScripts);
 const dist=path.join(root,'dist'); fs.mkdirSync(dist,{recursive:true});
 fs.writeFileSync(path.join(dist,'index.html'),html);
 // Explicit platform edition: never point GitHub Pages at /sdk.js.
@@ -49,6 +65,11 @@ for(const p of ['telemetry-config.js','telemetry-client.js','privacy.html'])fs.c
 const crazyDir=path.join(dist,'crazygames');fs.mkdirSync(crazyDir,{recursive:true});
 fs.writeFileSync(path.join(crazyDir,'index.html'),crazygamesHtml);
 for(const p of ['telemetry-config.js','telemetry-client.js','privacy.html'])fs.copyFileSync(path.join(root,p),path.join(crazyDir,p));
+const playgamaDir=path.join(dist,'playgama');fs.mkdirSync(playgamaDir,{recursive:true});
+fs.writeFileSync(path.join(playgamaDir,'index.html'),playgamaHtml);
+fs.copyFileSync(path.join(root,'playgama-bridge-config.json'),path.join(playgamaDir,'playgama-bridge-config.json'));
+fs.copyFileSync(path.join(root,'src/platform/playgama-privacy.html'),path.join(playgamaDir,'privacy.html'));
+
 const check=path.join(dist,'game-check.js'); fs.writeFileSync(check,js);
 try {execFileSync(process.execPath,['--check',check],{stdio:'pipe'});} finally {fs.rmSync(check,{force:true});}
 for (const p of ['telemetry-config.js','telemetry-client.js','privacy.html','.nojekyll']) fs.copyFileSync(path.join(root,p),path.join(dist,p));
