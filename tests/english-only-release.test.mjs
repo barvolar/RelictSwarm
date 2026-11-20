@@ -17,7 +17,7 @@ function context(lang='ru',system='ru-RU'){
 }
 test('English is mandatory, even with saved Russian locale, mobile system RU and platform RU',()=>{
  assert.doesNotMatch(settings,/id="langBtn"/);
- assert.doesNotMatch(settings,/changeLocale\(locale/);
+ assert.match(settings,/const languageSelector=portal\?/,'Only Playgama may show a language selector');
  for(const provider of ['web','crazygames','yandex']){
   const {c,store}=context('ru','ru-RU');
   c.window.RelicPlatform.provider=provider;
@@ -42,7 +42,13 @@ test('mobile browser translation is disabled for this English-only game',()=>{
 test('English translation covers every known static Russian UI template',()=>{
  const {c}=context('ru','ru-RU');
  for(const path of ['src/index.template.html','src/modules/50-ui/pages/play-progression.js','src/modules/50-ui/pages/main-menu.js','src/modules/50-ui/pages/shop-and-lab.js','src/modules/50-ui/pages/help.js','src/modules/40-game/training/pause-qa.js']){
+  let insidePlaygamaRussianHelp=false;
   for(const line of read(path).split('\n')){
+   // The Playgama-only Russian help has its own RU and browser smoke checks;
+   // English-only editions never call that function.
+   if(path.endsWith('/help.js')&&line.startsWith('function showHowRussian(){'))insidePlaygamaRussianHelp=true;
+   if(path.endsWith('/help.js')&&line.startsWith('function showHow(){'))insidePlaygamaRussianHelp=false;
+   if(insidePlaygamaRussianHelp)continue;
    if(!/[А-Яа-яЁё]/.test(line)||line.trim().startsWith('//'))continue;
    const en=vm.runInContext('localizedText('+JSON.stringify(line)+')',c);
    assert.ok(!/[А-Яа-яЁё]/.test(en),'Untranslated '+path+': '+en.slice(0,160));
