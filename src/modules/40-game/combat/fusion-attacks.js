@@ -25,10 +25,24 @@ function fireFusionSpecial(d,pos,target,base,rank){
   return true;
  }
  if(type==='prism'){
-  const r=Math.min(210,100+radius*16);S.gravityWells.push({x:target.x,y:target.y,r,force:160,damage:damage*.19,life:2.8,clock:.05,col});
-  for(const e of S.enemy.filter(e=>e.hp>0).sort((a,b)=>(a.x-target.x)**2+(a.y-target.y)**2-(b.x-target.x)**2-(b.y-target.y)**2).slice(0,Math.min(7,3+wm(d,'beams')))){
-   if(Math.hypot(e.x-target.x,e.y-target.y)<r*1.7){S.fx.push({type:'beam',a:{x:target.x,y:target.y},b:{x:e.x,y:e.y},life:.32,max:.32,col,width:3});hurtEnemy(e,damage*2.0,{slow:.3});}
-  }fusionField(target.x,target.y,r*.65,damage*.18,2,col);burst(target.x,target.y,col,13,100);return true;
+  // The singularity itself now fires repeated prism pulses during its 2.8s
+  // lifetime. Damage is spread across five volleys instead of one huge hit.
+  // Each well stores its own beam count/damage, so later upgrades affect new
+  // wells without retroactively multiplying already deployed ones.
+  const r=Math.min(210,100+radius*16),maxWells=8;
+  const active=S.gravityWells.filter(g=>g.prism);
+  if(active.length>=maxWells){
+   const old=S.gravityWells.indexOf(active[0]);
+   if(old>=0)S.gravityWells.splice(old,1);
+  }
+  S.gravityWells.push({x:target.x,y:target.y,r,force:160,damage:damage*.15,
+   life:2.8,clock:.05,col,prism:true,prismClock:.08,
+   prismDamage:damage*.48,prismBeams:Math.min(7,3+wm(d,'beams'))});
+  // A mild persistent zone preserves the original laser+gravity identity
+  // without doubling the old immediate beam burst.
+  fusionField(target.x,target.y,r*.65,damage*.14,2,col);
+  burst(target.x,target.y,col,13,100);
+  return true;
  }
  if(type==='siege'){
   const shot=fusionLine(pos,target,18,damage*2.0,Math.min(1300,750+wm(d,'pierce')*90),{color:col,knock:18});damageArea(target.x,target.y,85+wm(d,'blast')*13,damage*1.15,{color:col,knock:14});for(const e of shot.hits.slice(1,1+Math.min(5,wm(d,'pierce'))))if(e.hp>0)damageArea(e.x,e.y,35,damage*.26,{color:col});
