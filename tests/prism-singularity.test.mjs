@@ -50,7 +50,7 @@ test('prism creates a 2.8s well with no front-loaded damage and repeated visible
  assert.equal(t.beamHits().length,1,'first pulse should be visible shortly after spawning');
  assert.equal(t.S.fx.filter(x=>x.type==='beam').length,1);
  assert.equal(t.S.fx.find(x=>x.type==='beam').col,'#8dfde9');
- t.step(2.68);
+ t.step(2.8);
  assert.equal(t.S.gravityWells.length,0,'well expires instead of persisting indefinitely');
  assert.equal(t.beamHits().length,5,'five balanced beam pulses in one well lifetime');
  const beamDamage=t.beamHits().reduce((n,h)=>n+h.damage,0);
@@ -83,11 +83,13 @@ test('splitting upgrade increases targets from 3 to 7, not damage per target, an
 });
 
 test('radius expands 16 units per modifier, caps at 210, and changes ray reach',()=>{
- const c=scene(),target=foe(100,0),edge=foe(231,0);
+ const c=scene(),target=foe(100,0),edge=foe(239,0);
  c.S.enemy=[target,edge];c.fire();
  c.step(.12);
  assert.equal(c.beamHits().filter(h=>h.enemy===edge).length,0);
  c.fire({radius:1});assert.equal(c.S.gravityWells.at(-1).r,116);
+ c.step(.12);
+ assert.ok(c.beamHits().some(h=>h.enemy===edge),'radius upgrade must reach a newly available foe');
  c.fire({radius:50});assert.equal(c.S.gravityWells.at(-1).r,210);
  assert.equal(c.S.gravityWells.at(-1).prismBeams,3);
 });
