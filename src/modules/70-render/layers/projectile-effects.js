@@ -26,7 +26,7 @@ function flameJetPose(fx){
 function drawBullets(){
  const lite=renderIsLite(),zoom=arenaZoom(),halfW=W/(2*zoom),halfH=H/(2*zoom),camX=S.cam.x,camY=S.cam.y;
  const visible=(x,y,pad=65)=>Math.abs(x-camX)<=halfW+pad&&Math.abs(y-camY)<=halfH+pad;
- for(const g of S.gravityWells){if(!visible(g.x,g.y,g.r))continue;cx.save();cx.globalAlpha=clamp(g.life/1.5,.25,.9);glow(g.x,g.y,g.r,'#8262ef',.20);ring(g.x,g.y,g.r,'#b99aff',1.8);for(let k=0;k<4;k++){const a=ambient*(k%2?-.9:1.2)+k*TAU/4,r=g.r*(.46+.05*Math.sin(ambient*3+k));cx.beginPath();cx.arc(g.x,g.y,r,a,a+1.9);cx.strokeStyle='#b7a4f9';cx.lineWidth=2.5;cx.stroke()}circ(g.x,g.y,10,'#06051e','#ded0ff',2);
+ for(const g of S.gravityWells){if(!visible(g.x,g.y,g.r))continue;cx.save();cx.globalAlpha=clamp(g.life/1.5,.25,.9);const wellTint=g.prism?g.col:'#8262ef';glow(g.x,g.y,g.r,wellTint,g.prism?.26:.20);ring(g.x,g.y,g.r,g.prism?'#a5fff1':'#b99aff',g.prism?2.4:1.8);for(let k=0;k<4;k++){const a=ambient*(k%2?-.9:1.2)+k*TAU/4,r=g.r*(.46+.05*Math.sin(ambient*3+k));cx.beginPath();cx.arc(g.x,g.y,r,a,a+1.9);cx.strokeStyle='#b7a4f9';cx.lineWidth=2.5;cx.stroke()}circ(g.x,g.y,10,'#06051e','#ded0ff',2);
   for(let j=0;j<13;j++){const a=ambient*.7+j*2.39996,rr=g.r*(.18+((j*.173+ambient*.14)%1)*.78);
    const xx=g.x+Math.cos(a)*rr,yy=g.y+Math.sin(a)*rr;circ(xx,yy,1.7,'#d3b4ff');}
   cx.restore()}
