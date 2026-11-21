@@ -6,10 +6,10 @@ import vm from 'node:vm';
 const read=p=>fs.readFileSync(new URL('../'+p,import.meta.url),'utf8');
 const schedule=read('src/modules/10-data/world/waves.js');
 const tactics=read('src/modules/40-game/upgrades/tactics.js');
-function context(initial={}){
+function context(initial={},selectedLocale='en'){
  const S={t:190,player:{x:0,y:0,hp:60,maxHp:100,inv:0,speed:225},enemy:[],fx:[],bullets:[],tactics:{},tacticFields:[],tacticChoices:[],playerDmg:1,pendingUp:0,...initial};
  const modal={innerHTML:'',querySelectorAll:()=>[]};
- const env={S,mode:'playing',trainingMode:false,last:0,performance:{now:()=>1000},$:(id)=>modal,Math,TEAL:'#fff',BLUE:'#def',
+ const env={S,mode:'playing',locale:selectedLocale,trainingMode:false,last:0,performance:{now:()=>1000},$:(id)=>modal,Math,TEAL:'#fff',BLUE:'#def',
   setMode(x){env.mode=x},toast(){},updateHUD(){},showUpgrades(){},sfx(){},burst(){},
   heal(n){S.player.hp=Math.min(S.player.maxHp,S.player.hp+n)},
   applyChill(e,n){e.chill=(e.chill||0)+n},
@@ -17,7 +17,7 @@ function context(initial={}){
   closest(x,y,max,except){return S.enemy.find(e=>e!==except&&e.hp>0)||null}
  };
  const ctx=vm.createContext(env);vm.runInContext(schedule+'\n'+tactics,ctx);
- return {ctx,S,run:code=>vm.runInContext(code,ctx)};
+ return {ctx,S,modal,run:code=>vm.runInContext(code,ctx)};
 }
 test('boss pools shuffle independently without repeats and keep the seven encounter times',()=>{
  const c=context();
@@ -45,6 +45,52 @@ test('reward offer is always three unique modules and contains an owned tier-2 u
  for(let i=0;i<20;i++)assert.ok(Array.from(c.run('tacticOptions()')).some(x=>x.id==='echo'));
  c.S.tactics.echo=2;
  assert.ok(Array.from(c.run('tacticOptions()')).every(x=>x.id!=='echo'));
+});
+
+test('Russian boss tactical reward renders localized heading, all three cards and descriptions',()=>{
+ const c=context({},'ru');
+ // Reproduce exactly the three modules reported by a player, regardless of RNG.
+ c.run("tacticOptions=()=>['resonance','cryo','gravity'].map(id=>TACTICS.find(m=>m.id===id))");
+ c.run('showTacticChoices()');
+ const html=c.modal.innerHTML;
+ assert.match(html,/БОСС ПОВЕРЖЕН/);
+ assert.match(html,/ТАКТИЧЕСКАЯ НАГРАДА/);
+ assert.match(html,/Выбери один тактический модуль/);
+ assert.match(html,/РЕЗОНАНС ОРУЖИЯ/);
+ assert.match(html,/КРИОИМПУЛЬС/);
+ assert.match(html,/ГРАВИТАЦИОННЫЙ СЛЕД/);
+ assert.match(html,/Каждая шестая дальнобойная атака/);
+ assert.match(html,/Каждые 14 секунд выпускает волну холода/);
+ assert.match(html,/После рывка остаётся поле на 2 секунды/);
+ assert.equal((html.match(/НОВЫЙ МОДУЛЬ/g)||[]).length,3);
+ assert.equal((html.match(/ВЫБРАТЬ/g)||[]).length,3);
+ assert.doesNotMatch(html,/BOSS DEFEATED|TACTICAL REWARD|NEW MODULE|WEAPON RESONANCE|CRYO PULSE|GRAVITY TRAIL|Choose one tactical module|Every sixth ranged attack/);
+});
+test('English tactical reward remains English and language selector covers both tiers of all 12 modules',()=>{
+ const c=context({},'en');
+ c.run("tacticOptions=()=>['resonance','cryo','gravity'].map(id=>TACTICS.find(m=>m.id===id))");
+ c.run('showTacticChoices()');
+ assert.match(c.modal.innerHTML,/BOSS DEFEATED/);
+ assert.match(c.modal.innerHTML,/TACTICAL REWARD/);
+ assert.match(c.modal.innerHTML,/WEAPON RESONANCE/);
+ assert.match(c.modal.innerHTML,/CRYO PULSE/);
+ assert.match(c.modal.innerHTML,/GRAVITY TRAIL/);
+ assert.doesNotMatch(c.modal.innerHTML,/БОСС ПОВЕРЖЕН|ТАКТИЧЕСКАЯ НАГРАДА|РЕЗОНАНС ОРУЖИЯ/);
+ const catalog=Array.from(c.run('TACTICS'));
+ for(const m of catalog){
+  const values=[['name','en'],['one','enOne'],['two','enTwo']];
+  for(const [ruKey,enKey] of values){
+   c.ctx.locale='ru';
+   assert.equal(c.run("tacticLanguage("+JSON.stringify(m[enKey])+","+JSON.stringify(m[ruKey])+")"),m[ruKey],m.id+' RU '+ruKey);
+   c.ctx.locale='en';
+   assert.equal(c.run("tacticLanguage("+JSON.stringify(m[enKey])+","+JSON.stringify(m[ruKey])+")"),m[enKey],m.id+' EN '+enKey);
+  }
+ }
+ // Tier two also uses the localized second description, not just the heading.
+ c.ctx.locale='ru';c.S.tactics.cryo=1;
+ c.run('showTacticChoices()');
+ assert.match(c.modal.innerHTML,/ЭВОЛЮЦИЯ/);
+ assert.match(c.modal.innerHTML,/Гибель охлаждённого врага создаёт небольшую морозную волну/);
 });
 test('taking a module never changes weapon inventory',()=>{
  const c=context({drones:[{id:'pulse'}],tacticChoices:[{id:'echo'}]});c.ctx.mode='tactic';
