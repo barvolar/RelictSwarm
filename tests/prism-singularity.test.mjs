@@ -119,6 +119,31 @@ test('large fire rates cannot accumulate unlimited prism wells or FX rays',()=>{
  assert.ok(t.beamHits().length<=8*7,'one pulse attacks at most 7 targets per active well');
 });
 
+test('real droneUpdate fires a prism well and its later pulses damage targets',()=>{
+ const S={enemy:[foe(120,0)],gravityWells:[],effects:[],fx:[],mines:[],hybrids:[],
+  drones:[{id:'fusion_prism',lvl:1,mods:{beams:1},cd:0,hitCd:0,flash:0}],
+  timeStopTimer:0,player:{x:0,y:0},playerDmg:1,haste:1,rageTimer:0,
+  tacticHasteUntil:0,t:30};
+ let rayHits=0,shots=0;
+ const ctx=vm.createContext({S,Math,shake:0,
+  DRONES:{fusion_prism:{base:2,color:'#8dfde9'}},wm:(d,k)=>d.mods?.[k]||0,
+  getDronePos:()=>({x:0,y:0}),chooseCombatTarget:()=>S.enemy[0],
+  calculateWeaponDamage:()=>1.5,calculateWeaponCooldown:()=>({cooldown:2,attackOverflow:1}),
+  tacticWeaponFired:()=>{},sfxWeapon:()=>{shots++},sfx:()=>{},burst:()=>{},
+  hurtEnemy:(e,n,opts={})=>{e.hp-=n;if(opts.slow===.35)rayHits++},
+  closest:()=>null,damageArea:()=>{},shatterFrozen:()=>{},applyChill:()=>{}
+ });
+ vm.runInContext(source+'\n'+read('src/modules/40-game/combat/drone-combat.js'),ctx);
+ vm.runInContext('droneUpdate(.02)',ctx);
+ assert.equal(shots,1);
+ assert.equal(S.gravityWells.length,1);
+ assert.equal(S.gravityWells[0].prismBeams,4);
+ vm.runInContext('droneUpdate(.2)',ctx);
+ assert.equal(shots,1,'weapon respects cooldown');
+ for(let i=0;i<7;i++)vm.runInContext('updateAreaWeapons(.02)',ctx);
+ assert.ok(rayHits>0,'periodic beams damage a target');
+});
+
 test('existing non-prism gravity wells retain their DOT logic',()=>{
  const t=scene(),target=foe(20,0);
  t.S.enemy.push(target);
