@@ -1457,8 +1457,8 @@ const I18N_PAIRS=[
   "A freezing laser leaves an icy trail and shatters frozen enemies."
  ],
  [
-  "Создаёт микросингулярность; от неё расходятся лазерные лучи к захваченным врагам.",
-  "Creates a micro-singularity that fires laser beams at trapped enemies."
+  "Создаёт воронку на 2,8 секунды: она притягивает обычных врагов и каждые 0,58 секунды обстреливает ближайшие цели лазерами.",
+  "Creates a 2.8-second gravity well that pulls regular enemies and fires laser volleys at nearby targets every 0.58 seconds."
  ],
  [
   "Тяжёлый снаряд пробивает колонну врагов, затем взрывается и разбрасывает ударную волну.",
@@ -2175,6 +2175,14 @@ const I18N_PAIRS=[
  [
   "+18 к радиусу",
   "+18 radius"
+ ],
+ [
+  "+16 к радиусу (до 210)",
+  "+16 radius (up to 210)"
+ ],
+ [
+  "+1 цель за залп (до 7)",
+  "+1 target per volley (up to 7)"
  ],
  [
   "+16 к радиусу",
