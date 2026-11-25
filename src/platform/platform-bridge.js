@@ -8,6 +8,43 @@
  let pauseHandler=()=>{},resumeHandler=()=>{};
  let language='ru',crazyLoadingStarted=false,gameReadySent=false,audioEnabled=true,audioStateHandler=()=>{},rewardedCallback=null;
  const pendingStorage=new Map();let storageFlushScheduled=false,storageQueue=Promise.resolve();
+ // The host's ad layer may be outside the game's fullscreen element.
+ // Do NOT show a Bridge ad until fullscreen has actually been released.
+ let activeAd=null;
+ function finishAd(kind){
+  if(activeAd?.kind!==kind)return;
+  activeAd=null;
+  window.RelicAdFullscreen?.afterAd?.();
+ }
+ function displayAd(kind,display){
+  if(activeAd)return false;
+  const request={kind};activeAd=request;
+  const failed=error=>{
+   console.warn('[Playgama] '+kind+' ad',error);
+   if(kind==='rewarded')rewardedCallback=null;
+   if(activeAd===request){activeAd=null;window.RelicAdFullscreen?.afterAd?.();}
+  };
+  const show=()=>{
+   if(activeAd!==request)return false;
+   try{
+    const result=display();
+    if(result?.catch)result.catch(failed);
+    return true;
+   }catch(error){failed(error);return false}
+  };
+  // Without fullscreen, keep SDK invocation inside the original player click.
+  if(!document.fullscreenElement&&!document.webkitFullscreenElement)return show();
+  // Browsers animate the exit. Await it to avoid presenting an invisible ad.
+  let preparation;
+  try{preparation=window.RelicAdFullscreen?.beforeAd?.()}
+  catch(error){failed(error);return false}
+  if(!preparation){failed(Error('Fullscreen ad guard unavailable'));return false;}
+  Promise.resolve(preparation).then(allowed=>{
+   if(allowed)show();
+   else failed(Error('Could not leave fullscreen before advertisement'));
+  }).catch(failed);
+  return true;
+ }
  function readStored(key){if(provider==='playgama')return window.RelicPlaygamaData?.[key]??null;try{return localStorage.getItem(key)}catch{return null}}
  function writeStored(key,value){
   if(provider!=='playgama'){try{localStorage.setItem(key,value)}catch{}return}
@@ -68,12 +105,14 @@
   isAudioEnabled:()=>audioEnabled,
   readStored,writeStored,
   canReward:()=>provider==='playgama'&&!!sdk?.advertisement?.isRewardedSupported,
-  showInterstitial(){if(provider!=='playgama'||!sdk?.advertisement?.isInterstitialSupported)return false;try{sdk.advertisement.showInterstitial('run_end');return true}catch(error){console.warn('[Playgama] Interstitial',error);return false}},
+  showInterstitial(){
+   if(provider!=='playgama'||!sdk?.advertisement?.isInterstitialSupported)return false;
+   return displayAd('interstitial',()=>sdk.advertisement.showInterstitial('run_end'));
+  },
   showRewarded(callback){
    if(provider!=='playgama'||!sdk?.advertisement?.isRewardedSupported||rewardedCallback||typeof callback!=='function')return false;
    rewardedCallback=callback;
-   try{sdk.advertisement.showRewarded('upgrade_reroll');return true}
-   catch(error){rewardedCallback=null;console.warn('[Playgama] Rewarded ad',error);return false}
+   return displayAd('rewarded',()=>sdk.advertisement.showRewarded('upgrade_reroll'));
   },
   ready:markReady,
   syncGameplay,
@@ -99,7 +138,13 @@
   sdk.advertisement.on(sdk.EVENT_NAME.REWARDED_STATE_CHANGED,state=>{
    if(state==='rewarded'&&rewardedCallback){const cb=rewardedCallback;rewardedCallback=null;cb()}
    else if(state==='closed'||state==='failed')rewardedCallback=null;
+   if(state==='closed'||state==='failed')finishAd('rewarded');
   });
+  if(sdk.EVENT_NAME.INTERSTITIAL_STATE_CHANGED){
+   sdk.advertisement.on(sdk.EVENT_NAME.INTERSTITIAL_STATE_CHANGED,state=>{
+    if(state==='closed'||state==='failed')finishAd('interstitial');
+   });
+  }
   if(sdk.platform.isPaused)platformPause();
   return;
  }
