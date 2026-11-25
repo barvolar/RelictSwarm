@@ -71,8 +71,64 @@ async function toggleFullscreen(){
   return false;
  }
 }
+// Playgama's fullscreen advertising UI may live outside the game's
+// fullscreen subtree. Exit before requesting an ad; the browser requires a
+// NEW player gesture to enter fullscreen again after the advertisement.
+let adFullscreenWasActive=false;
+let adFullscreenReturnUI=null;
+function hideAdFullscreenReturn(){
+ if(adFullscreenReturnUI){adFullscreenReturnUI.remove();adFullscreenReturnUI=null;}
+}
+function showAdFullscreenReturn(){
+ if(!adFullscreenWasActive)return;
+ adFullscreenWasActive=false;
+ if(activeFullscreenElement())return;
+ hideAdFullscreenReturn();
+ const wrapper=document.createElement('div');
+ wrapper.id='adFullscreenReturn';
+ wrapper.style.cssText='position:fixed;bottom:max(18px,env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);z-index:2147483000;display:flex;gap:6px;align-items:center;max-width:calc(100vw - 24px);background:#102234;border:1px solid #59d8d0;border-radius:13px;padding:6px;box-shadow:0 6px 26px #000a;';
+ const button=document.createElement('button');
+ button.type='button';button.id='adFullscreenReturnBtn';
+ button.style.cssText='cursor:pointer;border:0;border-radius:8px;background:#69efd4;color:#06202b;font:700 13px system-ui,sans-serif;padding:10px 14px;white-space:nowrap;';
+ const ru=typeof locale!=='undefined'&&locale==='ru';
+ button.textContent=ru?'⛶ ВЕРНУТЬ ПОЛНЫЙ ЭКРАН':'⛶ RETURN TO FULLSCREEN';
+ button.onclick=async()=>{
+  if(await toggleFullscreen())hideAdFullscreenReturn();
+ };
+ const dismiss=document.createElement('button');
+ dismiss.type='button';dismiss.id='adFullscreenDismiss';
+ dismiss.setAttribute('aria-label',ru?'Закрыть':'Dismiss');
+ dismiss.textContent='×';dismiss.style.cssText='cursor:pointer;border:0;background:transparent;color:#cfe9eb;font:22px system-ui,sans-serif;padding:2px 8px;';
+ dismiss.onclick=hideAdFullscreenReturn;
+ wrapper.append(button,dismiss);document.body.appendChild(wrapper);
+ adFullscreenReturnUI=wrapper;
+}
+window.RelicAdFullscreen={
+ async beforeAd(){
+  if(window.RELICT_PLATFORM!=='playgama')return true;
+  hideAdFullscreenReturn();
+  if(!activeFullscreenElement())return true;
+  // Record intent before exitFullscreen dispatches its change event.
+  adFullscreenWasActive=true;
+  try{
+   const exited=await exitGameFullscreen();
+   if(!exited&&activeFullscreenElement())throw Error('Browser refused fullscreen exit');
+   return true;
+  }catch(error){
+   adFullscreenWasActive=false;
+   console.warn('[Playgama] Cannot expose advertisement outside fullscreen:',error);
+   fullscreenNotice(typeof locale!=='undefined'&&locale==='ru'?
+    'Не удалось открыть рекламу: сначала выйди из полного экрана.':
+    'Cannot show this ad in fullscreen. Exit fullscreen first.');
+   return false;
+  }
+ },
+ afterAd:showAdFullscreenReturn,
+ clear:()=>{adFullscreenWasActive=false;hideAdFullscreenReturn();}
+};
 $('fullscreenBtn').addEventListener('click',toggleFullscreen);
 function onGameFullscreenChange(){
+ if(activeFullscreenElement())hideAdFullscreenReturn();
  syncFullscreenButtons();
  resetFloatingJoy();
  requestAnimationFrame(()=>resize());
