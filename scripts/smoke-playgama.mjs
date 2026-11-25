@@ -29,7 +29,8 @@ const makeMock=language=>`
   EVENT_NAME:{
    PAUSE_STATE_CHANGED:'pause',
    AUDIO_STATE_CHANGED:'audio',
-   REWARDED_STATE_CHANGED:'rewarded'
+   REWARDED_STATE_CHANGED:'rewarded',
+   INTERSTITIAL_STATE_CHANGED:'interstitial'
   },
   initialize(){calls.push(['initialize']);return Promise.resolve()},
   storage:{
@@ -56,8 +57,8 @@ const makeMock=language=>`
   advertisement:{
    isRewardedSupported:true,isInterstitialSupported:true,
    on(event,cb){(listeners[event]??=[]).push(cb)},
-   showInterstitial(where){calls.push(['interstitial',where])},
-   showRewarded(where){calls.push(['rewarded',where])}
+   showInterstitial(where){calls.push(['interstitial',where,!!document.fullscreenElement])},
+   showRewarded(where){calls.push(['rewarded',where,!!document.fullscreenElement])}
   }
  };
 })();
@@ -230,6 +231,44 @@ try{
    });
    await page.locator('#fullscreenBtn').click({timeout:10000});
    assert.equal(await page.locator('#fullscreenBtn').getAttribute('aria-pressed'),'true','fullscreen activates from HUD');
+   // Playgama draws some full-size ads outside the game iframe. Ensure the
+   // SDK is NEVER invoked with the game document still fullscreen.
+   assert.equal(await page.evaluate(()=>window.RelicPlatform.showInterstitial()),true);
+   await page.waitForFunction(()=>window.__bridgeCalls.some(c=>c[0]==='interstitial'),{timeout:10000});
+   let ads=await page.evaluate(()=>window.__bridgeCalls.filter(c=>c[0]==='interstitial'));
+   assert.equal(ads.at(-1)[2],false,'interstitial SDK call must happen AFTER native fullscreen exit');
+   assert.equal(await page.evaluate(()=>document.fullscreenElement),null,'fullscreen exited for the interstitial');
+   await page.evaluate(()=>window.__bridgeTrigger('interstitial','closed'));
+   await page.locator('#adFullscreenReturnBtn').waitFor({state:'visible',timeout:10000});
+   await page.locator('#adFullscreenReturnBtn').click();
+   assert.equal(await page.locator('#fullscreenBtn').getAttribute('aria-pressed'),'true','player can reenter fullscreen with a tap after interstitial');
+   assert.equal(await page.locator('#adFullscreenReturnBtn').count(),0,'return control removed after reentry');
+   // Closing a rewarded ad without a reward must not change upgrade cards.
+   await page.evaluate(()=>{
+    window.__testRewardCount=0;
+    if(!window.RelicPlatform.showRewarded(()=>window.__testRewardCount++))throw Error('rewarded request refused');
+   });
+   await page.waitForFunction(()=>window.__bridgeCalls.some(c=>c[0]==='rewarded'),{timeout:10000});
+   let rewarded=await page.evaluate(()=>window.__bridgeCalls.filter(c=>c[0]==='rewarded'));
+   assert.equal(rewarded.at(-1)[2],false,'rewarded SDK call must happen AFTER fullscreen exit');
+   await page.evaluate(()=>window.__bridgeTrigger('rewarded','closed'));
+   assert.equal(await page.evaluate(()=>window.__testRewardCount),0,'no rewards when ad closed without rewarded event');
+   await page.locator('#adFullscreenReturnBtn').click();
+   assert.equal(await page.locator('#fullscreenBtn').getAttribute('aria-pressed'),'true','player can reenter after cancelled reward ad');
+   // Confirm a completed ad grants exactly one reward and restores the UI.
+   await page.evaluate(()=>{
+    if(!window.RelicPlatform.showRewarded(()=>window.__testRewardCount++))throw Error('rewarded retry refused');
+   });
+   await page.waitForFunction(()=>window.__bridgeCalls.filter(c=>c[0]==='rewarded').length===2,{timeout:10000});
+   await page.evaluate(()=>{
+    window.__bridgeTrigger('rewarded','rewarded');
+    window.__bridgeTrigger('rewarded','closed');
+   });
+   assert.equal(await page.evaluate(()=>window.__testRewardCount),1,'completed rewarded ad grants exactly once');
+   await page.locator('#adFullscreenReturnBtn').waitFor({state:'visible',timeout:10000});
+   await page.locator('#adFullscreenReturnBtn').click();
+   assert.equal(await page.locator('#fullscreenBtn').getAttribute('aria-pressed'),'true','fullscreen restored after rewarded ad');
+   console.log('PASS: Playgama interstitial/rewarded ads exit fullscreen before display; no false reward; return-to-fullscreen works');
    await page.locator('#pauseBtn').click({timeout:10000});
    const pauseToggle=page.locator('#fullscreenPause');
    await pauseToggle.waitFor({state:'visible',timeout:10000});
