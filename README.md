@@ -1,5 +1,5 @@
 <div align="center">
-  <a href="https://barvolar.github.io/RelictSwarm/">
+  <a href="https://playgama.ai/play/b67negg2xnl746">
     <img src="./assets/relict-swarm-cover.svg" width="100%" alt="Реликтовый рой — 15 минут выживания на арене, боевой робот и рой врагов"/>
   </a>
 
@@ -8,7 +8,7 @@
   <p>Динамичный браузерный roguelite про боевого робота, бесконечную прокачку и битвы с боссами.</p>
 
   <p>
-    <a href="https://barvolar.github.io/RelictSwarm/"><img src="https://img.shields.io/badge/▶_ИГРАТЬ_БЕСПЛАТНО-35D9C6?style=for-the-badge&labelColor=0C2235&color=18BBAA" alt="Играть бесплатно"/></a>
+    <a href="https://playgama.ai/play/b67negg2xnl746"><img src="https://img.shields.io/badge/▶_ИГРАТЬ_БЕСПЛАТНО-35D9C6?style=for-the-badge&labelColor=0C2235&color=18BBAA" alt="Играть бесплатно"/></a>
     <img src="https://img.shields.io/badge/HTML5_·_В_БРАУЗЕРЕ-172B40?style=for-the-badge&labelColor=172B40&color=28485A" alt="Игра в браузере"/>
     <img src="https://img.shields.io/badge/ПК_·_ANDROID_·_iPHONE-172B40?style=for-the-badge&labelColor=172B40&color=28485A" alt="Для ПК и телефонов"/>
   </p>
@@ -58,7 +58,7 @@
 
 <div align="center">
 
-### [▶ НАЧАТЬ ЗАБЕГ](https://barvolar.github.io/RelictSwarm/)
+### [▶ НАЧАТЬ ЗАБЕГ](https://playgama.ai/play/b67negg2xnl746)
 
 **15 минут. Один робот. Целый рой.**
 
@@ -76,7 +76,7 @@
 <details>
 <summary><b>🔒 Конфиденциальность</b></summary>
 
-Игра сохраняет прогресс в браузере. Дополнительная отправка анонимной игровой статистики возможна только с согласия игрока и при наличии подключённого сервера аналитики. Выбор можно изменить в настройках. Подробнее: [**Privacy Policy (English)**](https://barvolar.github.io/RelictSwarm/privacy.html).
+Игра сохраняет прогресс в браузере. Дополнительная отправка анонимной игровой статистики возможна только с согласия игрока и при наличии подключённого сервера аналитики. Выбор можно изменить в настройках. Подробнее: [**Privacy Policy (English)**](https://playgama.ai/play/b67negg2xnl746privacy.html).
 
 </details>
 
